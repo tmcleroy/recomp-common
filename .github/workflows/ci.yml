@@ -1,0 +1,43 @@
+# Every push and pull request: the files are audited (tools/audit.sh), and the tests and the example
+# are built and run on Linux and macOS. Nothing from any game is needed.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: tools/audit.sh
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tests (the menu's rules; the C interface from C)
+        run: make test
+      - name: The example host
+        run: |
+          make example
+          build/shot menu.ppm ddddar
+          test -s menu.ppm
+      - name: The sync script, in a project made for the purpose
+        run: |
+          mkdir -p /tmp/project/tools
+          git -C /tmp/project init -q
+          cp tools/sync-common.sh /tmp/project/tools/
+          RECOMP_COMMON="$PWD" /tmp/project/tools/sync-common.sh
+          RECOMP_COMMON="$PWD" /tmp/project/tools/sync-common.sh --check
+          echo "// changed by hand" >> /tmp/project/recomp-common/menu.h
+          if RECOMP_COMMON="$PWD" /tmp/project/tools/sync-common.sh --check; then echo "a changed copy passed the check"; exit 1; fi

@@ -1,0 +1,144 @@
+# Using recomp-common in a port
+
+## Taking the copy
+
+1. Clone this repository beside your project's (`../recomp-common`), or anywhere and point
+   `RECOMP_COMMON` at it.
+2. Copy `tools/sync-common.sh` into a `tools/` folder of your project. The copy of the library goes
+   in a `recomp-common/` folder beside that `tools/` folder.
+3. Run it:
+
+   ```sh
+   tools/sync-common.sh
+   ```
+
+   It copies `src/` exactly as committed at this repository's HEAD and writes
+   `recomp-common/COMMIT`: the commit, and a SHA-256 of each file.
+4. Commit `recomp-common/` and the script in your project.
+5. Add `recomp-common/menu.cpp` to your build (C++17). A project in C also adds
+   `recomp-common/menu_c.cpp`, compiles those two files with a C++ compiler and links with it (or
+   links the C++ standard library).
+6. Add the check to whatever you run before committing, and to CI:
+
+   ```sh
+   tools/sync-common.sh --check
+   ```
+
+   It fails if the copy is not what `COMMIT` records. With a clone of this repository at hand it
+   also compares each file with that commit.
+
+**Never edit the copy.** To change the menu, change it here (and run `make test`), then run the sync
+script in each project and commit the new copy there. Projects move to a new version only when they
+run the script, so they can be on different versions; the `COMMIT` file says which.
+
+The copy is GPL-3.0 code. Keep the notice at the top of each file, and ship the license text with
+your project.
+
+## The interface (C++)
+
+Everything is in `menu.h`, namespace `recomp`. `examples/shot.cpp` uses all of it.
+
+```cpp
+recomp::MenuConfig config;
+
+// The first page, in groups; a line is drawn between groups.
+config.groups = {
+    {{MenuRow::Save}, {MenuRow::Load}, {MenuRow::Slot}},
+    {{MenuRow::Pages}, {MenuRow::Speed}, {MenuRow::Action, kInsertCoin, "Insert coin", "Puts a coin in the first slot."}},
+    {{MenuRow::Action, kReset, "Reset", "Starts the machine again."}, {MenuRow::Quit}, {MenuRow::Resume}},
+};
+
+// The game's optional features and commands. The menu makes a page for each category.
+config.features = {{"Cheats", "Endless time", "The round's clock stands still."},
+                   {"Cheats", "Health", "Whose health is kept full.", {"Off", "Player 1", "Both"}}};
+config.commands = {{"Training", "Training mode", "Straight to a practice round."}};
+config.value = [](size_t feature) { return /* 0 = off, or which choice */ 0; };
+config.setValue = [](size_t feature, int value) { /* change it; write the settings file */ };
+
+// The Speed row: the names, the first being full speed. What a speed means is the port's affair.
+config.speeds = {"Full", "1/2", "1/4"};
+config.speedDescription = "Left/Right: slow motion.";
+
+// What the menu's buttons are called on this console, for the hint line.
+config.confirmName = "A, B or C";
+config.closeName = "Esc";
+
+menu.Configure(std::move(config));
+```
+
+| Row kind | What it is | What `Buttons` returns when chosen |
+|---|---|---|
+| `Save`, `Load` | "Save state", "Load state" | `Chosen::Save`, `Chosen::Load` (use `Slot()`) |
+| `Slot` | The slot, 1 to 9 | nothing: the menu keeps it (`Slot()`, `SetSlot()`) |
+| `Speed` | One of `speeds`; left out if there are none | nothing: the menu keeps it (`Speed()`, `SetSpeed()`) |
+| `Pages` | Stands for several rows: the commands of no category, then a row per category | a command: `Chosen::Command` with its index |
+| `Action` | The port's own row: a title, a description, an id | `Chosen::Action` with the id |
+| `Quit` | "Quit game" | `Chosen::Quit` |
+| `Resume` | Closes the menu | nothing |
+
+While the menu is open, each time buttons are newly pressed:
+
+```cpp
+unsigned buttons = 0;   // kMenuUp, kMenuDown, kMenuLeft, kMenuRight, kMenuConfirm, kMenuBack
+const recomp::Menu::Chosen chosen = menu.Buttons(buttons);
+switch (chosen.kind) {
+case recomp::Menu::Chosen::Save:    /* save to menu.Slot(); menu.Close() if it worked */ break;
+case recomp::Menu::Chosen::Load:    /* or menu.Note("Nothing is kept in slot 3.") if it did not */ break;
+case recomp::Menu::Chosen::Action:  /* chosen.id is the row's id */ break;
+case recomp::Menu::Chosen::Command: /* chosen.id is its place in config.commands */ break;
+case recomp::Menu::Chosen::Quit:    /* end the game */ break;
+default: break;
+}
+```
+
+The port closes the menu after carrying out what was chosen (so that a failure can leave it open
+with a note). Resume and Back close it themselves.
+
+To show it, copy the game's picture as it stood when the menu opened and draw over the copy each
+time something changes:
+
+```cpp
+shown = picture;                                  // 32-bit pixels, red in the low byte
+menu.Draw(shown.data(), width, height);           // then show `shown` however you show pictures
+```
+
+Sizes follow the picture's height (one font dot is `height / 300` pixels, at least 1), so draw at
+the size the player sees, not at the console's resolution, if you want sharp text in a big window.
+
+### How the buttons behave
+
+- Up and Down choose a row and wrap around.
+- Confirm chooses a row, switches a feature, goes to the next of several values (around), or goes
+  into a page.
+- Left and Right go through a row's values and stop at the ends. On a row with no values, Left
+  leaves a page for the first page.
+- Back closes the menu.
+- The menu opens on the page and the row it was closed on.
+
+## The interface (C)
+
+`menu_c.h` is the same thing as plain functions and structs: `rmenu_new`, `rmenu_configure` (rows
+carry a `group` number instead of being nested; feature choices are a `NULL`-ended array of names),
+`rmenu_open`, `rmenu_buttons` (returns `RMENU_SAVE`, `RMENU_ACTION` and so on, with the id through a
+pointer), `rmenu_draw`. Everything given to `rmenu_configure` is copied except the two function
+pointers and `user`. `tests/c_test.c` is a complete example.
+
+## What a port is expected to do
+
+These are not enforced by the library; they are what makes every port feel the same.
+
+- **Esc, F1 and a gamepad button open and close the menu.** Nothing but the menu's "Quit game" row
+  (and closing the window) ends the game; Esc does not.
+- **The first page** is save states, then what the game offers, then Reset / Quit game / Resume,
+  with Resume last.
+- **The game stands still** while the menu is open, and buttons held as it closes do not reach the
+  game until they are let go.
+- **With the menu closed nothing changes:** no cost per frame, no change to input timing.
+- **A test flag** that opens the menu at a frame, presses given buttons and writes the picture
+  (`--menu FRAME:KEYS[:shot.png]`), so the menu can be checked without a window.
+
+## Text on its own
+
+`text.h` (namespace `recomp::text`) is a header with no dependencies: a `Canvas` over a pixel
+buffer with `Fill` (a blended rectangle) and `Text` (wrapped at spaces to a width), and `TextWidth`
+and `TextLines` to measure. Ports use it for readouts over the picture as well.
