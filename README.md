@@ -1,7 +1,8 @@
 # recomp-common
 
-Code shared between recomp ports (native ports of games made by static recompilation). So far: an
-**in-game overlay menu** and the small bitmap text it is drawn with.
+Code shared between recomp ports (native ports of games made by static recompilation): an
+**in-game overlay menu** and the small bitmap text it is drawn with, the **settings rules** a
+launcher and its game must agree on, and the **launcher** itself.
 
 ![The menu's first page](docs/menu.png)
 
@@ -10,8 +11,9 @@ show, hands it button presses, and gets back what the player chose; it draws its
 32-bit pixels over a copy of the game's picture. The same menu, with the same look and rules, then
 works in every port that takes it.
 
-- C++17, no dependencies beyond the standard library. No SDL.
-- A C interface (`menu_c.h`) for ports written in C.
+- `src/` is C++17 with no dependencies beyond the standard library. No SDL.
+- C interfaces (`menu_c.h`, `settings_c.h`) for ports written in C.
+- `launcher/` is a program of its own (SDL 3 and Dear ImGui, fetched by its build).
 - Nothing from any game is in this repository, and nothing from a game is needed to build or test it.
 
 ## What the menu does
@@ -30,6 +32,22 @@ works in every port that takes it.
 
 ![A page of features](docs/menu-page.png)
 
+## The launcher
+
+![The launcher's Features page](docs/launcher.png)
+
+One launcher for every port: a Game page (the player's own game file, which is only ever read; the
+picture's options; Play), a Features page (the presets Pure, Enhanced and Custom, and a switch or a
+choice for each feature the game lists), and a Controllers page (connected gamepads, a tester, and a
+key and a gamepad button for each of the game's buttons). A port adds one file that describes
+itself: the words for its game file and the check of it, what the game is started with, which
+buttons can be chosen. The launcher and the game read and write the same `settings.ini` by the same
+rules (`src/settings.h`), so they cannot disagree about what a line in it means.
+
+Its look, and the files that make it, come from the launcher of
+[wiiparty-recomp](https://github.com/arelkair/wiiparty-recomp) by arelkair; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 ## Try it
 
 ```sh
@@ -40,10 +58,17 @@ build/shot menu.ppm ddddar     # press Down x4, Confirm, Right; write the pictur
 
 `examples/shot.cpp` is a complete host in about a hundred lines and is the place to start reading.
 
+```sh
+make launcher   # build/launcher/example-launcher, with a stand-in for the game (needs cmake; SDL 3 is fetched if absent)
+make launcher-shots            # its three pages as pictures, with no window shown
+```
+
+`launcher/example` is what a port's own launcher folder looks like.
+
 ## Using it in a port
 
 The library is not installed and has no package: a port keeps a **committed copy** of `src/` and
-compiles it with the rest of its code, so the port builds from a fresh clone with nothing else
+`launcher/` and compiles it with the rest of its code, so the port builds from a fresh clone with nothing else
 present. `tools/sync-common.sh` makes the copy, records which commit it came from, and (with
 `--check`) fails if anyone changed the copy by hand.
 
@@ -54,6 +79,9 @@ expected to follow (what opens the menu, what "Quit game" means, the order of th
 |---|---|
 | `src/menu.h`, `menu.cpp` | The menu. |
 | `src/menu_c.h`, `menu_c.cpp` | The same menu for hosts written in C. |
+| `src/settings.h`, `settings.cpp` | The settings file and the rules for features: presets, values, choices. |
+| `src/settings_c.h`, `settings_c.cpp` | The same rules for hosts written in C. |
+| `launcher/` | The launcher: `launcher.cmake` (what a port includes), `src/` (`launcher.h` is what a port fills in), `example/`. |
 | `src/text.h` | A 5x7 dot-matrix font on a canvas of 32-bit pixels; usable on its own for a port's readouts. |
 | `tools/sync-common.sh` | The script a port keeps to take and check its copy. |
 | `examples/shot.cpp` | A host with no game. |
@@ -61,7 +89,7 @@ expected to follow (what opens the menu, what "Quit game" means, the order of th
 
 ## Status
 
-Version 0.1.0 (see [CHANGELOG.md](CHANGELOG.md)). The interface may still change before 1.0; a
+Version 0.2.0 (see [CHANGELOG.md](CHANGELOG.md)). The interface may still change before 1.0; a
 port is never changed under its feet, because it only moves to a new version when it runs the sync
 script.
 

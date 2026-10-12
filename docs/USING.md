@@ -142,3 +142,78 @@ These are not enforced by the library; they are what makes every port feel the s
 `text.h` (namespace `recomp::text`) is a header with no dependencies: a `Canvas` over a pixel
 buffer with `Fill` (a blended rectangle) and `Text` (wrapped at spaces to a width), and `TextWidth`
 and `TextLines` to measure. Ports use it for readouts over the picture as well.
+
+## Settings: the rules a launcher and its game share
+
+`settings.h` (namespace `recomp`; `settings_c.h` for C) is the one place that says what the
+`[features]` section of a port's `settings.ini` means:
+
+```ini
+[features]
+preset = enhanced        ; pure | enhanced | custom
+free_play = 0            ; a feature's own value wins over the preset: 0, 1, or the number of a choice
+```
+
+- **The game lists its features** for the launcher: `--list-features` prints
+  `recomp::FeatureListText(features)`, a feature a line (name, category, flags, title, description
+  and, when it is a choice of several things, their names with `|` between them, tab-separated).
+  Features flagged `kFeatureSession` last one run and are not listed or saved.
+- **Both read values the same way:** `recomp::FeatureValues(ini, features)` gives every feature's
+  value: the file's if it has one, else the preset's (on only in `enhanced`, for features flagged
+  `kFeatureEnhanced`). Of a category's `kFeatureExclusive` features only one is on.
+- **Both change a value the same way:** `recomp::SetFeature(ini, features, index, value)` makes the
+  preset `custom`, writes down the features that were following the preset so that nothing else
+  changes, and never rewrites a value that was already in the file. `recomp::SetPreset` chooses a
+  preset.
+- `recomp::Ini` is the file itself: `load`, `get`, `set`, `save`. It keeps every line it was not
+  asked to change, comments and other sections included, so the launcher, the game and the player
+  can all write to one file.
+
+With every feature off (the `pure` preset, or no file) a game must run exactly as the original.
+
+## The launcher
+
+A port's launcher is the shared one plus one file of its own. `launcher/example` is a complete
+example with no game; a port's `launcher/CMakeLists.txt` is its `CMakeLists.txt` with other names:
+
+```cmake
+set(LAUNCHER_GAME_NAME "My Game")          # as the player reads it
+set(LAUNCHER_GAME_EXE mygame)              # the game program, beside the launcher (mygame or mygame_app)
+set(LAUNCHER_APP_ID org.example.mygame)
+set(LAUNCHER_HOME_ENV MYGAME_HOME)         # a variable naming a folder to use instead of the player's
+set(LAUNCHER_DISCLAIMER "Not affiliated with ...")
+set(LAUNCHER_PORT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/description.cpp)
+include(../recomp-common/launcher/launcher.cmake)     # makes the target `launcher`
+```
+
+`description.cpp` defines `launcher::describe()` (`launcher/src/launcher.h`):
+
+| Field | What |
+|---|---|
+| `original` | Where the original ran, as the Features page says it: "in the arcade", "on the console". |
+| `file_heading`, `file_intro`, `file_empty`, `file_not_set_up`, `file_filter`, `file_key` | The words for the player's game file, the file dialog's filter, and its key in `launcher.ini`. |
+| `check` | Looks at the player's file and says `Good` (the file the port was made from), `Usable` (it may run) or `NotUsable`, with a line for the player. It must only read the file. |
+| `check_on_thread` | For a check that reads a large file: the page says "Checking..." meanwhile. |
+| `find_nearby` | Optional: a game file near the program, for a build inside the source tree. |
+| `arguments` | What the game is started with, from the file, the player's folder and the Display switches. |
+| `display` | The Display card's switches (`launcher.ini`, `[video]`): key, title, detail, the default, and another switch it needs. |
+| `bindings` | The game's buttons and their usual keys and gamepad buttons (`bindings.h`). With it, the Controllers page lets the player choose them, for one or two players. |
+| `controls_heading`, `controls` | Rows of text for what is fixed (the menu's keys and so on). |
+
+The player's choices are kept in their folder (`SDL_GetPrefPath("", LAUNCHER_GAME_NAME)`, or the
+folder `LAUNCHER_HOME_ENV` names): `launcher.ini` is the launcher's own (where the game file is, the
+Display switches), `settings.ini` is the one the game reads too (features, keys and buttons) and is
+handed to it by the port's `arguments`.
+
+**Keys and buttons.** `launcher/src/bindings.h` (it needs only SDL 3) is the format and its reader:
+`[keyboard1]`, `[gamepad1]` (and `2` for a second player), an action's name and a key, button or
+trigger by SDL's name, or `none`. A game written against SDL 3 includes the same header and reads
+the file once when it starts (`recomp::LoadBindings`); while playing it looks only at that table, so
+choosing keys adds nothing to reading input. A game not on SDL 3 reads the same sections itself.
+
+**Checking it without a window.** `<game>-launcher --screenshot PREFIX [--size WxH]` writes a
+picture per page and shows nothing. With `SDL_VIDEO_DRIVER=dummy SDL_RENDER_DRIVER=software` it
+needs no display at all, and two runs give the same bytes, so a port can compare before and after.
+
+A port that gives out a built launcher must include the licenses of SDL, Dear ImGui and the Inter
+font with it; see `THIRD_PARTY_NOTICES.md`.

@@ -1,5 +1,5 @@
-# Every push and pull request: the files are audited (tools/audit.sh), and the tests and the example
-# are built and run on Linux and macOS. Nothing from any game is needed.
+# Every push and pull request: the files are audited (tools/audit.sh), and the tests, the example and the
+# launcher (with a stand-in for the game) are built and run on Linux and macOS. Nothing from any game is needed.
 name: CI
 
 on:
@@ -39,5 +39,15 @@ jobs:
           cp tools/sync-common.sh /tmp/project/tools/
           RECOMP_COMMON="$PWD" /tmp/project/tools/sync-common.sh
           RECOMP_COMMON="$PWD" /tmp/project/tools/sync-common.sh --check
+          test -f /tmp/project/recomp-common/settings.h
+          test -f /tmp/project/recomp-common/launcher/launcher.cmake
+          echo "// changed by hand" >> /tmp/project/recomp-common/launcher/src/app.h
+          if RECOMP_COMMON="$PWD" /tmp/project/tools/sync-common.sh --check; then echo "a changed copy passed the check"; exit 1; fi
+          RECOMP_COMMON="$PWD" /tmp/project/tools/sync-common.sh
           echo "// changed by hand" >> /tmp/project/recomp-common/menu.h
           if RECOMP_COMMON="$PWD" /tmp/project/tools/sync-common.sh --check; then echo "a changed copy passed the check"; exit 1; fi
+      - name: The launcher, with a stand-in for the game, and its pages with no display
+        run: |
+          if [ "$RUNNER_OS" = Linux ]; then sudo apt-get update -qq && sudo apt-get install -y -qq libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev libegl1-mesa-dev libgles2-mesa-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev > /dev/null; fi
+          make launcher-shots
+          build/launcher/example --list-features | grep -q "Off|Player 1|Both"
