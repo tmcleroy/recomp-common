@@ -3,6 +3,32 @@
 Versions follow [semantic versioning](https://semver.org/). Before 1.0 the interface may change in
 a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
+## 0.4.0 (2026-10-13)
+
+- **The launcher works with a gamepad, and with the arrow keys, alone.** The d-pad, the left stick
+  or the arrow keys move a ring from one button, switch, list or sidebar row to the next; A, Space
+  or Enter presses what the ring is on; B or Esc closes a list, or goes from a page to the sidebar;
+  the shoulder buttons go to the page before and after; the right stick scrolls a page. In the
+  sidebar, up and down change the page and right goes into it. With a gamepad connected the ring
+  is shown from the start; using the mouse hides it. A launcher nobody presses a key in looks as it
+  did: its pages' pictures are the same bytes.
+- A game file can be chosen with a gamepad: Choose, pressed with one, opens a list of folders and
+  files in the launcher's own window (the system's file dialog wants a mouse or a keyboard).
+- Choosing a button on the Controllers page with a gamepad: the button pressed is the button
+  chosen and nothing more; while a key is waited for, any gamepad button leaves things as they were.
+- **Muted**: the Game page has a Sound card with one switch, off unless the player switches it on.
+  When it is on the game is started with `--mute` after the port's own arguments
+  (`Description::mute_argument`; `nullptr` for no card). A game should take that argument and have
+  a row in its menu that switches the sound off and on.
+- **Menu**: a `MenuRow::Mute` row ("Sound": On / Muted) through `MenuConfig::muted` and `setMuted`
+  (`RMENU_ROW_MUTE` for C). `kMenuBack` now leaves a page for the one it was reached from and closes
+  the menu only on the first page (it closed the menu from anywhere). A host should give Space,
+  Enter and a gamepad's A to Confirm, and Backspace and B to Back.
+- `ui.h`: `focus_item`, `focus_next_item`, `show_focus`, `focus_shown`, `gamepad_in_use`, and
+  `nav_item` takes `reachable`. A port's own pages get the ring from the widgets they already use.
+- `--screenshot PREFIX --press KEYS` presses keys, and the buttons of a gamepad made for the test,
+  then takes one picture: the launcher's navigation can be checked with no window and no gamepad.
+
 ## 0.3.0 (2026-10-13)
 
 - **The launcher takes pages of a port's own** (`launcher.h`: `Description::pages`), shown in the

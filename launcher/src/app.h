@@ -2,6 +2,10 @@
 // Copyright (C) 2026 Tommy McLeroy. Part of recomp-common: https://github.com/tmcleroy/recomp-common
 // The launcher's pages: the player's game file, the optional features, controllers, Play. What is about one
 // port comes from launcher::describe() (launcher.h) and the LAUNCHER_* definitions.
+//
+// All of it works with the arrow keys and Space or Enter, and with a gamepad (the d-pad or the left stick,
+// A to press, B to go back to the sidebar or close a list, the shoulder buttons for the page before and
+// after, the right stick to scroll), as well as with the mouse. A ring is round what they are on.
 #pragma once
 
 #include <SDL3/SDL.h>
@@ -33,6 +37,12 @@ public:
     int page_count() const;
     void set_page(int page) { page_ = page; }
     bool busy() const;
+    // A window the player sees (not pictures for a test): with a gamepad connected the ring shows from the start
+    void set_interactive();
+    // While a key or a button is being chosen for an action (and until that button is let go), and while
+    // the game runs (its gamepad is the game's), the arrow keys and the gamepad do not move the ring:
+    // main.cpp switches them off for those frames.
+    bool navigation_paused() const { return capture_action_ >= 0 || nav_hold_ || game_.running(); }
 
 private:
     // Paths.
@@ -58,6 +68,12 @@ private:
     void save_bindings();
     bool capture(const SDL_Event& event);
 
+    // The game file chosen with a gamepad: a list of folders and files in the launcher's own window.
+    void open_browser();
+    void list_folder(const std::filesystem::path& folder);
+    void browser();
+
+    void navigation();
     void sidebar(float height);
     void page(float width, float height);
     Page own_page(int index) const;
@@ -94,4 +110,25 @@ private:
     int capture_action_ = -1;      // the action waiting for a key or a button to be pressed for it, or -1
     bool capture_gamepad_ = false; //   (a gamepad's, or the keyboard's)
     std::vector<SDL_JoystickID> opened_pads_;  // gamepads opened so that their buttons are heard
+
+    // The arrow keys and a gamepad.
+    bool interactive_ = false;
+    bool show_focus_ = false;      // show the ring as soon as there is something for it to be round
+    bool nav_hold_ = false;        // a button was just chosen for an action: nothing moves until it is let go
+    bool focus_sidebar_ = false;   // put the ring on the sidebar's row for the page shown
+    bool in_sidebar_ = false;      // the ring was in the sidebar in the last frame
+    unsigned focus_seen_ = 0;      // what it was on in the last frame
+    bool focus_page_ = false;      // put the ring on the first thing in the page
+    bool right_from_sidebar_ = false;  // Right was pressed in the last frame with the ring in the sidebar
+    unsigned left_from_ = 0;       // Left was pressed in the last frame with the ring on this (0: it was not)
+    bool popup_was_open_ = false;  // a list was open in the last frame (Back closes that, and does no more)
+
+    struct BrowseEntry {
+        std::string name;
+        bool folder;
+    };
+    bool browse_open_ = false;   // open the list in this frame
+    bool browse_moved_ = false;  // another folder is listed: back to its top
+    std::filesystem::path browse_folder_;
+    std::vector<BrowseEntry> browse_entries_;
 };

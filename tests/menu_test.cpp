@@ -118,6 +118,29 @@ int main() {
     Press(menu, {kMenuBack});
     CHECK(!menu.IsOpen());
 
+    // Back in a page leaves the page (the menu stays open); a Mute row switches the sound, and is not
+    // there without the two functions
+    {
+        MenuConfig c = Config();
+        bool muted = false;
+        c.groups.insert(c.groups.begin(), {{MenuRow::Mute}});
+        Menu plain;
+        plain.Configure(c);
+        plain.Open();
+        CHECK(Press(plain, {kMenuConfirm}).kind == Menu::Chosen::Save); // (no Mute row: the first is Save)
+        c.muted = [&] { return muted; };
+        c.setMuted = [&](bool to) { muted = to; };
+        Menu sound;
+        sound.Configure(c);
+        sound.Open();
+        CHECK(Press(sound, {kMenuConfirm}).kind == Menu::Chosen::None);
+        CHECK(muted);
+        Press(sound, {kMenuLeft});
+        CHECK(!muted);
+        std::vector<uint32_t> picture(640 * 480);
+        sound.Draw(picture.data(), 640, 480);
+    }
+
     // With no speeds there is no Speed row; with nothing at all, nothing happens
     MenuConfig bare = Config();
     bare.speeds.clear();

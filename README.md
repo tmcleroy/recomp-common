@@ -39,7 +39,8 @@ works in every port that takes it.
 One launcher for every port: a Game page (the player's own game file, which is only ever read; the
 picture's options; Play), a Features page (the presets Pure, Enhanced and Custom, and a switch or a
 choice for each feature the game lists), and a Controllers page (connected gamepads, a tester, and a
-key and a gamepad button for each of the game's buttons). A port adds one file that describes
+key and a gamepad button for each of the game's buttons). All of it can be used with a gamepad alone,
+or the arrow keys with Space or Enter, as well as with the mouse. A port adds one file that describes
 itself: the words for its game file and the check of it, what the game is started with, which
 buttons can be chosen. A port that is not about one game file can add pages of its own and leave
 the Game page out. The launcher and the game read and write the same `settings.ini` by the same

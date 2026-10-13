@@ -92,7 +92,7 @@ default: break;
 ```
 
 The port closes the menu after carrying out what was chosen (so that a failure can leave it open
-with a note). Resume and Back close it themselves.
+with a note). Resume, and Back on the first page, close it themselves.
 
 To show it, copy the game's picture as it stood when the menu opened and draw over the copy each
 time something changes:
@@ -112,7 +112,9 @@ the size the player sees, not at the console's resolution, if you want sharp tex
   into a page.
 - Left and Right go through a row's values and stop at the ends. On a row with no values, Left
   leaves a page for the first page.
-- Back closes the menu.
+- Back leaves a page for the one it was reached from; on the first page it closes the menu.
+- A `MenuRow::Mute` row ("Sound") switches the game's sound off and on through `MenuConfig::muted` and
+  `setMuted`. Give Space, Enter and a gamepad's A to Confirm, and Backspace and B to Back.
 - The menu opens on the page and the row it was closed on.
 
 ## The interface (C)
@@ -196,6 +198,7 @@ include(../recomp-common/launcher/launcher.cmake)     # makes the target `launch
 | `check_on_thread` | For a check that reads a large file: the page says "Checking..." meanwhile. |
 | `find_nearby` | Optional: a game file near the program, for a build inside the source tree. |
 | `arguments` | What the game is started with, from the file, the player's folder and the Display switches. |
+| `mute_argument` | What the game is started with when the Game page's "Muted" switch is on (`launcher.ini`, `[audio]`); `"--mute"` unless the port says otherwise, `nullptr` for no switch. The game's menu should have a row that switches the sound off and on. |
 | `display` | The Display card's switches (`launcher.ini`, `[video]`): key, title, detail, the default, and another switch it needs. |
 | `bindings` | The game's buttons and their usual keys and gamepad buttons (`bindings.h`). With it, the Controllers page lets the player choose them, for one or two players. |
 | `controls_heading`, `controls` | Rows of text for what is fixed (the menu's keys and so on). |
@@ -224,9 +227,20 @@ trigger by SDL's name, or `none`. A game written against SDL 3 includes the same
 the file once when it starts (`recomp::LoadBindings`); while playing it looks only at that table, so
 choosing keys adds nothing to reading input. A game not on SDL 3 reads the same sections itself.
 
+**A gamepad, or the arrow keys, alone.** Everything in the launcher can be reached and pressed
+without a mouse: the d-pad, the left stick or the arrow keys move a ring; A, Space or Enter presses
+what it is on; B or Esc goes back (closes a list, or goes from a page to the sidebar); the shoulder
+buttons change the page; the right stick scrolls. A port's own pages need do nothing for this if
+they are made of `ui.h`'s widgets. A game's in-game menu should answer to the same: Space, Enter and
+a gamepad's A choose, Backspace and B go back, whatever the game's own buttons are set to.
+
 **Checking it without a window.** `<game>-launcher --screenshot PREFIX [--size WxH]` writes a
 picture per page and shows nothing. With `SDL_VIDEO_DRIVER=dummy SDL_RENDER_DRIVER=software` it
 needs no display at all, and two runs give the same bytes, so a port can compare before and after.
+`--screenshot PREFIX --press KEYS` presses keys one after another and then writes one picture,
+`PREFIX.png`: `u d l r` are the arrow keys, `e` Enter, `s` Space, `x` Esc; `U D L R A B [ ]` are the
+d-pad, A, B and the shoulder buttons of a gamepad that exists only in the program; a digit shows that
+page; `.` waits.
 
 A port that gives out a built launcher must include the licenses of SDL, Dear ImGui and the Inter
 font with it; see `THIRD_PARTY_NOTICES.md`.
