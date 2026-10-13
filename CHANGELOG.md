@@ -5,6 +5,12 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Menu**: pages under pages, and a page's row wherever the host wants it. `MenuConfig::pages`
+  names a page's parent (its row is then on the parent's page, after the parent's commands), what
+  its row says, and whether the row counts the features that are on. `MenuRow::Page` is a row for
+  one page on the first page; the `Pages` row leaves that page out. Left and Back go to the page a
+  page was reached from. With no `pages` and no `Page` row the menu is as it was.
+
 ## 0.2.0 (2026-10-12)
 
 - **Settings** (`settings.h`, and `settings_c.h` for C): the `[features]` rules a launcher and its
