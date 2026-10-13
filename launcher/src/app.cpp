@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Tommy McLeroy. Part of recomp-common: https://github.com/tmcleroy/recomp-common
-// (Card, row and inset_separator are from the launcher of wiiparty-recomp by arelkair, GPL-3.0-or-later:
-// https://github.com/arelkair/wiiparty-recomp, launcher/src/layout.h; see THIRD_PARTY_NOTICES.md.)
 #include "app.h"
 
 #include <algorithm>
@@ -16,10 +14,14 @@
 #include <mach-o/dyld.h>
 #endif
 
+#include "layout.h"
 #include "steam.h"
 #include "ui.h"
 
 using launcher::FileCheck;
+using layout::Card;
+using layout::inset_separator;
+using layout::row;
 using ui::Font;
 using ui::Kind;
 using ui::px;
@@ -30,56 +32,6 @@ constexpr float kSidebarWidth = 220.0f;
 constexpr float kPagePaddingX = 44.0f;
 constexpr float kPagePaddingTop = 40.0f;
 constexpr float kContentMaxWidth = 720.0f;
-
-// A rounded panel behind its contents.
-class Card {
-public:
-    explicit Card(float width) : list_(ImGui::GetWindowDrawList()), start_(ImGui::GetCursorScreenPos()), width_(width) {
-        list_->ChannelsSplit(2);
-        list_->ChannelsSetCurrent(1);
-    }
-    void end() {
-        float bottom = ImGui::GetCursorScreenPos().y;
-        list_->ChannelsSetCurrent(0);
-        list_->AddRectFilled(start_, ImVec2(start_.x + width_, bottom), ui::palette().surface, px(14));
-        list_->ChannelsMerge();
-    }
-
-private:
-    ImDrawList* list_;
-    ImVec2 start_;
-    float width_;
-};
-
-// A card row: label and detail on the left, a control on the right.
-template <typename Control>
-void row(float width, const char* label, const char* detail, float control_width, float control_height, Control control) {
-    const ui::Palette& p = ui::palette();
-    ImVec2 top = ImGui::GetCursorScreenPos();
-    float pad = px(18);
-    ImGui::SetCursorScreenPos(top + ImVec2(pad, px(14)));
-    ImGui::BeginGroup();
-    float text_width = width - pad * 2 - px(control_width) - px(24);
-    ui::text(label, Font::Regular, ui::size::kBody, p.text, text_width);
-    if (detail && *detail) {
-        ui::gap(3);
-        ui::text(detail, Font::Regular, ui::size::kDetail, p.secondary, text_width);
-    }
-    ImGui::EndGroup();
-    float bottom = ImGui::GetItemRectMax().y + px(14);
-    float height = bottom - top.y;
-    ImGui::SetCursorScreenPos(ImVec2(top.x + width - pad - px(control_width), top.y + std::round((height - px(control_height)) * 0.5f)));
-    control();
-    ImGui::SetCursorScreenPos(ImVec2(top.x, bottom));
-    ImGui::Dummy(ImVec2(width, 0));
-}
-
-void inset_separator(float width) {
-    ImVec2 at = ImGui::GetCursorScreenPos();
-    float thickness = std::max(1.0f, std::floor(ui::scale()));
-    ImGui::GetWindowDrawList()->AddRectFilled(at + ImVec2(px(18), 0), at + ImVec2(width - px(18), thickness), ui::palette().separator);
-    ImGui::Dummy(ImVec2(width, thickness));
-}
 
 // The folder the launcher program is in (the game program is beside it).
 std::filesystem::path base_path() {
@@ -163,7 +115,7 @@ int play_directly() {
     std::filesystem::path folder = player_folder();
     recomp::Ini prefs(folder / "launcher.ini");
     prefs.load();
-    if (!about.check(prefs.get("game", about.file_key)).usable()) {
+    if (about.game_page && !about.check(prefs.get("game", about.file_key)).usable()) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, LAUNCHER_GAME_NAME, about.file_not_set_up, nullptr);
         return 1;
     }
@@ -185,7 +137,12 @@ int play_directly() {
 }
 
 App::App(SDL_Window* window)
-    : about_(launcher::describe()), window_(window), prefs_(data_folder() / "launcher.ini"), settings_(data_folder() / "settings.ini") {
+    : about_(launcher::describe()),
+      window_(window),
+      prefs_(data_folder() / "launcher.ini"),
+      settings_(data_folder() / "settings.ini"),
+      folder_(data_folder()),
+      program_folder_(base_path()) {
     prefs_.load();
     settings_.load();
     // The launcher's default is the Enhanced preset (the game alone, with no settings, runs Pure).
@@ -199,11 +156,11 @@ App::App(SDL_Window* window)
     }
     load_features();
     bindings_ = recomp::LoadBindings(settings_.path().string(), about_.bindings);
-    std::string remembered = prefs_.get("game", about_.file_key);
+    std::string remembered = about_.game_page ? prefs_.get("game", about_.file_key) : std::string();
     if (!remembered.empty()) {
         use_game_file(remembered);
     }
-    if (about_.find_nearby && !checking_ && !file_.usable()) {
+    if (about_.game_page && about_.find_nearby && !checking_ && !file_.usable()) {
         // Nothing usable remembered: the port may know of one near the program
         std::string nearby = about_.find_nearby(base_path());
         if (!nearby.empty()) {
@@ -219,7 +176,31 @@ App::~App() {
 }
 
 bool App::busy() const {
+    for (const launcher::CustomPage& page : about_.pages) {
+        if (page.busy && page.busy()) {
+            return true;
+        }
+    }
     return checking_ || game_.running();
+}
+
+int App::page_count() const {
+    return static_cast<int>(about_.pages.size()) + (about_.game_page ? 3 : 2);
+}
+
+// The launcher's own page at a place in the sidebar (the port's pages come first), or Page::Count
+Page App::own_page(int index) const {
+    int own = index - static_cast<int>(about_.pages.size());
+    if (own < 0) {
+        return Page::Count;
+    }
+    return static_cast<Page>(about_.game_page ? own : own + 1);
+}
+
+launcher::PageContext App::context(float width) {
+    launcher::PageContext context{width, window_, prefs_, settings_, folder_, program_folder_, game_.running(), game_.exit_code(), play_error_, {}};
+    context.play = [this] { play(); };
+    return context;
 }
 
 std::filesystem::path App::game_program() const {
@@ -338,8 +319,22 @@ bool App::consume(const SDL_Event& event) {
         return true;
     }
     if (event.type == SDL_EVENT_DROP_FILE && event.drop.data) {
-        use_game_file(event.drop.data);
-        page_ = Page::Game;
+        // To the port's page that is shown if it takes files, else to the first of its pages that does,
+        // else it is the game file
+        int count = static_cast<int>(about_.pages.size());
+        for (int i = -1; i < count; i++) {
+            int index = i < 0 ? page_ : i;
+            if (index < count && about_.pages[index].drop) {
+                launcher::PageContext dropped = context(0.0f);
+                about_.pages[index].drop(dropped, event.drop.data);
+                page_ = index;
+                return true;
+            }
+        }
+        if (about_.game_page) {
+            use_game_file(event.drop.data);
+            page_ = count;
+        }
         return true;
     }
     return false;
@@ -354,6 +349,11 @@ void App::frame() {
     if (!picked.empty()) {
         use_game_file(picked);
     }
+    // The game may have changed settings.ini (its menu's features): what it left is what is shown and kept
+    if (was_running_ && !game_.running()) {
+        settings_.load();
+    }
+    was_running_ = game_.running();
     const ui::Palette& p = ui::palette();
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->Pos);
@@ -378,19 +378,21 @@ void App::sidebar(float height) {
     ImGui::SetCursorScreenPos(origin + ImVec2(px(24), px(28)));
     ui::text(LAUNCHER_GAME_NAME, Font::Semibold, 17.0f, p.text);
     ImGui::SetCursorScreenPos(origin + ImVec2(px(24), px(50)));
-    ui::text("native port", Font::Regular, ui::size::kDetail, p.secondary);
-    const char* names[] = {"Game", "Features", "Controllers"};
+    ui::text(about_.subtitle, Font::Regular, ui::size::kDetail, p.secondary);
+    const char* own[] = {"Game", about_.features_name, "Controllers"};
     float top = px(100);
     float step = px(38);
     ImGuiID indicator = ImHashStr("nav-indicator");
     float at = ui::animate(indicator, static_cast<float>(page_), 18.0f);
+    int custom = static_cast<int>(about_.pages.size());
     ImVec2 pill = origin + ImVec2(px(20), top + at * step);
     ImGui::GetWindowDrawList()->AddRectFilled(pill, pill + ImVec2(px(inner), px(36)), p.control_hover, px(10));
-    for (int i = 0; i < static_cast<int>(Page::Count); i++) {
+    for (int i = 0; i < page_count(); i++) {
         ImGui::SetCursorScreenPos(origin + ImVec2(px(20), top + step * static_cast<float>(i)));
         ImGui::PushID(i);
-        if (ui::nav_item(names[i], static_cast<int>(page_) == i, inner)) {
-            page_ = static_cast<Page>(i);
+        const char* name = i < custom ? about_.pages[i].name : own[static_cast<int>(own_page(i))];
+        if (ui::nav_item(name, page_ == i, inner)) {
+            page_ = i;
         }
         ImGui::PopID();
     }
@@ -401,9 +403,13 @@ void App::sidebar(float height) {
 void App::page(float width, float height) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(px(kPagePaddingX), px(kPagePaddingTop)));
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ui::palette().background);
-    ImGui::BeginChild(static_cast<int>(page_) + 100, ImVec2(width, height), ImGuiChildFlags_AlwaysUseWindowPadding);
+    ImGui::BeginChild(page_ + 100, ImVec2(width, height), ImGuiChildFlags_AlwaysUseWindowPadding);
     float content = std::min(width - px(kPagePaddingX) * 2, px(kContentMaxWidth));
-    switch (page_) {
+    if (page_ < static_cast<int>(about_.pages.size())) {
+        launcher::PageContext shown = context(content);
+        about_.pages[page_].draw(shown);
+    }
+    switch (own_page(page_)) {
     case Page::Game:
         game_page(content);
         break;
@@ -422,21 +428,11 @@ void App::page(float width, float height) {
     ImGui::PopStyleVar();
 }
 
-void App::heading(const char* title, const char* intro, float width) {
-    const ui::Palette& p = ui::palette();
-    ui::text(title, Font::Semibold, ui::size::kHeading, p.text);
-    if (intro) {
-        ui::gap(8);
-        ui::text(intro, Font::Regular, ui::size::kLead, p.secondary, std::min(width, px(620)));
-    }
-    ui::gap(26);
-}
-
 // ---- Game --------------------------------------------------------------------------------
 
 void App::game_page(float width) {
     const ui::Palette& p = ui::palette();
-    heading(LAUNCHER_GAME_NAME, about_.file_intro, width);
+    layout::heading(LAUNCHER_GAME_NAME, about_.file_intro, width);
 
     FileCheck file;
     {
@@ -545,21 +541,25 @@ void App::game_page(float width) {
 
 void App::features_page(float width) {
     const ui::Palette& p = ui::palette();
-    std::string intro = std::string("Pure plays the game exactly as it was ") + about_.original + ". Enhanced turns on the improvements; or pick your own.";
-    heading("Features", intro.c_str(), width);
+    std::string intro = about_.features_intro
+                            ? std::string(about_.features_intro)
+                            : std::string("Pure plays the game exactly as it was ") + about_.original + ". Enhanced turns on the improvements; or pick your own.";
+    layout::heading(about_.features_name, intro.c_str(), width);
 
-    std::vector<std::string> labels = {std::string("Pure: as ") + about_.original, "Enhanced: recommended", "Custom"};
-    std::string preset = recomp::Preset(settings_);
-    int index = 0;
-    for (int i = 0; i < 3; i++) {
-        if (preset == kPresetNames[i]) {
-            index = i;
+    if (about_.presets) {
+        std::vector<std::string> labels = {std::string("Pure: as ") + about_.original, "Enhanced: recommended", "Custom"};
+        std::string preset = recomp::Preset(settings_);
+        int index = 0;
+        for (int i = 0; i < 3; i++) {
+            if (preset == kPresetNames[i]) {
+                index = i;
+            }
         }
+        if (ui::dropdown("##preset", labels, index, 280.0f)) {
+            set_preset(kPresetNames[index]);
+        }
+        ui::gap(26);
     }
-    if (ui::dropdown("##preset", labels, index, 280.0f)) {
-        set_preset(kPresetNames[index]);
-    }
-    ui::gap(26);
 
     if (!features_error_.empty()) {
         ui::text(features_error_.c_str(), Font::Regular, ui::size::kBody, p.danger, width);
@@ -721,7 +721,7 @@ bool App::capture(const SDL_Event& event) {
 
 void App::controllers_page(float width) {
     const ui::Palette& p = ui::palette();
-    heading("Controllers", "The keyboard always works. Gamepads show up here when connected; press buttons and move the sticks to check they work.",
+    layout::heading("Controllers", "The keyboard always works. Gamepads show up here when connected; press buttons and move the sticks to check they work.",
             width);
 
     int count = 0;

@@ -41,7 +41,8 @@ picture's options; Play), a Features page (the presets Pure, Enhanced and Custom
 choice for each feature the game lists), and a Controllers page (connected gamepads, a tester, and a
 key and a gamepad button for each of the game's buttons). A port adds one file that describes
 itself: the words for its game file and the check of it, what the game is started with, which
-buttons can be chosen. The launcher and the game read and write the same `settings.ini` by the same
+buttons can be chosen. A port that is not about one game file can add pages of its own and leave
+the Game page out. The launcher and the game read and write the same `settings.ini` by the same
 rules (`src/settings.h`), so they cannot disagree about what a line in it means.
 
 Its look, and the files that make it, come from the launcher of
@@ -89,7 +90,7 @@ expected to follow (what opens the menu, what "Quit game" means, the order of th
 
 ## Status
 
-Version 0.2.0 (see [CHANGELOG.md](CHANGELOG.md)). The interface may still change before 1.0; a
+Version 0.3.0 (see [CHANGELOG.md](CHANGELOG.md)). The interface may still change before 1.0; a
 port is never changed under its feet, because it only moves to a new version when it runs the sync
 script.
 

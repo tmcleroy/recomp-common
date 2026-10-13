@@ -199,6 +199,19 @@ include(../recomp-common/launcher/launcher.cmake)     # makes the target `launch
 | `display` | The Display card's switches (`launcher.ini`, `[video]`): key, title, detail, the default, and another switch it needs. |
 | `bindings` | The game's buttons and their usual keys and gamepad buttons (`bindings.h`). With it, the Controllers page lets the player choose them, for one or two players. |
 | `controls_heading`, `controls` | Rows of text for what is fixed (the menu's keys and so on). |
+| `subtitle` | The line under the game's name in the sidebar. |
+| `pages` | Pages of the port's own, before the launcher's in the sidebar (below). |
+| `game_page` | `false`: no Game page, game file or Display card; the port's pages have Play. |
+| `features_name`, `features_intro`, `presets` | Another name and other first lines for the Features page, and whether it has the preset chooser. |
+
+**Pages of a port's own.** A `launcher::CustomPage` is a name and a `draw(PageContext&)`, and
+optionally `drop` (a file dropped on the window) and `busy` (work is going on on another thread:
+keep drawing). The page is drawn inside the launcher's page column with `ui.h` (text, buttons,
+switches, dropdowns) and `layout.h` (`heading`, `label`, `Card`, `row`, `inset_separator`), so it
+looks like the others. The `PageContext` has the column's width, the window (for file dialogs),
+`launcher.ini` and `settings.ini`, the player's folder, the program's folder, whether the game is
+running, and `play()`, which starts it with the port's `arguments`. A port's pages come out in the
+`--screenshot` pictures like the others, in the sidebar's order.
 
 The player's choices are kept in their folder (`SDL_GetPrefPath("", LAUNCHER_GAME_NAME)`, or the
 folder `LAUNCHER_HOME_ENV` names): `launcher.ini` is the launcher's own (where the game file is, the
