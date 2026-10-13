@@ -145,14 +145,14 @@ int main(int argc, char** argv) {
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
         if (!screenshot_prefix.empty() && shot_frames == 0) {
-            app.set_page(static_cast<Page>(shot_page));
+            app.set_page(shot_page);
         }
         app.frame();
         render(renderer);
         if (!screenshot_prefix.empty() && ++shot_frames >= 45 && !app.busy()) {
             save_picture(renderer, screenshot_prefix + std::to_string(shot_page) + ".png");
             shot_frames = 0;
-            if (++shot_page == static_cast<int>(Page::Count)) {
+            if (++shot_page == app.page_count()) {
                 running = false;
             }
         }

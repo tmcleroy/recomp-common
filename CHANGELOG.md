@@ -3,8 +3,20 @@
 Versions follow [semantic versioning](https://semver.org/). Before 1.0 the interface may change in
 a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
-## Unreleased
+## 0.3.0 (2026-10-13)
 
+- **The launcher takes pages of a port's own** (`launcher.h`: `Description::pages`), shown in the
+  sidebar before its own and drawn with the launcher's widgets. A page may take files dropped on
+  the window and may say it is busy. `launcher/src/layout.h` now holds what pages are built from
+  (`Card`, `row`, `inset_separator`, `heading`, `label`), for those pages to use.
+- A port with no one game file can leave out the Game page (`game_page = false`); its own pages
+  then start the game (`PageContext::play`).
+- The Features page can be given another name and other first lines, and can be shown without the
+  preset chooser (`features_name`, `features_intro`, `presets`). The sidebar's line under the
+  game's name can be set (`subtitle`).
+- When the game stops, the launcher reads `settings.ini` again, so a feature switched in the game's
+  menu is not undone by the launcher's next save.
+- A launcher that sets none of these is as it was: its pages' pictures are the same bytes.
 - **Menu**: pages under pages, and a page's row wherever the host wants it. `MenuConfig::pages`
   names a page's parent (its row is then on the parent's page, after the parent's commands), what
   its row says, and whether the row counts the features that are on. `MenuRow::Page` is a row for

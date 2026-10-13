@@ -29,7 +29,9 @@ public:
     // Window events the launcher handles itself (dropped files, a key or button being chosen); false: pass to ImGui.
     bool consume(const SDL_Event& event);
     void frame();
-    void set_page(Page page) { page_ = page; }
+    // The pages in the sidebar's order: the port's own, then the launcher's
+    int page_count() const;
+    void set_page(int page) { page_ = page; }
     bool busy() const;
 
 private:
@@ -58,16 +60,19 @@ private:
 
     void sidebar(float height);
     void page(float width, float height);
-    void heading(const char* title, const char* intro, float width);
+    Page own_page(int index) const;
+    launcher::PageContext context(float width);
     void game_page(float width);
     void features_page(float width);
     void controllers_page(float width);
 
     const launcher::Description& about_;
     SDL_Window* window_;
-    Page page_ = Page::Game;
+    int page_ = 0;
     recomp::Ini prefs_;     // launcher.ini: where the game file is, the Display switches
     recomp::Ini settings_;  // the game's settings.ini: features, controls
+    std::filesystem::path folder_;          // the player's
+    std::filesystem::path program_folder_;  // the launcher's
 
     mutable std::mutex mutex_;
     std::string picked_;  // from the file dialog (another thread)
@@ -80,6 +85,7 @@ private:
     std::string features_error_;
 
     GameProcess game_;
+    bool was_running_ = false;
     std::string play_error_;
     std::string steam_message_;  // what Add to Steam did
     int selected_pad_ = 0;
