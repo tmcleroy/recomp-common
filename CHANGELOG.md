@@ -9,7 +9,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   or the arrow keys move a ring from one button, switch, list or sidebar row to the next; A, Space
   or Enter presses what the ring is on; B or Esc closes a list, or goes from a page to the sidebar;
   the shoulder buttons go to the page before and after; the right stick scrolls a page. In the
-  sidebar, up and down change the page and right goes into it. With a gamepad connected the ring
+  sidebar, up and down change the page and right goes into it (at its first control); the ring
+  never jumps from a sidebar row to whatever in the page happens to be nearest. With a gamepad connected the ring
   is shown from the start; using the mouse hides it. A launcher nobody presses a key in looks as it
   did: its pages' pictures are the same bytes.
 - A game file can be chosen with a gamepad: Choose, pressed with one, opens a list of folders and
