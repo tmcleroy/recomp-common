@@ -196,6 +196,7 @@ include(../recomp-common/launcher/launcher.cmake)     # makes the target `launch
 | `check_on_thread` | For a check that reads a large file: the page says "Checking..." meanwhile. |
 | `find_nearby` | Optional: a game file near the program, for a build inside the source tree. |
 | `arguments` | What the game is started with, from the file, the player's folder and the Display switches. |
+| `mute_argument` | What the game is started with when the Game page's "Muted" switch is on (`launcher.ini`, `[audio]`); `"--mute"` unless the port says otherwise, `nullptr` for no switch. The game's menu should have a row that switches the sound off and on. |
 | `display` | The Display card's switches (`launcher.ini`, `[video]`): key, title, detail, the default, and another switch it needs. |
 | `bindings` | The game's buttons and their usual keys and gamepad buttons (`bindings.h`). With it, the Controllers page lets the player choose them, for one or two players. |
 | `controls_heading`, `controls` | Rows of text for what is fixed (the menu's keys and so on). |

@@ -114,6 +114,11 @@ struct Description {
     std::vector<std::string> (*arguments)(const Launch &launch) = nullptr;
     bool saves_folder = false;                // make <folder>/saves before starting
 
+    // The Game page's Sound card has one switch, "Muted" (off unless the player switches it on; kept in
+    // launcher.ini under [audio]). When it is on the game is started with this argument after the port's
+    // own. nullptr: no card (a game with no sound to switch off).
+    const char *mute_argument = "--mute";
+
     bool preset_summary = false;              // a line over Play saying which preset is chosen
     std::vector<Toggle> display;              // the Display card's switches (none: no card)
 

@@ -16,6 +16,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   files in the launcher's own window (the system's file dialog wants a mouse or a keyboard).
 - Choosing a button on the Controllers page with a gamepad: the button pressed is the button
   chosen and nothing more; while a key is waited for, any gamepad button leaves things as they were.
+- **Muted**: the Game page has a Sound card with one switch, off unless the player switches it on.
+  When it is on the game is started with `--mute` after the port's own arguments
+  (`Description::mute_argument`; `nullptr` for no card). A game should take that argument and have
+  a row in its menu that switches the sound off and on.
 - `ui.h`: `focus_item`, `focus_next_item`, `show_focus`, `focus_shown`, `gamepad_in_use`, and
   `nav_item` takes `reachable`. A port's own pages get the ring from the widgets they already use.
 - `--screenshot PREFIX --press KEYS` presses keys, and the buttons of a gamepad made for the test,

@@ -104,7 +104,11 @@ std::vector<std::string> arguments_for(const recomp::Ini& prefs, const std::file
         }
         return false;
     };
-    return about.arguments(launch);
+    std::vector<std::string> arguments = about.arguments(launch);
+    if (about.mute_argument && prefs.get("audio", "muted") == "1") {
+        arguments.push_back(about.mute_argument);
+    }
+    return arguments;
 }
 
 }  // namespace
@@ -585,6 +589,20 @@ void App::game_page(float width) {
             });
         }
         display.end();
+    }
+    if (about_.mute_argument) {
+        ui::gap(24);
+        ui::text("SOUND", Font::Semibold, ui::size::kDetail, p.secondary);
+        ui::gap(10);
+        Card sound(width);
+        bool muted = prefs_.get("audio", "muted") == "1";
+        row(width, "Muted", "Start the game with no sound. The game's menu switches it back on.", 42.0f, 24.0f, [&] {
+            if (ui::toggle("##muted", muted)) {
+                prefs_.set("audio", "muted", muted ? "0" : "1");
+                prefs_.save();
+            }
+        });
+        sound.end();
     }
     ui::gap(28);
 
