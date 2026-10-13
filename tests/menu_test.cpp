@@ -153,6 +153,45 @@ int main() {
             CHECK(pixels[64] != 0x12345678);
         }
     }
+    // Pages under a page, and a page given a row of its own: Modes at the top, with Begin (a command of
+    // its own), then the pages Show and Viewer under it; Left and Back go to where each was reached from
+    {
+        MenuConfig c = Config();
+        c.groups.insert(c.groups.begin(), {{MenuRow::Page, 0, "Modes"}});
+        c.commands.push_back({"Modes", "Begin", "Starts."});
+        c.commands.push_back({"Show", "Start", "Starts the show."});
+        c.features.push_back({"Show", "Parts", "What is shown.", {"All", "Some"}});
+        c.features.push_back({"Viewer", "Place", "Where.", {"Here", "There"}});
+        c.pages = {{"Modes", "", "Other ways to run the game.", false}, {"Show", "Modes", "", false}, {"Viewer", "Modes", "", false}};
+        g_values.clear();
+        Menu nested;
+        nested.Configure(c);
+        nested.Open();
+        // (the first row is the Modes page; on it: Begin, Show, Viewer, Back)
+        CHECK(Press(nested, {kMenuConfirm}).kind == Menu::Chosen::None);
+        Menu::Chosen begin = Press(nested, {kMenuConfirm});
+        CHECK(begin.kind == Menu::Chosen::Command && begin.id == 2);
+        // Show: Start, Parts, Back
+        Press(nested, {kMenuDown, kMenuConfirm});
+        Menu::Chosen start = Press(nested, {kMenuConfirm});
+        CHECK(start.kind == Menu::Chosen::Command && start.id == 3);
+        Press(nested, {kMenuDown, kMenuRight});
+        CHECK(g_values[3] == 1);
+        // Back from Show is on Modes's Show row; Down and Confirm is then Viewer, whose first row is Place
+        Press(nested, {kMenuDown, kMenuConfirm});
+        Press(nested, {kMenuDown, kMenuConfirm, kMenuRight});
+        CHECK(g_values[4] == 1);
+        // Left twice, from rows that Left does not change: Modes, then the first page on its first row
+        // again. The pages under Modes are not rows of the first page: Save is its second row
+        Press(nested, {kMenuDown, kMenuLeft, kMenuLeft});
+        CHECK(Press(nested, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::Save);
+        // ... and Modes is not listed again among the pages: after Slot and Start over comes Cheats
+        Press(nested, {kMenuDown, kMenuDown, kMenuDown, kMenuDown, kMenuConfirm});
+        Press(nested, {kMenuConfirm});
+        CHECK(g_values[0] == 1);
+        g_values.clear();
+    }
+
     puts("menu_test: all as it should be");
     return 0;
 }
