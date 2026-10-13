@@ -19,7 +19,7 @@ this repository's license. Compared with that project at commit `2860f2c` (2026-
 
 | File here | From | What |
 |---|---|---|
-| `launcher/src/ui.cpp`, `ui.h` | `launcher/src/ui.cpp`, `ui.h` | The look: palette, fonts, buttons, switches, the dropdown, animation. As they were there but for a few lines (that project has since added font decompression and a software-rendering switch, which are not here). |
+| `launcher/src/ui.cpp`, `ui.h` | `launcher/src/ui.cpp`, `ui.h` | The look: palette, fonts, buttons, switches, the dropdown, animation. As they were there but for the ring round what the arrow keys or a gamepad are on, and a few lines (that project has since added font decompression and a software-rendering switch, which are not here). |
 | `launcher/src/embedded.h` | `launcher/src/embedded.h` | Two declarations, unchanged. |
 | `launcher/src/layout.h`: `Card`, `row`, `inset_separator` | `launcher/src/layout.h` | The card and row helpers the pages are built from. |
 | `launcher/src/main.cpp` | `launcher/src/main.cpp` | The window and the frame loop; about two thirds of its lines were that project's when it came here. |

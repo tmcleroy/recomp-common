@@ -50,4 +50,7 @@ jobs:
         run: |
           if [ "$RUNNER_OS" = Linux ]; then sudo apt-get update -qq && sudo apt-get install -y -qq libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev libegl1-mesa-dev libgles2-mesa-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev > /dev/null; fi
           make launcher-shots
+          SDL_VIDEO_DRIVER=dummy SDL_RENDER_DRIVER=software EXAMPLE_HOME=build/launcher-shots/home build/launcher/example-launcher --screenshot build/launcher-shots/keys --press "dddre"
+          SDL_VIDEO_DRIVER=dummy SDL_RENDER_DRIVER=software EXAMPLE_HOME=build/launcher-shots/home build/launcher/example-launcher --screenshot build/launcher-shots/pad --press "]RADA[B"
+          test -s build/launcher-shots/keys.png && test -s build/launcher-shots/pad.png
           build/launcher/example --list-features | grep -q "Off|Player 1|Both"

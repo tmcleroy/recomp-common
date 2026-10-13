@@ -224,9 +224,20 @@ trigger by SDL's name, or `none`. A game written against SDL 3 includes the same
 the file once when it starts (`recomp::LoadBindings`); while playing it looks only at that table, so
 choosing keys adds nothing to reading input. A game not on SDL 3 reads the same sections itself.
 
+**A gamepad, or the arrow keys, alone.** Everything in the launcher can be reached and pressed
+without a mouse: the d-pad, the left stick or the arrow keys move a ring; A, Space or Enter presses
+what it is on; B or Esc goes back (closes a list, or goes from a page to the sidebar); the shoulder
+buttons change the page; the right stick scrolls. A port's own pages need do nothing for this if
+they are made of `ui.h`'s widgets. A game's in-game menu should answer to the same: Space, Enter and
+a gamepad's A choose, Backspace and B go back, whatever the game's own buttons are set to.
+
 **Checking it without a window.** `<game>-launcher --screenshot PREFIX [--size WxH]` writes a
 picture per page and shows nothing. With `SDL_VIDEO_DRIVER=dummy SDL_RENDER_DRIVER=software` it
 needs no display at all, and two runs give the same bytes, so a port can compare before and after.
+`--screenshot PREFIX --press KEYS` presses keys one after another and then writes one picture,
+`PREFIX.png`: `u d l r` are the arrow keys, `e` Enter, `s` Space, `x` Esc; `U D L R A B [ ]` are the
+d-pad, A, B and the shoulder buttons of a gamepad that exists only in the program; a digit shows that
+page; `.` waits.
 
 A port that gives out a built launcher must include the licenses of SDL, Dear ImGui and the Inter
 font with it; see `THIRD_PARTY_NOTICES.md`.
