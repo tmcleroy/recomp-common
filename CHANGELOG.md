@@ -20,6 +20,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   When it is on the game is started with `--mute` after the port's own arguments
   (`Description::mute_argument`; `nullptr` for no card). A game should take that argument and have
   a row in its menu that switches the sound off and on.
+- **Menu**: a `MenuRow::Mute` row ("Sound": On / Muted) through `MenuConfig::muted` and `setMuted`
+  (`RMENU_ROW_MUTE` for C). `kMenuBack` now leaves a page for the one it was reached from and closes
+  the menu only on the first page (it closed the menu from anywhere). A host should give Space,
+  Enter and a gamepad's A to Confirm, and Backspace and B to Back.
 - `ui.h`: `focus_item`, `focus_next_item`, `show_focus`, `focus_shown`, `gamepad_in_use`, and
   `nav_item` takes `reachable`. A port's own pages get the ring from the widgets they already use.
 - `--screenshot PREFIX --press KEYS` presses keys, and the buttons of a gamepad made for the test,

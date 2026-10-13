@@ -92,7 +92,7 @@ default: break;
 ```
 
 The port closes the menu after carrying out what was chosen (so that a failure can leave it open
-with a note). Resume and Back close it themselves.
+with a note). Resume, and Back on the first page, close it themselves.
 
 To show it, copy the game's picture as it stood when the menu opened and draw over the copy each
 time something changes:
@@ -112,7 +112,9 @@ the size the player sees, not at the console's resolution, if you want sharp tex
   into a page.
 - Left and Right go through a row's values and stop at the ends. On a row with no values, Left
   leaves a page for the first page.
-- Back closes the menu.
+- Back leaves a page for the one it was reached from; on the first page it closes the menu.
+- A `MenuRow::Mute` row ("Sound") switches the game's sound off and on through `MenuConfig::muted` and
+  `setMuted`. Give Space, Enter and a gamepad's A to Confirm, and Backspace and B to Back.
 - The menu opens on the page and the row it was closed on.
 
 ## The interface (C)
