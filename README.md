@@ -1,5 +1,9 @@
 # recomp-common
 
+[![CI](https://github.com/tmcleroy/recomp-common/actions/workflows/ci.yml/badge.svg)](https://github.com/tmcleroy/recomp-common/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/tmcleroy/recomp-common)](https://github.com/tmcleroy/recomp-common/releases)
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
+
 Code shared between recomp ports (native ports of games made by static recompilation): an
 **in-game overlay menu** and the small bitmap text it is drawn with, the **settings rules** a
 launcher and its game must agree on, and the **launcher** itself.
@@ -15,6 +19,16 @@ works in every port that takes it.
 - C interfaces (`menu_c.h`, `settings_c.h`) for ports written in C.
 - `launcher/` is a program of its own (SDL 3 and Dear ImGui, fetched by its build).
 - Nothing from any game is in this repository, and nothing from a game is needed to build or test it.
+
+## Who uses it
+
+| Project | What |
+| --- | --- |
+| [cps2recomp](https://github.com/tmcleroy/cps2recomp) | A toolkit for native ports of Capcom CPS-2 arcade games; keeps a copy in `recomp-common/` |
+| [satrecomp](https://github.com/tmcleroy/satrecomp) | A toolkit for native ports of Sega Saturn games; keeps a copy in `recomp-common/` |
+| [Vampire Savior Recomp](https://github.com/tmcleroy/vampire-savior-recomp) | A native port of *Vampire Savior* (CPS-2) with a full training mode, made with cps2recomp: the menu and launcher you see there are this library's ([download](https://github.com/tmcleroy/vampire-savior-recomp/releases)) |
+
+To play a game, download a port; this repository is for people making ports.
 
 ## What the menu does
 
@@ -91,7 +105,7 @@ expected to follow (what opens the menu, what "Quit game" means, the order of th
 
 ## Status
 
-Version 0.3.0 (see [CHANGELOG.md](CHANGELOG.md)). The interface may still change before 1.0; a
+Version 0.4.0 (see [CHANGELOG.md](CHANGELOG.md)). The interface may still change before 1.0; a
 port is never changed under its feet, because it only moves to a new version when it runs the sync
 script.
 
