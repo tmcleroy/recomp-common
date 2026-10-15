@@ -207,6 +207,15 @@ int main() {
         // Left twice, from rows that Left does not change: Modes, then the first page on its first row
         // again. The pages under Modes are not rows of the first page: Save is its second row
         Press(nested, {kMenuDown, kMenuLeft, kMenuLeft});
+        // Right on a page's row goes into it as Confirm does, and Left comes back to that row: Modes, Show
+        // (from the Begin row), back on Modes's Show row (Up from which is Begin), and the first page again
+        Press(nested, {kMenuRight});
+        Press(nested, {kMenuDown, kMenuRight});
+        CHECK(Press(nested, {kMenuConfirm}).id == 3);
+        Press(nested, {kMenuLeft});
+        Menu::Chosen again = Press(nested, {kMenuUp, kMenuConfirm});
+        CHECK(again.kind == Menu::Chosen::Command && again.id == 2);
+        Press(nested, {kMenuLeft});
         CHECK(Press(nested, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::Save);
         // ... and Modes is not listed again among the pages: after Slot and Start over comes Cheats
         Press(nested, {kMenuDown, kMenuDown, kMenuDown, kMenuDown, kMenuConfirm});
