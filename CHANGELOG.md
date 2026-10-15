@@ -3,6 +3,15 @@
 Versions follow [semantic versioning](https://semver.org/). Before 1.0 the interface may change in
 a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
+## Unreleased
+
+- In-game menu: a description longer than three lines no longer runs over the hint at the panel's
+  foot. The panel leaves room for the longest description on the page (three lines at least), and
+  the rows close up when the picture is short.
+- In-game menu: a value too long for the room beside its title (a long choice's name) is drawn in
+  the small letters, and cut short with ".." if even those do not fit, instead of over the title.
+- In-game menu: the panel is opaque; the game's own text no longer shows faintly through it.
+
 ## 0.4.0 (2026-10-13)
 
 - **The launcher works with a gamepad, and with the arrow keys, alone.** The d-pad, the left stick
