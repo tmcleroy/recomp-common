@@ -105,7 +105,7 @@ expected to follow (what opens the menu, what "Quit game" means, the order of th
 
 ## Status
 
-Version 0.4.0 (see [CHANGELOG.md](CHANGELOG.md)). The interface may still change before 1.0; a
+Version 0.5.0 (see [CHANGELOG.md](CHANGELOG.md)). The interface may still change before 1.0; a
 port is never changed under its feet, because it only moves to a new version when it runs the sync
 script.
 

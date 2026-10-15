@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+## 0.5.0 (2026-10-15)
+
 - In-game menu: a description longer than three lines no longer runs over the hint at the panel's
   foot. The panel leaves room for the longest description on the page (three lines at least), and
   the rows close up when the picture is short.
