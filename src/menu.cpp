@@ -406,7 +406,21 @@ void Menu::Draw(uint32_t *pixels, int width, int height) const {
         const float ty = y + (rowHeight - 14 * d) / 2;
         canvas.Text(x, ty, 2 * d, 0, white, title.c_str());
         if (!value.empty()) {
-            canvas.Text(x + inner - TextWidth(value.c_str(), 2 * d), ty, 2 * d, 0, valueColor, value.c_str());
+            // (a value too long for the room beside the title: in the small letters, and cut short if even
+            // those do not fit)
+            const float room = inner - TextWidth(title.c_str(), 2 * d) - 6 * d;
+            if (TextWidth(value.c_str(), 2 * d) <= room) {
+                canvas.Text(x + inner - TextWidth(value.c_str(), 2 * d), ty, 2 * d, 0, valueColor, value.c_str());
+            } else {
+                std::string small = value;
+                if (TextWidth(small.c_str(), d) > room) {
+                    while (small.size() > 1 && TextWidth((small + "..").c_str(), d) > room) {
+                        small.pop_back();
+                    }
+                    small += "..";
+                }
+                canvas.Text(x + inner - TextWidth(small.c_str(), d), ty + 4 * d, d, 0, valueColor, small.c_str());
+            }
         }
         if (selected) {
             description = rowDescription;
