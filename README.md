@@ -51,8 +51,8 @@ To play a game, download a port; this repository is for people making ports.
 ![The launcher's Features page](docs/launcher.png)
 
 One launcher for every port: a Game page (the player's own game file, which is only ever read; the
-picture's options; Play), a Features page (the presets Pure, Enhanced and Custom, and a switch or a
-choice for each feature the game lists), and a Controllers page (connected gamepads, a tester, and a
+picture's options; Play), a Features page (the presets Pure, Enhanced and Custom, a search box, and a switch or
+a choice for each feature the game lists), and a Controllers page (connected gamepads, a tester, and a
 key and a gamepad button for each of the game's buttons). All of it can be used with a gamepad alone,
 or the arrow keys with Space or Enter, as well as with the mouse. A port adds one file that describes
 itself: the words for its game file and the check of it, what the game is started with, which

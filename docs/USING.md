@@ -111,7 +111,7 @@ the size the player sees, not at the console's resolution, if you want sharp tex
 - Confirm chooses a row, switches a feature, goes to the next of several values (around), or goes
   into a page.
 - Left and Right go through a row's values and stop at the ends. On a row with no values, Left
-  leaves a page for the first page.
+  leaves a page for the one it was reached from, and Right on a page's row goes into that page.
 - Back leaves a page for the one it was reached from; on the first page it closes the menu.
 - A `MenuRow::Mute` row ("Sound") switches the game's sound off and on through `MenuConfig::muted` and
   `setMuted`. Give Space, Enter and a gamepad's A to Confirm, and Backspace and B to Back.

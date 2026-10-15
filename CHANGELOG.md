@@ -11,6 +11,12 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 - In-game menu: a value too long for the room beside its title (a long choice's name) is drawn in
   the small letters, and cut short with ".." if even those do not fit, instead of over the title.
 - In-game menu: the panel is opaque; the game's own text no longer shows faintly through it.
+- In-game menu: Right on a page's row goes into that page, as Confirm does (Left still comes back).
+- **The launcher's Features page has a search box.** Only the features with every word typed in
+  their name, description, category or choices are shown, with how many of them match. Ctrl+F (or
+  Cmd+F) goes into it; Esc empties it, a second Esc leaves it; with a gamepad, A goes into it and B
+  leaves it with what was typed kept. The other pages' pictures are the same bytes as before.
+- Launcher tests: `--press` takes `f` for Ctrl+F and types what is between double quotes.
 
 ## 0.4.0 (2026-10-13)
 
