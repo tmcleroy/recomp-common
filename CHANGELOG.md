@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- A collection's games can run at once, one of each: Play is only off for a game that is running. A shared
+  feature one game's menu changes while another runs is set in that one when it ends (unless its own menu changed
+  it too). The launcher's arrow keys and gamepad stay on while a game runs, unless another window is in front.
+  A port's launcher is as it was.
+
 - **The launcher can be a collection**: one launcher for several games (`LAUNCHER_COLLECTION`,
   `launcher::describe_collection()`; README). Games, Features (what more than one game has, under the same
   name and with the same choices, set for all of them; what a game's menu changes of it is set for the others
