@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -174,6 +175,12 @@ std::string lower(std::string text) {
 
 }  // namespace
 
+// (--play is often typed: what goes wrong is said on the terminal too)
+static void say(SDL_MessageBoxFlags kind, const std::string& title, const std::string& message) {
+    std::fprintf(stderr, "%s: %s\n", title.c_str(), message.c_str());
+    SDL_ShowSimpleMessageBox(kind, title.c_str(), message.c_str(), nullptr);
+}
+
 int play_directly(const std::string& id, const std::vector<std::string>& extra) {
     // Straight into the game with the file chosen earlier (e.g. a Steam shortcut in Game Mode).
     std::vector<Target> all = targets();
@@ -188,14 +195,14 @@ int play_directly(const std::string& id, const std::vector<std::string>& extra) 
         for (const Target& one : all) {
             message += " " + one.id;
         }
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, LAUNCHER_GAME_NAME, message.c_str(), nullptr);
+        say(SDL_MESSAGEBOX_INFORMATION, LAUNCHER_GAME_NAME, message);
         return 1;
     }
     const launcher::Description& about = *target->about;
     recomp::Ini prefs(player_folder(LAUNCHER_GAME_NAME, LAUNCHER_HOME_ENV) / "launcher.ini");
     prefs.load();
     if (about.game_page && !about.check(prefs.get(target->file_section, about.file_key)).usable()) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, target->name.c_str(), about.file_not_set_up, nullptr);
+        say(SDL_MESSAGEBOX_INFORMATION, target->name, about.file_not_set_up);
         return 1;
     }
     GameProcess game;
@@ -208,7 +215,7 @@ int play_directly(const std::string& id, const std::vector<std::string>& extra) 
     std::vector<std::string> arguments = arguments_for(prefs, *target);
     arguments.insert(arguments.end(), extra.begin(), extra.end());
     if (!game.start(program_path(target->exe), arguments, target->folder, message, target->folder / "logs" / "game.log")) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, target->name.c_str(), message.c_str(), nullptr);
+        say(SDL_MESSAGEBOX_ERROR, target->name, message);
         return 1;
     }
     while (game.running()) {
