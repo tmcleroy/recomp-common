@@ -5,6 +5,18 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The launcher can be a collection**: one launcher for several games (`LAUNCHER_COLLECTION`,
+  `launcher::describe_collection()`; README). Games, Features (what more than one game has, under the same
+  name and with the same choices, set for all of them; what a game's menu changes of it is set for the others
+  when the game ends), Controllers (every game's), and a page for each game whose file is chosen. Each game keeps
+  its own folder and complete `settings.ini`, and the file chosen in a launcher of its own is taken over.
+  `--play ID`, `--play [ID] -- ARGS` (more arguments for the game), `--page ID`; what `--play` cannot do is
+  said on the terminal too. A port's launcher is unchanged (its pages' pictures are the same, pixel for pixel,
+  and so are its pictures after keys and gamepad buttons pressed).
+- `kFeatureOwn` (64): a game's feature that a collection's launcher never sets for another game.
+- The launcher's `Description::check`, `find_nearby`, `arguments` and the new `candidates` (where in a
+  folder a game's file may be) are `std::function`s; a plain function still does.
+
 ## 0.5.0 (2026-10-15)
 
 - In-game menu: a description longer than three lines no longer runs over the hint at the panel's
