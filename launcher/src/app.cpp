@@ -330,6 +330,13 @@ bool App::busy() const {
     return finding_ || any_running();
 }
 
+bool App::ready_for_keys() const {
+    if (!collection_) {
+        return !busy();
+    }
+    return !finding_ && std::none_of(slots_.begin(), slots_.end(), [](const auto& one) { return one->checking.load(); });
+}
+
 bool App::any_running() const {
     return std::any_of(slots_.begin(), slots_.end(), [](const auto& one) { return one->game.running(); });
 }

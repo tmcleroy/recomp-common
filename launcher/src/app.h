@@ -45,6 +45,9 @@ public:
     void set_page(const std::string& id);
     bool busy() const;
     bool any_running() const;
+    // --press: the next key may be pressed (a port's launcher: nothing is busy; a collection's: nothing but its
+    // games, so that a second can be started while one runs)
+    bool ready_for_keys() const;
     // A window the player sees (not pictures for a test): with a gamepad connected the ring shows from the start
     void set_interactive();
     // While a key or a button is being chosen for an action (and until that button is let go), and while
