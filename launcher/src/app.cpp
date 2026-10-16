@@ -554,6 +554,9 @@ void App::find_shared() {
     for (size_t which = 0; which < slots_.size(); which++) {
         const Slot& one = *slots_[which];
         for (size_t i = 0; i < one.features.size(); i++) {
+            if (one.features[i].flags & recomp::kFeatureOwn) {
+                continue;
+            }
             auto known = std::find_if(shared_.begin(), shared_.end(), [&](const Shared& s) {
                 return s.info.name == one.features[i].name && s.info.choices == one.features[i].choices;
             });
