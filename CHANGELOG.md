@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- The launcher's Sound card can have folders the player chooses for the game (`Description::folders`,
+  `FolderChoice`): a row with Choose… (the system's folder dialog, or the launcher's own browser with a gamepad)
+  and Clear, kept in `launcher.ini`, and given to the game as `ARGUMENT FOLDER`. For cps2recomp's custom
+  soundtrack (the folder of the player's music files).
+
 - A collection's games can run at once, one of each: Play is only off for a game that is running. A shared
   feature one game's menu changes while another runs is set in that one when it ends (unless its own menu changed
   it too). The launcher's arrow keys and gamepad stay on while a game runs, unless another window is in front.
