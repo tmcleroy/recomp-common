@@ -346,7 +346,8 @@ bool App::navigation_paused() const {
         return true;
     }
     if (collection_) {
-        return any_running() && !(SDL_GetWindowFlags(window_) & SDL_WINDOW_INPUT_FOCUS);
+        // (a window that is not shown, for pictures, is never in front)
+        return any_running() && interactive_ && !(SDL_GetWindowFlags(window_) & SDL_WINDOW_INPUT_FOCUS);
     }
     return any_running();
 }
