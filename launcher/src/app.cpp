@@ -543,7 +543,9 @@ void App::load_features(Slot& one) {
     one.features = recomp::ParseFeatureList(GameProcess::output_of(one.program(), {"--list-features"}));
 }
 
-// A collection's features that more than one of its games (those here) has: one row for all of them
+// A collection's features that more than one of its games (those here) has, by the same name and with the same
+// choices: one row for all of them. (A choice whose choices are not the same in each, a stage of each game's say,
+// is each game's own.)
 void App::find_shared() {
     shared_.clear();
     if (!collection_) {
@@ -552,7 +554,9 @@ void App::find_shared() {
     for (size_t which = 0; which < slots_.size(); which++) {
         const Slot& one = *slots_[which];
         for (size_t i = 0; i < one.features.size(); i++) {
-            auto known = std::find_if(shared_.begin(), shared_.end(), [&](const Shared& s) { return s.info.name == one.features[i].name; });
+            auto known = std::find_if(shared_.begin(), shared_.end(), [&](const Shared& s) {
+                return s.info.name == one.features[i].name && s.info.choices == one.features[i].choices;
+            });
             if (known == shared_.end()) {
                 shared_.push_back({one.features[i], {}});
                 known = shared_.end() - 1;
@@ -595,7 +599,7 @@ void App::after_game(Slot& one) {
             continue;
         }
         for (const Shared& shared : shared_) {
-            if (shared.info.name != one.features[i].name) {
+            if (std::none_of(shared.where.begin(), shared.where.end(), [&](const auto& at) { return slots_[at.first].get() == &one && at.second == i; })) {
                 continue;
             }
             for (const auto& [which, feature] : shared.where) {
@@ -1155,7 +1159,9 @@ void App::title_page(size_t which, float width) {
     std::vector<int> values = recomp::FeatureValues(one.settings, one.features);
     std::vector<FeatureRow> rows;
     for (size_t i = 0; i < one.features.size(); i++) {
-        bool shared = std::any_of(shared_.begin(), shared_.end(), [&](const Shared& s) { return s.info.name == one.features[i].name; });
+        bool shared = std::any_of(shared_.begin(), shared_.end(), [&](const Shared& s) {
+            return std::any_of(s.where.begin(), s.where.end(), [&](const auto& at) { return at.first == which && at.second == i; });
+        });
         if (!shared) {
             rows.push_back({&one.features[i], values[i], "", i});
         }
