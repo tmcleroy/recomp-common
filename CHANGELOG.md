@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- A collection's game is told the file chosen for another of its games (`Launch::file_of`, by the game's id):
+  for a game that reads another's files too (cps2recomp's Vampire Savior Definitive, which reads Vampire Savior
+  2's ROM set).
+
 - The launcher's Sound card can have folders the player chooses for the game (`Description::folders`,
   `FolderChoice`): a row with Choose… (the system's folder dialog, or the launcher's own browser with a gamepad)
   and Clear, kept in `launcher.ini`, and given to the game as `ARGUMENT FOLDER`. For cps2recomp's custom
