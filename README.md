@@ -53,7 +53,7 @@ To play a game, download a port; this repository is for people making ports.
 One launcher for every port: a Game page (the player's own game file, which is only ever read; the
 picture's options; the sound's, with folders the port lets the player choose, such as a custom soundtrack's; Play), a Features page (the presets Pure, Enhanced and Custom, a search box, and a switch or
 a choice for each feature the game lists), and a Controllers page (connected gamepads, a tester, and a
-key and a gamepad button for each of the game's buttons). All of it can be used with a gamepad alone,
+key and a gamepad button for each of the game's buttons, for each of its players, up to four). All of it can be used with a gamepad alone,
 or the arrow keys with Space or Enter, as well as with the mouse. A port adds one file that describes
 itself: the words for its game file and the check of it, what the game is started with, which
 buttons can be chosen. A port that is not about one game file can add pages of its own and leave
@@ -67,10 +67,18 @@ Features page has the features more than one game has, under the same name and w
 all of them at once (a game marks one of its own that only shares a name: `kFeatureOwn`), and a feature changed
 in a game's own menu is set for the others when it ends; its Controllers page sets the keys and buttons of every
 game; and each game whose file is chosen has a page with its Display switches, Play, and the features only it
-has. Its games can run at once, one of each. Every game keeps its own folder and a complete `settings.ini`, as a launcher of its own would, and takes
+has. Its games can run at once, one of each, and a game that needs another's file too is given the one chosen on that game's page (`Launch::file_of`). Every game keeps its own folder and a complete `settings.ini`, as a launcher of its own would, and takes
 over the file chosen there. `--play ID` starts a game straight away, `--play ID -- ARGS` gives the game more
 arguments after the launcher's own, and `--page ID` opens at a game's page. A port's own launcher is unchanged:
 its pages are the same pixels as before.
+
+**Updates** (optional: `LAUNCHER_UPDATE_REPO` and `LAUNCHER_VERSION` in the port's `launcher/CMakeLists.txt`;
+`launcher/src/update.h`): the launcher looks at the port's GitHub releases when it opens (a switch turns that
+off) and, when there is a newer version, offers it at the top of its first page. Update downloads only the files
+that changed (each gzipped, named by its SHA-256, beside a manifest per system that the port's release script
+writes), checks every one, and only then puts them in place, taking away the files the new version no longer has;
+if anything fails nothing is changed. Then the new launcher starts. A copy that is not a release's download (a
+build) is only told of the new version. Downloads go through the system's `curl`; the port links zlib.
 
 Its look, and the files that make it, come from the launcher of
 [wiiparty-recomp](https://github.com/arelkair/wiiparty-recomp) by arelkair; see
