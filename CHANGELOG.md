@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- Bindings for up to four players (`kBindMaxPlayers`; `BindTable::players` is still two unless a port says):
+  `[keyboard3]`, `[gamepad3]` and so on, the third gamepad player 3's, and a button for each player on the
+  Controllers page. For cps2recomp's three-player games. A port with one or two players is as it was.
+
 - The launcher's Sound card can have folders the player chooses for the game (`Description::folders`,
   `FolderChoice`): a row with Choose… (the system's folder dialog, or the launcher's own browser with a gamepad)
   and Clear, kept in `launcher.ini`, and given to the game as `ARGUMENT FOLDER`. For cps2recomp's custom
