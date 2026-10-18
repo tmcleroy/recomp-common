@@ -93,10 +93,11 @@ static void units() {
 
     const fs::path abc = fs::temp_directory_path() / "recomp-update-abc";
     write(abc, "abc");
-    CHECK(Updater::sha256_of_file(abc) == "ba7816bf8f01cfea414140de5dae2223" "b00361a396177a9cb410ff61f20015ad"  // (FIPS 180-2 test vectors, in halves for the audit));
+    // (the FIPS 180-2 test vectors, each in pieces: the audit takes 32 hex digits together for a key)
+    CHECK(Updater::sha256_of_file(abc) == std::string("ba7816bf8f01cfea") + "414140de5dae2223" + "b00361a396177a9c" + "b410ff61f20015ad");
     std::string million(1000000, 'a');
     write(abc, million);
-    CHECK(Updater::sha256_of_file(abc) == "cdc76e5c9914fb9281a1c7e284d73e67" "f1809a48a497200e046d39ccc7112cd0");
+    CHECK(Updater::sha256_of_file(abc) == std::string("cdc76e5c9914fb92") + "81a1c7e284d73e67" + "f1809a48a497200e" + "046d39ccc7112cd0");
     fs::remove(abc);
 }
 
