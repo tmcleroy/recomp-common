@@ -67,7 +67,7 @@ Features page has the features more than one game has, under the same name and w
 all of them at once (a game marks one of its own that only shares a name: `kFeatureOwn`), and a feature changed
 in a game's own menu is set for the others when it ends; its Controllers page sets the keys and buttons of every
 game; and each game whose file is chosen has a page with its Display switches, Play, and the features only it
-has. Its games can run at once, one of each. Every game keeps its own folder and a complete `settings.ini`, as a launcher of its own would, and takes
+has. Its games can run at once, one of each, and a game that needs another's file too is given the one chosen on that game's page (`Launch::file_of`). Every game keeps its own folder and a complete `settings.ini`, as a launcher of its own would, and takes
 over the file chosen there. `--play ID` starts a game straight away, `--play ID -- ARGS` gives the game more
 arguments after the launcher's own, and `--page ID` opens at a game's page. A port's own launcher is unchanged:
 its pages are the same pixels as before.
