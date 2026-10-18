@@ -7,11 +7,12 @@ CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Wpedantic -Isrc
 B := build
 
 .PHONY: test example launcher launcher-shots audit clean
-test: $(B)/menu_test $(B)/c_test $(B)/settings_test $(B)/settings_c_test
+test: $(B)/menu_test $(B)/c_test $(B)/settings_test $(B)/settings_c_test $(B)/update_test
 	@$(B)/menu_test
 	@$(B)/c_test
 	@$(B)/settings_test
 	@cd $(B) && ./settings_c_test > /dev/null && echo "settings_c_test: all as it should be"
+	@$(B)/update_test
 
 $(B)/menu_test: tests/menu_test.cpp src/menu.cpp src/menu.h src/text.h
 	@mkdir -p $(B)
@@ -32,6 +33,11 @@ $(B)/settings_c_test: tests/settings_c_test.c src/settings.cpp src/settings_c.cp
 	@mkdir -p $(B)
 	$(CC) -std=c99 -Wall -Wextra -Wpedantic -Isrc -c tests/settings_c_test.c -o $(B)/settings_c_test.o
 	$(CXX) $(CXXFLAGS) $(B)/settings_c_test.o src/settings.cpp src/settings_c.cpp -o $@
+
+# The launcher's updates (launcher/src/update.h; needs zlib, and curl to run)
+$(B)/update_test: tests/update_test.cpp launcher/src/update.cpp launcher/src/update.h
+	@mkdir -p $(B)
+	$(CXX) $(CXXFLAGS) -Ilauncher/src -fsanitize=address,undefined tests/update_test.cpp launcher/src/update.cpp -lz -o $@
 
 # A host with no game: build/shot OUT.ppm [KEYS] [WIDTHxHEIGHT] (examples/shot.cpp)
 example: $(B)/shot

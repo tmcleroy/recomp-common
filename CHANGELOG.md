@@ -5,6 +5,13 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Updates**: a launcher built with `LAUNCHER_UPDATE_REPO` and `LAUNCHER_VERSION` checks the port's GitHub
+  releases when it opens (the first page's Updates card has the switch and Check now) and offers a newer version
+  at the top of that page. Update downloads only the files that changed, from the manifest and gzipped files a
+  release carries (`launcher/src/update.h` has their format), checks each against its SHA-256 and puts them all in
+  place or none, then starts the new launcher. A beta is offered only to a beta; a build that is not a release's
+  download is only told. `make test` runs a whole check and install from releases in a folder.
+
 - Bindings for up to four players (`kBindMaxPlayers`; `BindTable::players` is still two unless a port says):
   `[keyboard3]`, `[gamepad3]` and so on, the third gamepad player 3's, and a button for each player on the
   Controllers page. For cps2recomp's three-player games. A port with one or two players is as it was.
