@@ -72,6 +72,14 @@ over the file chosen there. `--play ID` starts a game straight away, `--play ID 
 arguments after the launcher's own, and `--page ID` opens at a game's page. A port's own launcher is unchanged:
 its pages are the same pixels as before.
 
+**Updates** (optional: `LAUNCHER_UPDATE_REPO` and `LAUNCHER_VERSION` in the port's `launcher/CMakeLists.txt`;
+`launcher/src/update.h`): the launcher looks at the port's GitHub releases when it opens (a switch turns that
+off) and, when there is a newer version, offers it at the top of its first page. Update downloads only the files
+that changed (each gzipped, named by its SHA-256, beside a manifest per system that the port's release script
+writes), checks every one, and only then puts them in place, taking away the files the new version no longer has;
+if anything fails nothing is changed. Then the new launcher starts. A copy that is not a release's download (a
+build) is only told of the new version. Downloads go through the system's `curl`; the port links zlib.
+
 Its look, and the files that make it, come from the launcher of
 [wiiparty-recomp](https://github.com/arelkair/wiiparty-recomp) by arelkair; see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
