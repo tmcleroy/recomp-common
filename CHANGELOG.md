@@ -7,9 +7,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 - **Updates**: a launcher built with `LAUNCHER_UPDATE_REPO` and `LAUNCHER_VERSION` checks the port's GitHub
   releases when it opens (the first page's Updates card has the switch and Check now) and offers a newer version
-  at the top of that page. Update downloads only the files that changed, from the manifest and gzipped files a
-  release carries (`launcher/src/update.h` has their format), checks each against its SHA-256 and puts them all in
-  place or none, then starts the new launcher. A beta is offered only to a beta; a build that is not a release's
+  at the top of that page. Update downloads the system's archive from the release, checks it against the
+  manifest the release carries beside it (`launcher/src/update.h` has its format), unpacks it, checks each file
+  that changed against its SHA-256 and puts them all in place or none, then starts the new launcher. (At first
+  each file was a gzipped release file of its own: a release then had a file for every file of every download.
+  A release now has only its archives and a manifest per system, and the launcher needs no zlib.) A beta is offered only to a beta; a build that is not a release's
   download is only told. `make test` runs a whole check and install from releases in a folder.
 
 - Bindings for up to four players (`kBindMaxPlayers`; `BindTable::players` is still two unless a port says):

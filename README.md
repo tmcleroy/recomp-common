@@ -74,11 +74,13 @@ its pages are the same pixels as before.
 
 **Updates** (optional: `LAUNCHER_UPDATE_REPO` and `LAUNCHER_VERSION` in the port's `launcher/CMakeLists.txt`;
 `launcher/src/update.h`): the launcher looks at the port's GitHub releases when it opens (a switch turns that
-off) and, when there is a newer version, offers it at the top of its first page. Update downloads only the files
-that changed (each gzipped, named by its SHA-256, beside a manifest per system that the port's release script
-writes), checks every one, and only then puts them in place, taking away the files the new version no longer has;
-if anything fails nothing is changed. Then the new launcher starts. A copy that is not a release's download (a
-build) is only told of the new version. Downloads go through the system's `curl`; the port links zlib.
+off) and, when there is a newer version, offers it at the top of its first page. Update downloads that system's
+archive from the release (the same file a player downloads by hand), checks it against the manifest the port's
+release script puts beside it, unpacks it, checks every file that changed, and only then puts them in place,
+taking away the files the new version no longer has; if anything fails nothing is changed. Then the new launcher
+starts. A release so carries only its archives and one small manifest per system. A copy that is not a release's
+download (a build) is only told of the new version. Downloads go through the system's `curl`, unpacking through
+its `tar` (`ditto` on macOS).
 
 Its look, and the files that make it, come from the launcher of
 [wiiparty-recomp](https://github.com/arelkair/wiiparty-recomp) by arelkair; see

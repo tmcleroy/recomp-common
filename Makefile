@@ -34,10 +34,10 @@ $(B)/settings_c_test: tests/settings_c_test.c src/settings.cpp src/settings_c.cp
 	$(CC) -std=c99 -Wall -Wextra -Wpedantic -Isrc -c tests/settings_c_test.c -o $(B)/settings_c_test.o
 	$(CXX) $(CXXFLAGS) $(B)/settings_c_test.o src/settings.cpp src/settings_c.cpp -o $@
 
-# The launcher's updates (launcher/src/update.h; needs zlib, and curl to run)
+# The launcher's updates (launcher/src/update.h; needs curl and tar, or ditto, to run)
 $(B)/update_test: tests/update_test.cpp launcher/src/update.cpp launcher/src/update.h
 	@mkdir -p $(B)
-	$(CXX) $(CXXFLAGS) -Ilauncher/src -fsanitize=address,undefined tests/update_test.cpp launcher/src/update.cpp -lz -o $@
+	$(CXX) $(CXXFLAGS) -Ilauncher/src -fsanitize=address,undefined tests/update_test.cpp launcher/src/update.cpp -o $@
 
 # A host with no game: build/shot OUT.ppm [KEYS] [WIDTHxHEIGHT] (examples/shot.cpp)
 example: $(B)/shot
