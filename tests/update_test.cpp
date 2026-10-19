@@ -5,8 +5,6 @@
 // from releases in a folder (file:// URLs, through the system's curl, as a player's launcher does over https).
 #include "update.h"
 
-#include <zlib.h>
-
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -42,29 +40,43 @@ static void wait(const Updater& updater) {
     }
 }
 
-// A release in `folder`/<tag>/: its manifest and its gzipped files. `files`: path, contents, executable
+// A release in `folder`/<tag>/: its archive (the top folder "Top", with the files) and its manifest; `old`: a
+// manifest of the first kind only (no archive). `files`: path, contents, executable
 struct File {
     std::string path, text;
     bool executable;
 };
-static std::string release(const fs::path& folder, const std::string& tag, const std::vector<File>& files, bool corrupt = false) {
-    const fs::path at = folder / tag;
+static std::string release(const fs::path& folder, const std::string& tag, const std::vector<File>& files, bool corrupt = false, bool old = false) {
+    const fs::path at = folder / tag, top = at / "pack" / "Top";
     fs::create_directories(at);
-    std::string manifest = "recomp-update 1\nversion " + tag.substr(1) + "\n";
+    std::string lines;
     for (const File& file : files) {
-        const fs::path plain = at / "plain";
-        write(plain, file.text);
-        const std::string sha = Updater::sha256_of_file(plain);
-        fs::remove(plain);
-        const fs::path packed = at / (sha + ".gz");
-        gzFile out = gzopen(packed.string().c_str(), "wb9");
-        std::string text = corrupt ? file.text + "!" : file.text;
-        gzwrite(out, text.data(), static_cast<unsigned>(text.size()));
-        gzclose(out);
-        manifest += "file " + sha + " " + std::to_string(file.text.size()) + " " + std::to_string(fs::file_size(packed)) + " " +
-                    (file.executable ? "x" : "-") + " " + file.path + "\n";
+        write(top / file.path, file.text);
+        const std::string sha = Updater::sha256_of_file(top / file.path);
+        if (corrupt) {
+            write(top / file.path, file.text + "!");
+        }
+        lines += "file " + sha + " " + std::to_string(file.text.size()) + (old ? " 0 " : " ") + (file.executable ? "x" : "-") + " " + file.path + "\n";
     }
-    write(at / (std::string("update-") + Updater::platform() + ".txt"), manifest);
+    std::string manifest = std::string(old ? "recomp-update 1" : "recomp-update 2") + "\nversion " + tag.substr(1) + "\n";
+    if (!old) {
+#if defined(__APPLE__)
+        const std::string name = "Top.zip", pack = "ditto -c -k --keepParent";
+#elif defined(_WIN32)
+        const std::string name = "Top.zip", pack = "tar -a -cf";
+#else
+        const std::string name = "Top.tar.gz", pack = "tar -czf";
+#endif
+#if defined(__APPLE__)
+        const std::string command = pack + " \"" + top.string() + "\" \"" + (at / name).string() + "\"";
+#else
+        const std::string command = pack + " \"" + (at / name).string() + "\" -C \"" + (at / "pack").string() + "\" Top";
+#endif
+        CHECK(std::system(command.c_str()) == 0);
+        manifest += "archive " + Updater::sha256_of_file(at / name) + " " + std::to_string(fs::file_size(at / name)) + " " + name + "\ntop Top\n";
+    }
+    fs::remove_all(at / "pack");
+    write(at / (std::string("update-") + Updater::platform() + ".txt"), manifest + lines);
     return "{\"tag_name\": \"" + tag + "\", \"draft\": false, \"prerelease\": " + (tag.find('-') != std::string::npos ? "true" : "false") +
            ", \"html_url\": \"https://example.org/" + tag + "\", \"body\": \"Notes with \\\"quotes\\\" and \\u00e9\", \"assets\": [{\"name\": \"update-" +
            Updater::platform() + ".txt\", \"size\": 1, \"browser_download_url\": \"file://" + (at / "update-").generic_string() + Updater::platform() +
@@ -90,6 +102,13 @@ static void units() {
     CHECK(!Updater::parse_manifest("recomp-update 1\nversion 1.0.0\nfile " + sha + " 10 5 x C:\\windows\n", m));
     CHECK(!Updater::parse_manifest("version 1.0.0\nfile " + sha + " 10 5 x a\n", m));  // (no header)
     CHECK(!Updater::parse_manifest("recomp-update 1\nversion 1.0.0\nfile " + sha + " 10 5 x a\nfile " + sha + " 10 5 x a\n", m));
+    const std::string two = "recomp-update 2\nversion 1.0.0\narchive " + sha + " 99 Game-macOS.zip\ntop My Game.app\n";
+    CHECK(Updater::parse_manifest(two + "file " + sha + " 10 x Contents/MacOS/my game\n", m));
+    CHECK(m.archive == "Game-macOS.zip" && m.archive_size == 99 && m.top == "My Game.app" && m.files.size() == 1 && m.files[0].size == 10);
+    CHECK(!Updater::parse_manifest(two + "file " + sha + " 10 5 x a\n", m));  // (the first kind's line)
+    CHECK(!Updater::parse_manifest("recomp-update 2\nversion 1.0.0\ntop T\nfile " + sha + " 10 x a\n", m));  // (no archive)
+    CHECK(!Updater::parse_manifest("recomp-update 2\nversion 1.0.0\narchive " + sha + " 9 ../a.zip\ntop T\nfile " + sha + " 10 x a\n", m));
+    CHECK(!Updater::parse_manifest("recomp-update 1\nversion 1.0.0\narchive " + sha + " 9 a.zip\nfile " + sha + " 10 5 x a\n", m));
 
     const fs::path abc = fs::temp_directory_path() / "recomp-update-abc";
     write(abc, "abc");
@@ -116,7 +135,7 @@ int main() {
     }
     write(app / "player.ini", "the player's own file");
     const std::string list = "[" + release(releases, "v1.1.0-beta.1", {{"example-launcher", "beta", true}}) + ", " + release(releases, "v1.0.0", new_files) +
-                             ", " + release(releases, "v0.9.0", old_files) + "]";
+                             ", " + release(releases, "v0.9.0", old_files, false, true) + "]";
     write(releases / "releases.json", list);
     const std::string url = "file://" + (releases / "releases.json").generic_string();
 #ifdef _WIN32
@@ -169,7 +188,7 @@ int main() {
         const Updater::Status found = updater.status();
         CHECK(found.state == Updater::State::Available);
         CHECK(found.version == "1.0.0" && found.notes_url == "https://example.org/v1.0.0");
-        CHECK(found.message.find("3 files") != std::string::npos);
+        CHECK(found.message.find("3 files change") != std::string::npos);
         updater.install();
         wait(updater);
         CHECK(updater.status().state == Updater::State::Installed);
