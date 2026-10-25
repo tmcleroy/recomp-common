@@ -1562,28 +1562,6 @@ void App::title_page(size_t which, float width) {
     display_cards(which, width);
     ui::gap(28);
     play_button(which, width);
-    ui::gap(36);
-    ui::text("THIS GAME'S FEATURES", Font::Semibold, ui::size::kDetail, p.secondary);
-    ui::gap(6);
-    ui::text("What only this game has. What the games share is on the Features page, set for all of them.", Font::Regular, ui::size::kDetail,
-             p.secondary, width);
-    ui::gap(18);
-    if (!one.features_error.empty()) {
-        ui::text(one.features_error.c_str(), Font::Regular, ui::size::kBody, p.danger, width);
-    } else {
-        std::vector<int> values = recomp::FeatureValues(one.settings, one.features);
-        std::vector<FeatureRow> rows;
-        for (size_t i = 0; i < one.features.size(); i++) {
-            bool shared = std::any_of(shared_.begin(), shared_.end(), [&](const Shared& s) {
-                return std::any_of(s.where.begin(), s.where.end(), [&](const auto& at) { return at.first == which && at.second == i; });
-            });
-            if (!shared) {
-                rows.push_back({&one.features[i], values[i], "", i});
-            }
-        }
-        feature_list(width, rows, "Nothing of its own: every feature it has is on the Features page.",
-                     [&](const FeatureRow& feature, int value) { set_feature(one, feature.index, value); });
-    }
     // Its place in the sidebar's list (which can be dragged there too)
     std::vector<size_t> list = titled();
     if (list.size() > 1) {
@@ -1605,6 +1583,28 @@ void App::title_page(size_t which, float width) {
         });
         card.end();
     }
+    ui::gap(36);
+    ui::text("THIS GAME'S FEATURES", Font::Semibold, ui::size::kDetail, p.secondary);
+    ui::gap(6);
+    ui::text("What only this game has. What the games share is on the Features page, set for all of them.", Font::Regular, ui::size::kDetail,
+             p.secondary, width);
+    ui::gap(18);
+    if (!one.features_error.empty()) {
+        ui::text(one.features_error.c_str(), Font::Regular, ui::size::kBody, p.danger, width);
+        return;
+    }
+    std::vector<int> values = recomp::FeatureValues(one.settings, one.features);
+    std::vector<FeatureRow> rows;
+    for (size_t i = 0; i < one.features.size(); i++) {
+        bool shared = std::any_of(shared_.begin(), shared_.end(), [&](const Shared& s) {
+            return std::any_of(s.where.begin(), s.where.end(), [&](const auto& at) { return at.first == which && at.second == i; });
+        });
+        if (!shared) {
+            rows.push_back({&one.features[i], values[i], "", i});
+        }
+    }
+    feature_list(width, rows, "Nothing of its own: every feature it has is on the Features page.",
+                 [&](const FeatureRow& feature, int value) { set_feature(one, feature.index, value); });
 }
 
 // ---- the game file, chosen with a gamepad --------------------------------------------------

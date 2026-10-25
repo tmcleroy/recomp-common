@@ -6,7 +6,7 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 ## Unreleased
 
 - A collection's games are in the player's order: dragging a game's row in the sidebar moves it (the others make
-  room), and Move up and Move down at the foot of the game's page do it with a gamepad or the keys. The Games page
+  room), and Move up and Move down on the game's page (under Play) do it with a gamepad or the keys. The Games page
   and the Controllers page's Layout for list them the same way. Kept in `launcher.ini`, `[games] order` (their ids;
   a game not named there comes after, in the collection's order).
 - A small window: the launcher no longer opens bigger than the screen, and can be made as small as 600×400 (it was
