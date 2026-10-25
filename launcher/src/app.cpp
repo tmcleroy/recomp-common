@@ -1484,7 +1484,9 @@ void App::play_button(size_t which, float width) {
     } else if (!one.play_error.empty()) {
         ui::gap(10);
         ui::text(one.play_error.c_str(), Font::Regular, ui::size::kDetail, p.danger, width);
-    } else if (!one.game.running() && one.game.exit_code() != 0) {
+    } else if (!one.game.running() && one.game.exit_code() != 0 &&
+               !(collection_ && std::any_of(collection_->multi.begin(), collection_->multi.end(),
+                                            [&](const launcher::MultiMode& m) { return m.next_code == one.game.exit_code(); }))) {
         ui::gap(10);
         std::string text = "The game stopped with code " + std::to_string(one.game.exit_code()) + ".";
         ui::text(text.c_str(), Font::Regular, ui::size::kDetail, p.danger, width);
