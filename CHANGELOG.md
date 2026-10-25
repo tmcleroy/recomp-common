@@ -18,6 +18,12 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 - A collection's Games page: the Updates card is always at the top (it was at the page's end until there was a new
   version), and each game's Play comes before its Choose…, where the ring lands coming into the row.
 - `--press`: `@X,Y;` moves the mouse, `(` and `)` press and let go of its left button.
+- **Portable mode** (`src/folders.h`): `portable.txt` beside the launcher (on macOS beside the app, beside the
+  AppImage for one) keeps the player's folders in `user/<name>/` there instead of the system's. The first time,
+  the launcher offers to copy what the system's folders have, never moving or writing over anything; a folder it
+  cannot write to is said, and it stops. Taking `portable.txt` away goes back to the system's folders. The first
+  page has a Your files card: where they are kept, and Show to open the folder. `make test` tests the folders,
+  and that an update keeps `portable.txt` and `user/`.
 
 - A collection's games can each have a layout of their own: the Controllers page's Layout for chooses every
   game's or one game's, and Its own layout gives that game keys and buttons of its own, with its own table's

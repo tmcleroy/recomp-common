@@ -134,6 +134,8 @@ int main() {
         write(app / file.path, file.text);
     }
     write(app / "player.ini", "the player's own file");
+    write(app / "portable.txt", "");  // (portable mode: its marker and the player's folders beside the launcher)
+    write(app / "user" / "Game" / "settings.ini", "the player's settings");
     const std::string list = "[" + release(releases, "v1.1.0-beta.1", {{"example-launcher", "beta", true}}) + ", " + release(releases, "v1.0.0", new_files) +
                              ", " + release(releases, "v0.9.0", old_files, false, true) + "]";
     write(releases / "releases.json", list);
@@ -200,6 +202,7 @@ int main() {
         }
         CHECK(!fs::exists(app / "gone.txt"));
         CHECK(read(app / "player.ini") == "the player's own file");
+        CHECK(fs::exists(app / "portable.txt") && read(app / "user" / "Game" / "settings.ini") == "the player's settings");
         CHECK(!fs::exists(app / ".update"));
 #ifndef _WIN32
         CHECK((fs::status(app / "game").permissions() & fs::perms::owner_exec) != fs::perms::none);
