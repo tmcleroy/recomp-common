@@ -5,6 +5,13 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- A collection's games can each have a layout of their own: the Controllers page's Layout for chooses every
+  game's or one game's, and Its own layout gives that game keys and buttons of its own, with its own table's
+  names for its buttons (`Description::bindings`; `Collection::bindings` is the table every game shares). It
+  starts as every game's is; switched off, the game has every game's again. Which games have their own is kept
+  in `launcher.ini`, under `[controls]`; the shared actions a game's own table has not got are `none` in its
+  `settings.ini`. A collection that gives its games no table of their own is as it was.
+
 - **Updates**: a launcher built with `LAUNCHER_UPDATE_REPO` and `LAUNCHER_VERSION` checks the port's GitHub
   releases when it opens (the first page's Updates card has the switch and Check now) and offers a newer version
   at the top of that page. Update downloads the system's archive from the release, checks it against the
