@@ -5,6 +5,20 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- A collection's games are in the player's order: dragging a game's row in the sidebar moves it (the others make
+  room), and Move up and Move down at the foot of the game's page do it with a gamepad or the keys. The Games page
+  and the Controllers page's Layout for list them the same way. Kept in `launcher.ini`, `[games] order` (their ids;
+  a game not named there comes after, in the collection's order).
+- A small window: the launcher no longer opens bigger than the screen, and can be made as small as 600×400 (it was
+  800×540, which a small screen with large text could not show: the rows' words went under their buttons). Below
+  760 wide the sidebar is narrower (a long name is cut short with "…") and the page has less room round it;
+  `layout::row` puts its control under the words when there is too little room beside them; and the sidebar's list
+  scrolls (the mouse wheel, and to keep the ring's row or the page shown in view) when it is longer than the window.
+  A port's launcher at its usual size is the same pixels as before.
+- A collection's Games page: the Updates card is always at the top (it was at the page's end until there was a new
+  version), and each game's Play comes before its Choose…, where the ring lands coming into the row.
+- `--press`: `@X,Y;` moves the mouse, `(` and `)` press and let go of its left button.
+
 - A collection's games can each have a layout of their own: the Controllers page's Layout for chooses every
   game's or one game's, and Its own layout gives that game keys and buttons of its own, with its own table's
   names for its buttons (`Description::bindings`; `Collection::bindings` is the table every game shares). It

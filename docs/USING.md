@@ -231,7 +231,8 @@ choosing keys adds nothing to reading input. A game not on SDL 3 reads the same 
 **A gamepad, or the arrow keys, alone.** Everything in the launcher can be reached and pressed
 without a mouse: the d-pad, the left stick or the arrow keys move a ring; A, Space or Enter presses
 what it is on; B or Esc goes back (closes a list, or goes from a page to the sidebar); the shoulder
-buttons change the page; the right stick scrolls. A port's own pages need do nothing for this if
+buttons change the page; the right stick scrolls. (What the mouse does by dragging, a collection's
+games' order in the sidebar, the ring does with Move up and Move down on the game's page.) A port's own pages need do nothing for this if
 they are made of `ui.h`'s widgets. A game's in-game menu should answer to the same: Space, Enter and
 a gamepad's A choose, Backspace and B go back, whatever the game's own buttons are set to.
 
@@ -241,7 +242,14 @@ needs no display at all, and two runs give the same bytes, so a port can compare
 `--screenshot PREFIX --press KEYS` presses keys one after another and then writes one picture,
 `PREFIX.png`: `u d l r` are the arrow keys, `e` Enter, `s` Space, `x` Esc; `U D L R A B [ ]` are the
 d-pad, A, B and the shoulder buttons of a gamepad that exists only in the program; a digit shows that
-page; `.` waits.
+page; `.` waits; `@X,Y;` moves the mouse to that place in the window, and `(` and `)` press and let
+go of its left button (a drag: `@100,288;(@100,350;@100,406;)`).
+
+**A small window.** The launcher works down to 600×400 (and never opens bigger than the screen): below
+760 wide its sidebar is narrower and the page has less room round it, a card's row puts its control
+under its words when there is too little room beside them (`layout::row`), and the sidebar's list
+scrolls when it is longer than the window. A port's own pages built of `layout.h`'s rows close up
+the same way.
 
 A port that gives out a built launcher must include the licenses of SDL, Dear ImGui and the Inter
 font with it; see `THIRD_PARTY_NOTICES.md`.

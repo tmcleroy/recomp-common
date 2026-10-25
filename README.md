@@ -68,7 +68,8 @@ all of them at once (a game marks one of its own that only shares a name: `kFeat
 in a game's own menu is set for the others when it ends; its Controllers page sets the keys and buttons of every
 game, or a game's own layout for a game given one (`Collection::bindings` is every game's table, a game's
 `Description::bindings` its own, with its own names for its buttons); and each game whose file is chosen has a page with its Display switches, Play, and the features only it
-has. Its games can run at once, one of each, and a game that needs another's file too is given the one chosen on that game's page (`Launch::file_of`). Every game keeps its own folder and a complete `settings.ini`, as a launcher of its own would, and takes
+has. The player puts the games in their own order by dragging a game's row in the sidebar (or with Move up and Move
+down on its page; kept in `launcher.ini`), and the Games page lists them the same way. Its games can run at once, one of each, and a game that needs another's file too is given the one chosen on that game's page (`Launch::file_of`). Every game keeps its own folder and a complete `settings.ini`, as a launcher of its own would, and takes
 over the file chosen there. `--play ID` starts a game straight away, `--play ID -- ARGS` gives the game more
 arguments after the launcher's own, and `--page ID` opens at a game's page. A port's own launcher is unchanged:
 its pages are the same pixels as before.
