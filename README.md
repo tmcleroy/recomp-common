@@ -71,7 +71,11 @@ game, or a game's own layout for a game given one (`Collection::bindings` is eve
 has. The player puts the games in their own order by dragging a game's row in the sidebar (or with Move up and Move
 down on its page; kept in `launcher.ini`), and the Games page lists them the same way. Its games can run at once, one of each, and a game that needs another's file too is given the one chosen on that game's page (`Launch::file_of`). Every game keeps its own folder and a complete `settings.ini`, as a launcher of its own would, and takes
 over the file chosen there. `--play ID` starts a game straight away, `--play ID -- ARGS` gives the game more
-arguments after the launcher's own, and `--page ID` opens at a game's page. A port's own launcher is unchanged:
+arguments after the launcher's own, and `--page ID` opens at a game's page. A collection may have modes that play
+several of its games one after another (`Collection::multi`, `MultiMode`): a Multi game page where the player chooses
+which games, in the sidebar's order or shuffled, and the mode's own choices; Start starts each in turn with the mode's
+arguments, and a game that ends with the mode's exit code (`next_code`) has had its turn, so the next one starts (after
+the last, the first again); quitting one stops the run. `--page multi` opens there. A port's own launcher is unchanged:
 its pages are the same pixels as before.
 
 **Updates** (optional: `LAUNCHER_UPDATE_REPO` and `LAUNCHER_VERSION` in the port's `launcher/CMakeLists.txt`;

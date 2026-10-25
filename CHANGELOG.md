@@ -5,6 +5,13 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Multi game**: a collection's modes that play several of its games one after another (`Collection::multi`,
+  `launcher::MultiMode`), on a page of their own after Controllers. The player chooses the games (those that have
+  the mode and a page of their own; kept in `launcher.ini`, `[multi.<key>] off`), their order (the sidebar's, or
+  shuffled, anew each time round) and the mode's choices (`MultiChoice`, each shown only with another's value if it
+  says); Start starts the first with its Play's arguments and the mode's. A game that ends with `next_code` has had
+  its turn and the next starts; ended any other way, the run stops (and says why), as does Stop after this game.
+  `--page multi` opens the page. A collection with no modes has the three pages it had.
 - A collection's games are in the player's order: dragging a game's row in the sidebar moves it (the others make
   room), and Move up and Move down on the game's page (under Play) do it with a gamepad or the keys. The Games page
   and the Controllers page's Layout for list them the same way. Kept in `launcher.ini`, `[games] order` (their ids;
