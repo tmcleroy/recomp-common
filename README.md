@@ -84,6 +84,15 @@ starts. A release so carries only its archives and one small manifest per system
 download (a build) is only told of the new version. Downloads go through the system's `curl`, unpacking through
 its `tar` (`ditto` on macOS).
 
+**Portable mode** (`src/folders.h`): a file named `portable.txt` beside the launcher (on macOS beside the app,
+which is never written to; beside the AppImage for one) keeps the player's folders, settings, saves and logs, in
+`user/<name>/` there instead of the system's folder for them, so the whole thing can be carried on a drive. The
+first time, the launcher offers to copy what the system's folders have (it never moves or writes over anything);
+a folder it cannot write to is said, and it stops rather than keep things elsewhere. Taking `portable.txt` away
+goes back to the system's folders as they were. Updates keep `portable.txt` and `user/`: they are not a release's
+files. The first page's Your files card shows the folder and opens it. A port's game that finds the launcher's
+`launcher.ini` itself asks `recomp::PortableFolder` too.
+
 Its look, and the files that make it, come from the launcher of
 [wiiparty-recomp](https://github.com/arelkair/wiiparty-recomp) by arelkair; see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
@@ -121,6 +130,7 @@ expected to follow (what opens the menu, what "Quit game" means, the order of th
 | `src/menu_c.h`, `menu_c.cpp` | The same menu for hosts written in C. |
 | `src/settings.h`, `settings.cpp` | The settings file and the rules for features: presets, values, choices. |
 | `src/settings_c.h`, `settings_c.cpp` | The same rules for hosts written in C. |
+| `src/folders.h` | Where the player's things are: the folder a download was unpacked to, and portable mode. |
 | `launcher/` | The launcher: `launcher.cmake` (what a port includes), `src/` (`launcher.h` is what a port fills in), `example/`. |
 | `src/text.h` | A 5x7 dot-matrix font on a canvas of 32-bit pixels; usable on its own for a port's readouts. |
 | `tools/sync-common.sh` | The script a port keeps to take and check its copy. |
