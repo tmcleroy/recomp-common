@@ -2053,7 +2053,7 @@ void App::controllers_page(float width) {
                 inset_separator(width);
                 row(width, "Its own layout",
                     own ? "This game has keys and buttons of its own, with its own names for its buttons. Off: every game's again."
-                        : "Off: this game has every game's layout. On: its own, which starts as every game's is.",
+                        : "Off: this game has every game's layout (Every game, above). On: keys and buttons of its own, starting as every game's are.",
                     42.0f, 24.0f, [&] {
                         if (ui::toggle("##own-layout", own)) {
                             set_own_layout(which, !own);
@@ -2064,89 +2064,94 @@ void App::controllers_page(float width) {
             games.end();
             ui::gap(10);
         }
-        const recomp::BindTable& table = bind_table();
-        recomp::Bindings& layout_shown = bind_layout();
-        bind_player_ = std::min(bind_player_, table.players - 1);
-        if (capture_action_ >= 0 && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            capture_action_ = -1;  // (a click anywhere: not waiting any more; on another button, waiting for that one)
-        }
-        for (int player = 0; table.players > 1 && player < table.players; player++) {
-            if (player > 0) {
+        // (a game with every game's layout: only its switch; the buttons are every game's, set there)
+        if (bind_slot_ < 0 || own_layout(static_cast<size_t>(bind_slot_))) {
+            const recomp::BindTable& table = bind_table();
+            recomp::Bindings& layout_shown = bind_layout();
+            bind_player_ = std::min(bind_player_, table.players - 1);
+            if (capture_action_ >= 0 && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                capture_action_ = -1;  // (a click anywhere: not waiting any more; on another button, waiting for that one)
+            }
+            for (int player = 0; table.players > 1 && player < table.players; player++) {
+                if (player > 0) {
+                    ImGui::SameLine(0.0f, px(8));
+                }
+                std::string label = "Player " + std::to_string(player + 1);
+                if (ui::button(label.c_str(), bind_player_ == player ? Kind::Primary : Kind::Secondary, 110.0f)) {
+                    bind_player_ = player;
+                    capture_action_ = -1;
+                }
+            }
+            if (table.players > 1) {
                 ImGui::SameLine(0.0f, px(8));
             }
-            std::string label = "Player " + std::to_string(player + 1);
-            if (ui::button(label.c_str(), bind_player_ == player ? Kind::Primary : Kind::Secondary, 110.0f)) {
-                bind_player_ = player;
-                capture_action_ = -1;
-            }
-        }
-        if (table.players > 1) {
-            ImGui::SameLine(0.0f, px(8));
-        }
-        if (ui::button("Back to the usual layout", Kind::Ghost, 200.0f)) {
-            recomp::Bindings usual = recomp::DefaultBindings(table);
-            for (int action = 0; action < table.count; action++) {
-                layout_shown.key[bind_player_][action] = usual.key[bind_player_][action];
-                layout_shown.pad[bind_player_][action] = usual.pad[bind_player_][action];
-            }
-            // (a key the usual layout gives this player is taken from the others)
-            for (int who = 0; who < table.players; who++) {
-                for (int action = 0; who != bind_player_ && action < table.count; action++) {
-                    for (int other = 0; other < table.count; other++) {
-                        SDL_Scancode& theirs = layout_shown.key[who][other];
-                        if (theirs != SDL_SCANCODE_UNKNOWN && theirs == layout_shown.key[bind_player_][action]) {
-                            theirs = SDL_SCANCODE_UNKNOWN;
+            if (ui::button("Back to the usual layout", Kind::Ghost, 200.0f)) {
+                recomp::Bindings usual = recomp::DefaultBindings(table);
+                for (int action = 0; action < table.count; action++) {
+                    layout_shown.key[bind_player_][action] = usual.key[bind_player_][action];
+                    layout_shown.pad[bind_player_][action] = usual.pad[bind_player_][action];
+                }
+                // (a key the usual layout gives this player is taken from the others)
+                for (int who = 0; who < table.players; who++) {
+                    for (int action = 0; who != bind_player_ && action < table.count; action++) {
+                        for (int other = 0; other < table.count; other++) {
+                            SDL_Scancode& theirs = layout_shown.key[who][other];
+                            if (theirs != SDL_SCANCODE_UNKNOWN && theirs == layout_shown.key[bind_player_][action]) {
+                                theirs = SDL_SCANCODE_UNKNOWN;
+                            }
                         }
                     }
                 }
+                capture_action_ = -1;
+                save_bindings();
             }
-            capture_action_ = -1;
-            save_bindings();
-        }
-        ui::gap(10);
-        constexpr float kChip = 170.0f, kChipGap = 10.0f;
-        Card buttons(width);
-        static const char* const kNth[recomp::kBindMaxPlayers] = {"first", "second", "third", "fourth"};
-        const std::string whose = "Player " + std::to_string(bind_player_ + 1);
-        const std::string what = std::string("The keyboard and the ") + kNth[bind_player_] +
-                                 " gamepad. Click a button here, then press the key or the gamepad button for it.";
-        row(width, table.players < 2 ? "Buttons" : whose.c_str(),
-            table.players < 2 ? "The keyboard and the gamepad. Click a button here, then press the key or the gamepad button for it."
-                              : what.c_str(),
-            kChip * 2 + kChipGap, 18.0f, [&] {
-                ImVec2 at = ImGui::GetCursorScreenPos();
-                ui::text("Keyboard", Font::Semibold, ui::size::kDetail, p.secondary);
-                ImGui::SetCursorScreenPos(at + ImVec2(px(kChip + kChipGap), 0));
-                ui::text("Gamepad", Font::Semibold, ui::size::kDetail, p.secondary);
-            });
-        for (int action = 0; action < table.count; action++) {
-            inset_separator(width);
-            ImGui::PushID(action);
-            row(width, table.actions[action].title, "", kChip * 2 + kChipGap, 34.0f, [&] {
-                ImVec2 at = ImGui::GetCursorScreenPos();
-                for (int gamepad = 0; gamepad < 2; gamepad++) {
-                    bool waiting = capture_action_ == action && capture_gamepad_ == (gamepad != 0);
-                    std::string label = waiting ? (gamepad ? "Press a button..." : "Press a key...")
-                                        : gamepad ? pad_label(layout_shown.pad[bind_player_][action])
-                                                  : key_label(layout_shown.key[bind_player_][action]);
-                    ImRect rect;
-                    ImGui::SetCursorScreenPos(at + ImVec2(gamepad ? px(kChip + kChipGap) : 0.0f, 0));
-                    if (ui::key_chip(gamepad ? "##pad" : "##key", label.c_str(), waiting, kChip, rect)) {
-                        capture_action_ = action;
-                        capture_gamepad_ = gamepad != 0;
+            ui::gap(10);
+            constexpr float kChip = 170.0f, kChipGap = 10.0f;
+            Card buttons(width);
+            static const char* const kNth[recomp::kBindMaxPlayers] = {"first", "second", "third", "fourth"};
+            const std::string whose = "Player " + std::to_string(bind_player_ + 1);
+            const std::string what = std::string("The keyboard and the ") + kNth[bind_player_] +
+                                     " gamepad. Click a button here, then press the key or the gamepad button for it.";
+            row(width, table.players < 2 ? "Buttons" : whose.c_str(),
+                table.players < 2 ? "The keyboard and the gamepad. Click a button here, then press the key or the gamepad button for it."
+                                  : what.c_str(),
+                kChip * 2 + kChipGap, 18.0f, [&] {
+                    ImVec2 at = ImGui::GetCursorScreenPos();
+                    ui::text("Keyboard", Font::Semibold, ui::size::kDetail, p.secondary);
+                    ImGui::SetCursorScreenPos(at + ImVec2(px(kChip + kChipGap), 0));
+                    ui::text("Gamepad", Font::Semibold, ui::size::kDetail, p.secondary);
+                });
+            for (int action = 0; action < table.count; action++) {
+                inset_separator(width);
+                ImGui::PushID(action);
+                row(width, table.actions[action].title, "", kChip * 2 + kChipGap, 34.0f, [&] {
+                    ImVec2 at = ImGui::GetCursorScreenPos();
+                    for (int gamepad = 0; gamepad < 2; gamepad++) {
+                        bool waiting = capture_action_ == action && capture_gamepad_ == (gamepad != 0);
+                        std::string label = waiting ? (gamepad ? "Press a button..." : "Press a key...")
+                                            : gamepad ? pad_label(layout_shown.pad[bind_player_][action])
+                                                      : key_label(layout_shown.key[bind_player_][action]);
+                        ImRect rect;
+                        ImGui::SetCursorScreenPos(at + ImVec2(gamepad ? px(kChip + kChipGap) : 0.0f, 0));
+                        if (ui::key_chip(gamepad ? "##pad" : "##key", label.c_str(), waiting, kChip, rect)) {
+                            capture_action_ = action;
+                            capture_gamepad_ = gamepad != 0;
+                        }
                     }
-                }
-            });
-            ImGui::PopID();
-        }
-        buttons.end();
-        ui::gap(8);
-        ui::text("While a button waits: Esc leaves it as it was, Backspace leaves it with nothing. Giving a key or a button that is in use "
-                 "swaps the two. A gamepad's left stick always works as the directions.",
-                 Font::Regular, ui::size::kDetail, p.secondary, width);
-        ui::gap(24);
-        if (capture_action_ >= 0) {
-            ui::request_frames(2);
+                });
+                ImGui::PopID();
+            }
+            buttons.end();
+            ui::gap(8);
+            ui::text("While a button waits: Esc leaves it as it was, Backspace leaves it with nothing. Giving a key or a button that is in use "
+                     "swaps the two. A gamepad's left stick always works as the directions.",
+                     Font::Regular, ui::size::kDetail, p.secondary, width);
+            ui::gap(24);
+            if (capture_action_ >= 0) {
+                ui::request_frames(2);
+            }
+        } else {
+            ui::gap(14);
         }
     }
 
