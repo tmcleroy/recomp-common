@@ -75,7 +75,7 @@ arguments after the launcher's own, and `--page ID` opens at a game's page. A co
 several of its games one after another (`Collection::multi`, `MultiMode`): a Multi game page where the player chooses
 which games, in the sidebar's order or shuffled, and the mode's own choices; Start starts each in turn with the mode's
 arguments, and a game that ends with the mode's exit code (`next_code`) has had its turn, so the next one starts (after
-the last, the first again); quitting one stops the run. `--page multi` opens there. A port's own launcher is unchanged:
+the last, the first again); quitting one stops the run. A mode can name the keys and buttons that work while its games play (`MultiButton`), shown on its card and while it plays. `--page multi` opens there. A port's own launcher is unchanged:
 its pages are the same pixels as before.
 
 **Updates** (optional: `LAUNCHER_UPDATE_REPO` and `LAUNCHER_VERSION` in the port's `launcher/CMakeLists.txt`;
