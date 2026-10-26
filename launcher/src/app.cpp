@@ -1926,6 +1926,11 @@ void App::multi_buttons(const launcher::MultiMode& m, float width, bool after) {
         }
         const launcher::MultiButton& b = m.buttons[n];
         row(width, b.title, b.detail, kKeys, 24.0f, [&] {
+            float keys = 0.0f;  // (at the right, as the other rows' controls end)
+            for (size_t k = 0; k < b.keys.size(); k++) {
+                keys += std::max(ui::text_size(b.keys[k], Font::Semibold, ui::size::kSmall).x + px(14), px(30)) + (k > 0 ? px(8) : 0.0f);
+            }
+            ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(std::max(0.0f, px(kKeys) - keys), 0.0f));
             for (size_t k = 0; k < b.keys.size(); k++) {
                 if (k > 0) {
                     ImGui::SameLine(0, px(8));
