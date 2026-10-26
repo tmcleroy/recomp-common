@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- A multi-game mode can list the keys and buttons that work while its games play (`MultiMode::buttons`,
+  `launcher::MultiButton`: a title, what it does, and keycaps for its keys): a While it plays card under the mode's
+  choices, and the same rows in the Now playing card.
 - **Multi game**: a collection's modes that play several of its games one after another (`Collection::multi`,
   `launcher::MultiMode`), on a page of their own after Controllers. The player chooses the games (those that have
   the mode and a page of their own; kept in `launcher.ini`, `[multi.<key>] off`), their order (the sidebar's, or
