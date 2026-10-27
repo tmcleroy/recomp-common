@@ -5,6 +5,12 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- A long choice can be made shorter in the game's menu: a feature marked `kFeatureMenuChoices` has, under its row on
+  the launcher's Features page (or a collection game's page), "In the game's menu: N of M" and Choose, which opens a
+  switch for each of its choices. The game's menu (`MenuConfig::offered`) then goes past those switched off with
+  Left, Right and Confirm; off and the one chosen now always stay. Kept in `settings.ini`, `[menu] <name> = 1,3`
+  (`MenuChoices`, `SetMenuChoices`; no value: every choice). A collection sets it for every game that has the feature.
+
 - The Speed row can have speeds faster than full: `MenuConfig::normalSpeed` is full speed's place in `speeds` (slowest
   first; the slower before it, the faster after) and where the menu starts. Left at 0, the row is as it was.
 - A multi-game mode can list the keys and buttons that work while its games play (`MultiMode::buttons`,

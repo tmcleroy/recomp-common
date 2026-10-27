@@ -86,6 +86,28 @@ int main() {
     CHECK(g_values[1] == 0);
     Press(menu, {kMenuLeft});
     CHECK(g_values[1] == 0);
+    {
+        // Choices the menu does not offer are passed over (MenuConfig::offered): Health's "Player 1"
+        MenuConfig only = Config();
+        only.offered = [](size_t feature, int choice) { return !(feature == 1 && choice == 1); };
+        Menu narrowed;
+        narrowed.Configure(std::move(only));
+        narrowed.Open();
+        g_values[1] = 0;
+        Press(narrowed, {kMenuDown, kMenuDown, kMenuDown, kMenuDown, kMenuConfirm, kMenuDown, kMenuRight});
+        CHECK(g_values[1] == 2);
+        Press(narrowed, {kMenuLeft});
+        CHECK(g_values[1] == 0);
+        Press(narrowed, {kMenuConfirm});
+        CHECK(g_values[1] == 2);
+        Press(narrowed, {kMenuConfirm});
+        CHECK(g_values[1] == 0);
+        // (one chosen elsewhere stays reachable from where it is)
+        g_values[1] = 1;
+        Press(narrowed, {kMenuRight});
+        CHECK(g_values[1] == 2);
+        g_values[1] = 0;
+    }
     // Back (the row after the two features), and the first page is where it was left
     Press(menu, {kMenuDown, kMenuConfirm});
     // ... on the Cheats row: two down is Training, whose page has the command
