@@ -33,8 +33,8 @@ To play a game, download a port; this repository is for people making ports.
 ## What the menu does
 
 - A first page in groups with a line between them: save states (save, load, a slot from 1 to 9),
-  what the game offers (the port's own rows, the game's speed, a row for each page of optional
-  features), and leaving (reset, quit, resume).
+  what the game offers (the port's own rows, the game's speed, slower or faster than full, a row for each
+  page of optional features), and leaving (reset, quit, resume).
 - A page per category of the game's optional features (cheats, training aids, picture options) and
   commands, built from one list the port hands over. A feature is on or off, or a choice of several
   named things.

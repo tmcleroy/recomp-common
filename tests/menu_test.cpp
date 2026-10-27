@@ -101,6 +101,18 @@ int main() {
     CHECK(menu.Speed() == 0);
     Press(menu, {kMenuLeft});
     CHECK(menu.Speed() == 0);
+    {
+        // Full speed in the middle (slower ones before it, faster after): where the menu starts
+        MenuConfig faster = Config();
+        faster.speeds = {"1/2", "Full", "2x"};
+        faster.normalSpeed = 1;
+        Menu both;
+        both.Configure(faster);
+        CHECK(both.Speed() == 1);
+        both.SetSpeed(2);
+        both.Configure(faster);
+        CHECK(both.Speed() == 2); // (chosen, kept)
+    }
 
     // The host's rows hand back their ids
     chosen = Press(menu, {kMenuDown, kMenuConfirm});

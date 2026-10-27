@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- The Speed row can have speeds faster than full: `MenuConfig::normalSpeed` is full speed's place in `speeds` (slowest
+  first; the slower before it, the faster after) and where the menu starts. Left at 0, the row is as it was.
 - A multi-game mode can list the keys and buttons that work while its games play (`MultiMode::buttons`,
   `launcher::MultiButton`: a title, what it does, and keycaps for its keys): a While it plays card under the mode's
   choices, and the same rows in the Now playing card.
