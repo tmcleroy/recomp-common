@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- A lobby on the Online card (`launcher::Online::lobby`, `list_argument`, `name_argument`): **List my matches in the
+  lobby** (opt-in, kept in `launcher.ini` `[online] listed`) and **Your name** (`[online] name`) make Host start the
+  game with the list and name arguments; **Open matches** shows the lobby's list (fetched from `lobby` every five
+  seconds while it is shown, on another thread: `fetch_lobby`, `src/online.h`), each with Join. The curl runner moves
+  from `update.cpp` to `process.h`/`process.cpp`, which every launcher builds.
 - The Online card for a game that gives hosts a code (`launcher::Online::codes`): Host says the game shows a code to
   hand out, and Join takes the code or an address.
 - Online play: a port that sets `Description::online` (`launcher::Online`: its host and join arguments, the port,
