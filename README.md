@@ -70,7 +70,7 @@ in a game's own menu is set for the others when it ends; its Controllers page se
 game, or a game's own layout for a game given one (`Collection::bindings` is every game's table, a game's
 `Description::bindings` its own, with its own names for its buttons); and each game whose file is chosen has a page with its Display switches, Play, and the features only it
 has. The player puts the games in their own order by dragging a game's row in the sidebar (or with Move up and Move
-down on its page; kept in `launcher.ini`), and the Games page lists them the same way. Its games can run at once, one of each, and a game that needs another's file too is given the one chosen on that game's page (`Launch::file_of`). Every game keeps its own folder and a complete `settings.ini`, as a launcher of its own would, and takes
+down on its page; kept in `launcher.ini`), and the Games page lists them the same way. For a player who has only one or two of the games, **Only the games you have** (a switch on the Games page, once one game is set up; `launcher.ini` `[games] installed_only`) leaves the others out of the Games, Features and Controllers pages; Choose folder… still finds them. Its games can run at once, one of each, and a game that needs another's file too is given the one chosen on that game's page (`Launch::file_of`). Every game keeps its own folder and a complete `settings.ini`, as a launcher of its own would, and takes
 over the file chosen there. `--play ID` starts a game straight away, `--play ID -- ARGS` gives the game more
 arguments after the launcher's own, and `--page ID` opens at a game's page. A collection may have modes that play
 several of its games one after another (`Collection::multi`, `MultiMode`): a Multi game page where the player chooses
