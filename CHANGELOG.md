@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- The Online page's open matches include those of games whose file isn't chosen yet, greyed, with **Add…**, which
+  opens the game's page to choose it (`Collection::file_name`: what the file is called there), and those of games the
+  collection hasn't, greyed. A row can be greyed (`layout::row`'s `dim`).
 - A collection's **Online** page (`Collection::lobby`, `online_intro`), after Multi game: **Host in the lobby** (your
   name, any of the games that can be played, Host: the game started with its Online's host, list and name arguments)
   and **Open matches**, every game's, with the game's name and Join (a game whose file is not chosen says so). The
