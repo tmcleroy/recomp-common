@@ -5,6 +5,12 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- The Online page shows the features of one category (`Collection::online_features`: what a match shows, the ping
+  and the like) under **In a match**, as the Features page does, set for every game that has them.
+- The Online page's open matches include those of games whose file isn't chosen yet, greyed, with **Add…**, which
+  opens the game's page to choose it (`Collection::file_name`: what the file is called there), and those of games the
+  collection hasn't, greyed, by the name the host's game gave (`OpenMatch::title`), with **Update…** to the Games
+  page when the launcher updates itself. A row can be greyed (`layout::row`'s `dim`).
 - A collection's **Online** page (`Collection::lobby`, `online_intro`), after Multi game: **Host in the lobby** (your
   name, any of the games that can be played, Host: the game started with its Online's host, list and name arguments)
   and **Open matches**, every game's, with the game's name and Join (a game whose file is not chosen says so). The
@@ -13,7 +19,7 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   lobby** (opt-in, kept in `launcher.ini` `[online] listed`) and **Your name** (`[online] name`) make Host start the
   game with the list and name arguments; **Open matches** shows the lobby's list (fetched from `lobby` every five
   seconds while it is shown, on another thread: `fetch_lobby`, `src/online.h`), each with Join. The curl runner moves
-  from `update.cpp` to `process.h`/`process.cpp`, which every launcher builds.
+  from `update.cpp` to `run_program.h`/`run_program.cpp`, which every launcher builds.
 - A collection's **Only the games you have**: a switch on the Games page (shown once a game is set up; `launcher.ini`
   `[games] installed_only`, off unless switched on) that leaves the games whose file has not been chosen out of the
   Games page, the Features page (a feature none of the player's games has, and their names in its note) and the

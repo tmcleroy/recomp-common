@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Tommy McLeroy. Part of recomp-common: https://github.com/tmcleroy/recomp-common
 #include "online.h"
 
-#include "process.h"
+#include "run_program.h"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -138,6 +138,7 @@ bool fetch_lobby(const std::string& url, std::vector<OpenMatch>& matches) {
         }
         OpenMatch match;
         match.game = text(at, "game", end);
+        match.title = text(at, "title", end);
         match.code = text(at, "code", end);
         match.name = text(at, "name", end);
         const size_t waiting = json.find("\"waiting\":", at);
