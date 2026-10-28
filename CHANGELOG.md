@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- The Online card for a game that gives hosts a code (`launcher::Online::codes`): Host says the game shows a code to
+  hand out, and Join takes the code or an address.
 - Online play: a port that sets `Description::online` (`launcher::Online`: its host and join arguments, the port,
   a line about it) gets an Online card under Play. **Host** starts the game with the host argument and says this
   machine's addresses (`local_addresses()`, `src/online.h`: the home network's and Tailscale's, not virtual
