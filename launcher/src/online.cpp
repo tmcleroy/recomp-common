@@ -37,9 +37,19 @@ std::string Kind(uint32_t a, const std::string &name) {
     return "";
 }
 
+// A network of this machine's own making (a virtual machine's or a container's): nobody else is on it
+bool Virtual(const std::string &name) {
+    for (const char *start : {"bridge", "docker", "br-", "veth", "virbr", "vmnet", "vboxnet", "vEthernet", "VirtualBox", "VMware", "Hyper-V"}) {
+        if (name.rfind(start, 0) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Add(std::vector<LocalAddress> &list, uint32_t a, const std::string &name) {
     const std::string kind = Kind(a, name);
-    if (kind == "-") {
+    if (kind == "-" || Virtual(name)) {
         return;
     }
     const std::string text = std::to_string(a >> 24) + "." + std::to_string((a >> 16) & 0xFF) + "." + std::to_string((a >> 8) & 0xFF) + "." +
