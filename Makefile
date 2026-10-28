@@ -41,9 +41,9 @@ $(B)/folders_test: tests/folders_test.cpp src/folders.h
 	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined tests/folders_test.cpp -o $@
 
 # The launcher's updates (launcher/src/update.h; needs curl and tar, or ditto, to run)
-$(B)/update_test: tests/update_test.cpp launcher/src/update.cpp launcher/src/update.h
+$(B)/update_test: tests/update_test.cpp launcher/src/update.cpp launcher/src/update.h launcher/src/process.cpp launcher/src/process.h
 	@mkdir -p $(B)
-	$(CXX) $(CXXFLAGS) -Ilauncher/src -fsanitize=address,undefined tests/update_test.cpp launcher/src/update.cpp -o $@
+	$(CXX) $(CXXFLAGS) -Ilauncher/src -fsanitize=address,undefined tests/update_test.cpp launcher/src/update.cpp launcher/src/process.cpp -o $@
 
 # A host with no game: build/shot OUT.ppm [KEYS] [WIDTHxHEIGHT] (examples/shot.cpp)
 example: $(B)/shot
