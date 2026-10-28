@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Join with a code** on the Online page (`Collection::code_lookup`): the code a host gave, and Join, which asks the
+  service which game the match is for (`lookup_code`) and starts that game with its Online's join argument and the
+  code; a game whose file isn't chosen is said, with Add…; one the collection hasn't, and a code that isn't a match's,
+  are said too.
 - The Online page puts Open matches first, above Host in the lobby and In a match.
 - The Online page shows the features of one category (`Collection::online_features`: what a match shows, the ping
   and the like) under **In a match**, as the Features page does, set for every game that has them.
