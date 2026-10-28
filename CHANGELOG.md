@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- Online play: a port that sets `Description::online` (`launcher::Online`: its host and join arguments, the port,
+  a line about it) gets an Online card under Play. **Host** starts the game with the host argument and says this
+  machine's addresses (`local_addresses()`, `src/online.h`: the home network's and Tailscale's, not virtual
+  machines' or containers'); **Join** starts it with the join argument and the address typed (`ui::text_field`),
+  kept in `launcher.ini` under `[online]`. Windows links `iphlpapi` and `ws2_32` for it.
 - A long choice can be made shorter in the game's menu: a feature marked `kFeatureMenuChoices` has, under its row on
   the launcher's Features page (or a collection game's page), "In the game's menu: N of M" and Choose, which opens a
   switch for each of its choices. The game's menu (`MenuConfig::offered`) then goes past those switched off with
