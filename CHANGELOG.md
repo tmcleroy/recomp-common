@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- A collection's **Only the games you have**: a switch on the Games page (shown once a game is set up; `launcher.ini`
+  `[games] installed_only`, off unless switched on) that leaves the games whose file has not been chosen out of the
+  Games page, the Features page (a feature none of the player's games has, and their names in its note) and the
+  Controllers page's Layout for list. What is chosen on the Features page is still set for every game that has it.
 - The Online card for a game that gives hosts a code (`launcher::Online::codes`): Host says the game shows a code to
   hand out, and Join takes the code or an address.
 - Online play: a port that sets `Description::online` (`launcher::Online`: its host and join arguments, the port,
