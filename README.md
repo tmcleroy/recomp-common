@@ -51,7 +51,7 @@ To play a game, download a port; this repository is for people making ports.
 ![The launcher's Features page](docs/launcher.png)
 
 One launcher for every port: a Game page (the player's own game file, which is only ever read; the
-picture's options; the sound's, with folders the port lets the player choose, such as a custom soundtrack's; Play; and, for a port with online play, an Online card: Host, with the addresses this machine can be joined at, and Join, with the host's address, or the code the host's game shows for a game that gives one), a Features page (the presets Pure, Enhanced and Custom, a search box, and a switch or
+picture's options; the sound's, with folders the port lets the player choose, such as a custom soundtrack's; Play; and, for a port with online play, an Online card: Host, with the addresses this machine can be joined at, and Join, with the host's address, or the code the host's game shows for a game that gives one; and for a game with a lobby, a switch to list the matches you host under your name, and the open matches other players have listed, to join with a press), a Features page (the presets Pure, Enhanced and Custom, a search box, and a switch or
 a choice for each feature the game lists; for a long choice the game marks `kFeatureMenuChoices`, which of its
 choices the game's own menu goes through, so the player's favourites make a short list there), and a Controllers page (connected gamepads, a tester, and a
 key and a gamepad button for each of the game's buttons, for each of its players, up to four). All of it can be used with a gamepad alone,
