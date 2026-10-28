@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- The launcher's version under its name, at the top of the sidebar. Online play's matches must be on the same version:
+  an open match says its host's version (`OpenMatch::version`), and one on another version is greyed, its Join off;
+  Join with a code says so too (`CodeLookup::version`).
 - The lobby follows the player's name: with **Your name** set, a match hosted from the Online card or the Online page
   is listed (`Online::list_argument`); without one it's joined only by its code. The card's "List my matches in the
   lobby" switch is gone, and Your name is on the card always. The Online page's section is **Host a match**. The code
