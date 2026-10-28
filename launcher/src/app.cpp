@@ -1739,6 +1739,32 @@ void App::online_page(float width) {
             });
     }
     host.end();
+    // The features about a match (Collection::online_features), as the Features page has them: set for every game
+    if (collection_->online_features) {
+        std::vector<FeatureRow> rows;
+        for (size_t i = 0; i < shared_.size(); i++) {
+            const Shared& shared = shared_[i];
+            if (shared.info.category == collection_->online_features && !shared.where.empty()) {
+                const auto& [which, index] = shared.where[0];
+                rows.push_back({&shared.info, recomp::FeatureValues(slots_[which]->settings, slots_[which]->features)[index], "", i});
+            }
+        }
+        if (!rows.empty()) {
+            ui::gap(24);
+            layout::label("IN A MATCH");
+            feature_list(
+                width, rows, "", [&](const FeatureRow& feature, int value) { set_shared(feature.index, value); },
+                [&](const FeatureRow& feature) {
+                    const auto& [which, index] = shared_[feature.index].where[0];
+                    return recomp::MenuChoices(slots_[which]->settings, slots_[which]->features[index]);
+                },
+                [&](const FeatureRow& feature, const std::vector<bool>& offered) {
+                    for (const auto& [which, index] : shared_[feature.index].where) {
+                        set_menu_choices(*slots_[which], index, offered);
+                    }
+                });
+        }
+    }
     // Every game's open matches, by game, in the sidebar's order
     follow_lobby(collection_->lobby);
     ui::gap(24);
