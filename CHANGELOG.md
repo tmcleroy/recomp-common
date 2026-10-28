@@ -5,6 +5,7 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- The Online page puts Open matches first, above Host in the lobby and In a match.
 - The Online page shows the features of one category (`Collection::online_features`: what a match shows, the ping
   and the like) under **In a match**, as the Features page does, set for every game that has them.
 - The Online page's open matches include those of games whose file isn't chosen yet, greyed, with **Add…**, which
