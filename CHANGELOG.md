@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- A collection's **Online** page (`Collection::lobby`, `online_intro`), after Multi game: **Host in the lobby** (your
+  name, any of the games that can be played, Host: the game started with its Online's host, list and name arguments)
+  and **Open matches**, every game's, with the game's name and Join (a game whose file is not chosen says so). The
+  list comes from `lobby` every five seconds while the page is shown (`OpenMatch::game`).
 - A lobby on the Online card (`launcher::Online::lobby`, `list_argument`, `name_argument`): **List my matches in the
   lobby** (opt-in, kept in `launcher.ini` `[online] listed`) and **Your name** (`[online] name`) make Host start the
   game with the list and name arguments; **Open matches** shows the lobby's list (fetched from `lobby` every five
