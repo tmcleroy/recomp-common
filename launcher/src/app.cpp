@@ -1797,8 +1797,25 @@ void App::online_page(float width) {
             inset_separator(width);
         }
         first = false;
-        std::string detail = match.game + ": " + waited(match) + ". This copy of the launcher hasn't that game: a newer version may.";
-        row(width, match.name.c_str(), detail.c_str(), 0.0f, 24.0f, [] {}, true);
+        // (a game a newer version has: its name as its host's game gave it; the Games page has the updates)
+        std::string detail = (match.title.empty() ? match.game : match.title) + ": " + waited(match) + ". Not in your version of " LAUNCHER_GAME_NAME
+#ifdef LAUNCHER_UPDATE_REPO
+                             ": update to play it.";
+#else
+                             ".";
+#endif
+        ImGui::PushID(n++);
+        row(
+            width, match.name.c_str(), detail.c_str(), 130.0f, 36.0f,
+            [&] {
+#ifdef LAUNCHER_UPDATE_REPO
+                if (ui::button("Update…", Kind::Secondary, 130.0f)) {
+                    page_ = 0;  // (the Games page: the update card)
+                }
+#endif
+            },
+            true);
+        ImGui::PopID();
     }
     list.end();
     (void)p;
