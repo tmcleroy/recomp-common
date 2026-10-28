@@ -31,7 +31,7 @@
 // The launcher's own pages. A port's: Game, Features, Controllers. A collection's: Games (Library), Features and
 // Controllers (for all the games), Multi game (if it has modes that play several games: launcher.h, MultiMode), then
 // one page for each game whose file is chosen (Title).
-enum class Page { Game, Features, Controllers, Library, Title, Multi, Count };
+enum class Page { Game, Features, Controllers, Library, Title, Multi, Online, Count };
 
 // --play: straight into the game set up earlier (a collection's: --play ID), with `extra` after the launcher's
 // own arguments for it; the exit code
@@ -194,6 +194,14 @@ private:
     void play_button(size_t which, float width);
     void online_card(size_t which, float width, bool ready);
     void lobby_card(size_t which, float width, bool ready);
+    // The Online page (a collection with a lobby: Collection::lobby): host in the lobby in any game, and every game's
+    // open matches
+    void online_page(float width);
+    void load_online();
+    // The lobby's list from `url`, fetched again every five seconds while it is shown
+    void follow_lobby(const std::string& url);
+    // A game that can be started now (its file chosen and good, its program there, not running)
+    bool can_play(size_t which) const;
     void files_card(float width);
 
     // The Multi game page (a collection's MultiModes): a mode's choices and games, and the run of one
