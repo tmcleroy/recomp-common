@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- The lobby follows the player's name: with **Your name** set, a match hosted from the Online card or the Online page
+  is listed (`Online::list_argument`); without one it's joined only by its code. The card's "List my matches in the
+  lobby" switch is gone, and Your name is on the card always. The Online page's section is **Host a match**. The code
+  field's hint is "The host's code".
 - **Join with a code** on the Online page (`Collection::code_lookup`): the code a host gave, and Join, which asks the
   service which game the match is for (`lookup_code`) and starts that game with its Online's join argument and the
   code; a game whose file isn't chosen is said, with Add…; one the collection hasn't, and a code that isn't a match's,
