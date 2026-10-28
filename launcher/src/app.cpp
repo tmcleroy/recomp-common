@@ -1762,7 +1762,8 @@ void App::online_page(float width) {
                     for (const auto& [which, index] : shared_[feature.index].where) {
                         set_menu_choices(*slots_[which], index, offered);
                     }
-                });
+                },
+                false);
         }
     }
     // Every game's open matches, by game, in the sidebar's order
@@ -2723,12 +2724,14 @@ void App::menu_choices(float width, const FeatureRow& feature, std::vector<bool>
 // The rows under their categories, narrowed by the search box: only those whose name, description, category or
 // choices have every word typed (Ctrl+F or Cmd+F goes into it)
 template <typename Set, typename Offered, typename SetOffered>
-void App::feature_list(float width, const std::vector<FeatureRow>& rows, const char* none, Set set, Offered offered, SetOffered set_offered) {
+void App::feature_list(float width, const std::vector<FeatureRow>& rows, const char* none, Set set, Offered offered, SetOffered set_offered,
+                       bool whole) {
     const ui::Palette& p = ui::palette();
     if (rows.empty()) {
         ui::text(none, Font::Regular, ui::size::kBody, p.secondary, width);
         return;
     }
+    // (`whole`: a page of features, with the search box and a heading for each category; else a few, as one card)
     if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_F) || ImGui::IsKeyChordPressed(ImGuiMod_Super | ImGuiKey_F)) {
         focus_search_ = true;
     }
@@ -2736,9 +2739,11 @@ void App::feature_list(float width, const std::vector<FeatureRow>& rows, const c
         ImGui::SetKeyboardFocusHere();
         focus_search_ = false;
     }
-    ui::search_box("##search", feature_search_, sizeof(feature_search_), "Search features", width);
+    if (whole) {
+        ui::search_box("##search", feature_search_, sizeof(feature_search_), "Search features", width);
+    }
     std::vector<std::string> words;
-    {
+    if (whole) {
         std::istringstream typed(lower(feature_search_));
         for (std::string word; typed >> word;) {
             words.push_back(word);
@@ -2762,7 +2767,9 @@ void App::feature_list(float width, const std::vector<FeatureRow>& rows, const c
         std::string count = matches == 0 ? std::string("No features match.") : std::to_string(matches) + " of " + std::to_string(rows.size()) + " features";
         ui::text(count.c_str(), Font::Regular, ui::size::kDetail, p.secondary);
     }
-    ui::gap(20);
+    if (whole) {
+        ui::gap(20);
+    }
     std::vector<std::string> categories;
     for (size_t i = 0; i < rows.size(); i++) {
         const std::string& category = rows[i].info->category;
@@ -2773,8 +2780,10 @@ void App::feature_list(float width, const std::vector<FeatureRow>& rows, const c
     for (const std::string& category : categories) {
         std::string upper = category;
         std::transform(upper.begin(), upper.end(), upper.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
-        ui::text(upper.c_str(), Font::Semibold, ui::size::kDetail, p.secondary);
-        ui::gap(10);
+        if (whole) {
+            ui::text(upper.c_str(), Font::Semibold, ui::size::kDetail, p.secondary);
+            ui::gap(10);
+        }
         Card card(width);
         bool first = true;
         for (size_t i = 0; i < rows.size(); i++) {
