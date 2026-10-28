@@ -13,7 +13,7 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   lobby** (opt-in, kept in `launcher.ini` `[online] listed`) and **Your name** (`[online] name`) make Host start the
   game with the list and name arguments; **Open matches** shows the lobby's list (fetched from `lobby` every five
   seconds while it is shown, on another thread: `fetch_lobby`, `src/online.h`), each with Join. The curl runner moves
-  from `update.cpp` to `process.h`/`process.cpp`, which every launcher builds.
+  from `update.cpp` to `run_program.h`/`run_program.cpp`, which every launcher builds.
 - A collection's **Only the games you have**: a switch on the Games page (shown once a game is set up; `launcher.ini`
   `[games] installed_only`, off unless switched on) that leaves the games whose file has not been chosen out of the
   Games page, the Features page (a feature none of the player's games has, and their names in its note) and the
