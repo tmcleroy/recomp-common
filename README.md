@@ -89,6 +89,15 @@ starts. A release so carries only its archives and one small manifest per system
 download (a build) is only told of the new version. Downloads go through the system's `curl`, unpacking through
 its `tar` (`ditto` on macOS).
 
+**Android** (`launcher.cmake` with the NDK): the launcher is a library (`lib<exe>-launcher.so`) that the port's
+activity, an SDL activity, loads, and so is each game (`lib<exe>.so`), which runs in a process of its own. What the
+launcher does elsewhere with programs it asks of its activity instead, through JNI: `startGame` and `gameResult`
+(a game's start and how it ended: `src/game_process.cpp`), `importFiles` and `importResult` (the system's picker,
+whose documents are copied into the launcher's folder, `roms/`: Choose… and Add ROM sets…) and `curl` (the online
+requests, from curl's arguments: `src/run_program.cpp`). A game's `--list-features` is asked of its library:
+`char *RecompListFeatures(void)`. The player's folders are in the app's folder on the shared storage, a folder for
+each name. A finger dragged scrolls a page, and Back is Esc. No updates there: the system installs the app.
+
 **Portable mode** (`src/folders.h`): a file named `portable.txt` beside the launcher (on macOS beside the app,
 which is never written to; beside the AppImage for one) keeps the player's folders, settings, saves and logs, in
 `user/<name>/` there instead of the system's folder for them, so the whole thing can be carried on a drive. The

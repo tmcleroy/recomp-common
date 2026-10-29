@@ -5,6 +5,13 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Android** (cps2recomp #104): `launcher.cmake` makes the launcher a library there, and the launcher starts each
+  game's library through the port's activity (`startGame`, `gameResult`), asks a game's library for its features
+  (`RecompListFeatures`), copies the files the player chooses with the system's picker into `roms/` in its folder
+  (`importFiles`, `importResult`; on a collection's first page **Add ROM sets…**), and makes the online requests
+  through the activity (`curl`). The player's folders are in the app's folder on the shared storage. A finger dragged
+  up or down scrolls what is under it (on every system with a touch screen), and a phone's Back is Esc.
+  `LAUNCHER_VERSION` no longer needs `LAUNCHER_UPDATE_REPO`.
 - **Play at the top** of a game's page (a collection's game, and a port's Game page), under its heading: its ROM set,
   Display and Sound, Online and Steam follow.
 - **The Online page's waiting room** (`Collection::room`, `room_protocol`; online.h `room_check_in`): while the page is
