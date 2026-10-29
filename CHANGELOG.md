@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Dark unless the system says light**: where the system says nothing of its theme (Steam's Gaming Mode on the Steam
+  Deck and Steam Machine, a Linux desktop with no preference) the launcher is dark, as Steam is, rather than light.
 - **The sidebar scrolls with a finger** on a touch screen (`App::scroll_sidebar`), as the page beside it does: its list of
   games was reached only with a mouse wheel. A finger's drag is a scroll before it is a row dragged to another place.
 - **Android** (cps2recomp #104): `launcher.cmake` makes the launcher a library there, and the launcher starts each
