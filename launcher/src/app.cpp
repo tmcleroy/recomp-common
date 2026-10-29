@@ -1400,7 +1400,8 @@ void App::sidebar(float height) {
         size_t which = 0;
         Page kind = own_page(i, &which);
         float y = row_y(static_cast<float>(i));
-        const Row* row = kind == Page::Title || kind == Page::Series ? &list[static_cast<size_t>(i - static_cast<int>(fixed))] : nullptr;
+        int k = i - static_cast<int>(fixed);  // (in the list)
+        const Row* row = kind == Page::Title || kind == Page::Series ? &list[static_cast<size_t>(k)] : nullptr;
         if (row) {
             // (by the game's id, or the series' name, so that its row is the same row wherever it is)
             ImGui::PushID(row->series ? ("series:" + slots_[which]->series).c_str() : slots_[which]->id.c_str());
@@ -1411,7 +1412,7 @@ void App::sidebar(float height) {
             if (row->inside && opened_ == slots_[which]->series) {
                 ui::set_value(place, series_y);
             }
-            if (i == drag_row) {
+            if (k == drag_row) {
                 ui::set_value(place, drag_at);
                 y = drag_at;
             } else {
@@ -1443,7 +1444,7 @@ void App::sidebar(float height) {
                     close_drag = slots_[which]->series;
                 }
             }
-            if (i == drag_row) {
+            if (row && k == drag_row) {
                 ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
                 move_to = static_cast<int>(std::floor((drag_at - row_y(fixed)) / step + 0.5f));
             }
