@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Play at the top** of a game's page (a collection's game, and a port's Game page), under its heading: its ROM set,
+  Display and Sound, Online and Steam follow.
 - **The Online page's waiting room** (`Collection::room`, `room_protocol`; online.h `room_check_in`): while the page is
   open and no game runs, the launcher checks in every five seconds with the player's name, the games they can play and
   whether others may invite them (`launcher.ini` `[online] invitable`), and lists the other players there, each with
