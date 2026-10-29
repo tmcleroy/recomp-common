@@ -5,6 +5,14 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The Online page's waiting room** (`Collection::room`, `room_protocol`; online.h `room_check_in`): while the page is
+  open and no game runs, the launcher checks in every five seconds with the player's name, the games they can play and
+  whether others may invite them (`launcher.ini` `[online] invitable`), and lists the other players there, each with
+  **Invite** (Host with `Online::invite_argument` and `invite_name_argument`, in the game chosen in the card) and
+  **Block** (`[online] blocked`, with **Unblock all**). Invitations to this player are a card at the top of the page:
+  **Accept** joins the match's code (**Add…** for a game without its file), **Decline**, **Block**. The player's
+  secret, from which the service makes their id, is `[online] room`.
+
 - **A collection's games in series** (`CollectionGame::series`): two or more games of a series with a page are under
   one sidebar row, which opens and closes (a chevron; kept in `launcher.ini` `[games] open`) and is a page of the
   series' games, each with Play and its page. A series moves as one in the player's order (dragged, or Move up/down
