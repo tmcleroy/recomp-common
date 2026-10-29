@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **A collection's games in series** (`CollectionGame::series`): two or more games of a series with a page are under
+  one sidebar row, which opens and closes (a chevron; kept in `launcher.ini` `[games] open`) and is a page of the
+  series' games, each with Play and its page. A series moves as one in the player's order (dragged, or Move up/down
+  on its page); a game under it moves among the series' games. The Games page puts the series' name over its games.
 - **Arcade while waiting** on the Online card and the Online page's Host a match (`Online::arcade_argument`, kept in
   `launcher.ini` `[online] arcade`): a switch that makes Host start the game with that argument too, for a game that
   lets its host play alone until the other player comes.
