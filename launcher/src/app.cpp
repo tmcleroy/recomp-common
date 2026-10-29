@@ -2294,7 +2294,9 @@ void App::library_page(float width) {
         if (one.series != series && !one.series.empty() && in_series[one.series] > 1) {
             ImVec2 at = ImGui::GetCursorScreenPos();
             ImGui::SetCursorScreenPos(at + ImVec2(px(18), px(14)));
-            ui::text(one.series.c_str(), Font::Semibold, ui::size::kSmall, p.tertiary);
+            std::string heading = one.series;
+            std::transform(heading.begin(), heading.end(), heading.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+            ui::text(heading.c_str(), Font::Semibold, ui::size::kSmall, p.secondary);
             ImGui::SetCursorScreenPos(ImVec2(at.x, ImGui::GetCursorScreenPos().y - px(8)));
         }
         series = one.series;
