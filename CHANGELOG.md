@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Arcade while waiting** on the Online card and the Online page's Host a match (`Online::arcade_argument`, kept in
+  `launcher.ini` `[online] arcade`): a switch that makes Host start the game with that argument too, for a game that
+  lets its host play alone until the other player comes.
 - The launcher's version under its name, at the top of the sidebar. Online play's matches must be on the same version:
   an open match says its host's version (`OpenMatch::version`), and one on another version is greyed, its Join off;
   Join with a code says so too (`CodeLookup::version`).
