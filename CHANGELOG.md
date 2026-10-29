@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The sidebar scrolls with a finger** on a touch screen (`App::scroll_sidebar`), as the page beside it does: its list of
+  games was reached only with a mouse wheel. A finger's drag is a scroll before it is a row dragged to another place.
 - **Android** (cps2recomp #104): `launcher.cmake` makes the launcher a library there, and the launcher starts each
   game's library through the port's activity (`startGame`, `gameResult`), asks a game's library for its features
   (`RecompListFeatures`), copies the files the player chooses with the system's picker into `roms/` in its folder
