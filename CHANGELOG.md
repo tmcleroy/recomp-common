@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Play at the top** of a game's page (a collection's game, and a port's Game page), under its heading: its ROM set,
+  Display and Sound, Online and Steam follow.
 - **A collection's games in series** (`CollectionGame::series`): two or more games of a series with a page are under
   one sidebar row, which opens and closes (a chevron; kept in `launcher.ini` `[games] open`) and is a page of the
   series' games, each with Play and its page. A series moves as one in the player's order (dragged, or Move up/down
