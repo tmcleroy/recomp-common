@@ -173,6 +173,18 @@ int main() {
         CHECK(!muted);
         std::vector<uint32_t> picture(640 * 480);
         sound.Draw(picture.data(), 640, 480);
+        // (or on a page of its own, with Speed: the page is there for them alone, and they work there)
+        MenuConfig paged = c;
+        paged.groups = {{{MenuRow::Page, 0, "Settings"}, {MenuRow::Resume}}};
+        paged.pages.push_back({"Settings", "", "", false, {MenuRow::Speed, MenuRow::Mute}});
+        Menu inPage;
+        inPage.Configure(paged);
+        inPage.Open();
+        const int speed = inPage.Speed();
+        Press(inPage, {kMenuConfirm, kMenuRight}); // (into the page; its first row, Speed, a step faster)
+        CHECK(inPage.Speed() == speed + 1);
+        Press(inPage, {kMenuDown, kMenuConfirm});   // (Mute: on)
+        CHECK(muted);
     }
 
     // With no speeds there is no Speed row; with nothing at all, nothing happens

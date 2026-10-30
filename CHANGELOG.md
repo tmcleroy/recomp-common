@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Speed and Mute on a page** (cps2recomp #196): `MenuPage::rows` puts those rows at the top of a page rather than
+  on the first one (a page with only them is there too). The Mute row is "Mute", Off or On, rather than "Sound", On
+  or Muted.
 - **Dark unless the system says light**: where the system says nothing of its theme (Steam's Gaming Mode on the Steam
   Deck and Steam Machine, a Linux desktop with no preference) the launcher is dark, as Steam is, rather than light.
 - **The sidebar scrolls with a finger** on a touch screen (`App::scroll_sidebar`), as the page beside it does: its list of
