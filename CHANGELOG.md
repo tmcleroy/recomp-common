@@ -10,6 +10,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   edged with the accent (`Card(width, highlight)`). A new version also puts a dot on the Games row and a card at the top of
   the Online page, whose **Update…** goes to the Games page's update card. The page's order: open matches (and joining
   with a code), the waiting room, hosting a match, then the features about a match.
+- **The player's name with Join too** (cps2recomp #196): `App::join_arguments` gives `Online::name_argument NAME` to
+  every Join (an open match, a code, an invitation, an address), and Host gives it whether or not there's a lobby, so
+  that a game can show each player the other's name.
 - **The Online page second**, after Games (cps2recomp #196): the pages played from first, then Features, Controllers
   and Multi game.
 - **Dark unless the system says light**: where the system says nothing of its theme (Steam's Gaming Mode on the Steam
