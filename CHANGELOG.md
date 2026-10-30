@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **What's worth attention stands out on the Online page** (cps2recomp #196): an invitation, open matches that can be
+  joined (their Join the primary button), the waiting room while someone is in it, and a new version are cards tinted and
+  edged with the accent (`Card(width, highlight)`). A new version also puts a dot on the Games row and a card at the top of
+  the Online page, whose **Update…** goes to the Games page's update card. The page's order: open matches (and joining
+  with a code), the waiting room, hosting a match, then the features about a match.
 - **The Online page second**, after Games (cps2recomp #196): the pages played from first, then Features, Controllers
   and Multi game.
 - **Dark unless the system says light**: where the system says nothing of its theme (Steam's Gaming Mode on the Steam
