@@ -464,6 +464,9 @@ App::App(SDL_Window* window)
         }
     }
     find_shared();
+    if (!collection_ && about_.game_page && about_.open_on_game_page) {
+        page_ = static_cast<int>(about_.pages.size());
+    }
     // The keys and buttons: a port's game's, or a collection's first game's that is here (they are set for all)
     size_t first = 0;
     for (size_t which = 0; which < slots_.size(); which++) {
@@ -1227,7 +1230,7 @@ bool App::consume(const SDL_Event& event) {
         // To the port's page that is shown if it takes files, else to the first of its pages that does,
         // else it is the game file
         int count = static_cast<int>(about_.pages.size());
-        for (int i = -1; i < count; i++) {
+        for (int i = -1; i < (about_.open_on_game_page ? 0 : count); i++) {
             int index = i < 0 ? page_ : i;
             if (index < count && about_.pages[index].drop) {
                 launcher::PageContext dropped = context(0.0f);

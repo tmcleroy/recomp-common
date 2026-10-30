@@ -125,6 +125,10 @@ struct Description {
 
     // The port's own pages (none: the launcher's three)
     std::vector<CustomPage> pages;
+    // true: the launcher opens on the Game page (not on the first of the port's own, which stay above it in the
+    // sidebar), and a dropped file goes to a page of the port's own only while that page is shown (else it is the
+    // game file): for pages that are extras, not the way in
+    bool open_on_game_page = false;
     // false: no Game page (and no game file, check or Display card): the port's pages have Play
     bool game_page = true;
 
