@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **What's worth attention stands out on the Online page** (cps2recomp #196): an invitation, open matches that can be
+  joined (their Join the primary button), the waiting room while someone is in it, and a new version are cards tinted and
+  edged with the accent (`Card(width, highlight)`). A new version also puts a dot on the Games row and a card at the top of
+  the Online page, whose **Update…** goes to the Games page's update card. The page's order: open matches (and joining
+  with a code), the waiting room, hosting a match, then the features about a match.
 - **The player's name with Join too** (cps2recomp #196): `App::join_arguments` gives `Online::name_argument NAME` to
   every Join (an open match, a code, an invitation, an address), and Host gives it whether or not there's a lobby, so
   that a game can show each player the other's name.
