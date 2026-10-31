@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **A new version on Android** (cps2recomp #209): the updater checks the releases there too. As an app can't replace
+  its own files, it looks for the newest release's APK rather than a manifest, and the update card's **Download**
+  (`Updater::Status::download_url`) opens it for the player to install. `Updater::platform` is `android` there.
 - **What's worth attention stands out on the Online page** (cps2recomp #196): an invitation, open matches that can be
   joined (their Join the primary button), the waiting room while someone is in it, and a new version are cards tinted and
   edged with the accent (`Card(width, highlight)`). A new version also puts a dot on the Games row and a card at the top of
