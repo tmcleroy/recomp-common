@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **A waiting room for a launcher of one game** (`Online::room`, `room_protocol`): what a collection's Online page has,
+  on the Game page under the Online card: the invitations waiting for this player, and the players in the room to
+  invite to the game. The launcher checks in while the Game page is open. `App::room_url()` and `room_protocol()` are
+  the collection's or the game's; `Online::game`, the id the service knows the game by, is the one game's there (`App::room_game`).
 - The Your files card says "Settings, saves, save states and the logs": "each board's memory" meant nothing to a
   port of a console game.
 - **A new version on Android** (cps2recomp #209): the updater checks the releases there too. As an app can't replace
@@ -23,6 +27,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 - **Speed and Mute on a page** (cps2recomp #196): `MenuPage::rows` puts those rows at the top of a page rather than
   on the first one (a page with only them is there too). The Mute row is "Mute", Off or On, rather than "Sound", On
   or Muted.
+- **A port's pages as extras** (`Description::open_on_game_page`): the launcher opens on the Game page, not on the
+  first of the port's own pages, and a file dropped on the window goes to a page of the port's own only while that
+  page is shown (else it is the game file). For a port whose own page is an extra (Soulcalibur II's Guest page).
 - **Dark unless the system says light**: where the system says nothing of its theme (Steam's Gaming Mode on the Steam
   Deck and Steam Machine, a Linux desktop with no preference) the launcher is dark, as Steam is, rather than light.
 - **The sidebar scrolls with a finger** on a touch screen (`App::scroll_sidebar`), as the page beside it does: its list of
