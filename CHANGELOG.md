@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- The Your files card says "Settings, saves, save states and the logs": "each board's memory" meant nothing to a
+  port of a console game.
 - **A new version on Android** (cps2recomp #209): the updater checks the releases there too. As an app can't replace
   its own files, it looks for the newest release's APK rather than a manifest, and the update card's **Download**
   (`Updater::Status::download_url`) opens it for the player to install. `Updater::platform` is `android` there.
