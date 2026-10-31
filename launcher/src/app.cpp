@@ -1682,8 +1682,8 @@ void App::page(float width, float height) {
         launcher::PageContext shown = context(content);
         about_.pages[page_].draw(shown);
     }
-    if (collection_ && collection_->room) {
-        follow_room(kind == Page::Online && !any_running());
+    if (room_url()) {
+        follow_room(kind == (collection_ ? Page::Online : Page::Game) && !any_running());
     }
     switch (kind) {
     case Page::Game:
@@ -1983,9 +1983,27 @@ void App::online_card(size_t which, float width, bool ready) {
         }
     });
     card.end();
+    // (a launcher of one game: its invitations and waiting room here, as a collection's Online page has them)
+    if (!collection_ && room_url()) {
+        ui::gap(24);
+        invitations_card(width);
+        room_card(width, {which});
+    }
     if (lobby) {
         lobby_card(which, width, ready);
     }
+}
+
+const char* App::room_url() const {
+    return collection_ ? collection_->room : about_.online.room;
+}
+
+int App::room_protocol() const {
+    return collection_ ? collection_->room_protocol : about_.online.room_protocol;
+}
+
+std::string App::room_game(size_t which) const {
+    return collection_ || !about_.online.game ? slots_[which]->id : about_.online.game;
 }
 
 std::vector<std::string> App::host_arguments(const launcher::Online& online) const {
@@ -2402,7 +2420,7 @@ void App::online_page(float width) {
 }
 
 void App::follow_room(bool here) {
-    const std::string url = collection_->room;
+    const std::string url = room_url();
     if (room_fetch_.valid() && room_fetch_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
         launcher::Room room = room_fetch_.get();
         room_at_ = SDL_GetTicks();
@@ -2421,7 +2439,7 @@ void App::follow_room(bool here) {
                                  room_answered_.end());
             // (the Online page's lobby list, with it: shown if that page's list is the one followed)
             room_lists_ = room.listed;
-            if (room.listed && collection_->lobby && lobby_url_ == collection_->lobby) {
+            if (room.listed && collection_ && collection_->lobby && lobby_url_ == collection_->lobby) {
                 lobby_ = std::move(room.matches);
                 lobby_failed_ = false;
                 lobby_at_ = room_at_;
@@ -2429,7 +2447,7 @@ void App::follow_room(bool here) {
             room_ = std::move(room);
         } else {
             room_.ok = false;
-            if (room_lists_ && collection_->lobby && lobby_url_ == collection_->lobby) {
+            if (room_lists_ && collection_ && collection_->lobby && lobby_url_ == collection_->lobby) {
                 lobby_failed_ = true;
                 lobby_at_ = room_at_;
             }
@@ -2460,13 +2478,13 @@ void App::follow_room(bool here) {
     me.name = online_name_;
     for (size_t which = 0; which < slots_.size(); which++) {
         if (can_play(which) || (slots_[which]->game.running())) {
-            me.games.push_back(slots_[which]->id);
+            me.games.push_back(room_game(which));
         }
     }
-    me.protocol = collection_->room_protocol;
+    me.protocol = room_protocol();
     me.version = own_version();
     me.invitable = prefs_.get("online", "invitable") != "0";
-    me.lobby = collection_->lobby != nullptr;
+    me.lobby = collection_ && collection_->lobby;
     const std::string blocked = prefs_.get("online", "blocked");
     for (size_t at = 0; at < blocked.size();) {
         const size_t comma = std::min(blocked.find(',', at), blocked.size());
@@ -2490,7 +2508,7 @@ void App::block(const std::string& id) {
                         room_.players.end());
     for (const launcher::Invitation& invitation : room_.invitations) {
         if (invitation.from == id) {
-            launcher::room_decline(collection_->room, prefs_.get("online", "room"), invitation.code);
+            launcher::room_decline(room_url(), prefs_.get("online", "room"), invitation.code);
             room_answered_.push_back(invitation.code);
         }
     }
@@ -2531,7 +2549,7 @@ void App::invitations_card(float width) {
         }
         size_t which = slots_.size();
         for (size_t i = 0; i < slots_.size(); i++) {
-            if (slots_[i]->id == invitation->game) {
+            if (room_game(i) == invitation->game) {
                 which = i;
             }
         }
@@ -2545,7 +2563,7 @@ void App::invitations_card(float width) {
         const std::string title = invitation->name + " invites you to " + game;
         const std::string detail = !known ? "Your version of " LAUNCHER_GAME_NAME " hasn't " + game + ": update to play it."
                                    : file ? "Accept starts the game and joins their match."
-                                          : "Add your " + game + " " + collection_->file_name + " to accept.";
+                                          : "Add your " + game + " " + (collection_ ? collection_->file_name : "game files") + " to accept.";
         ImGui::PushID(n++);
         row(width, title.c_str(), detail.c_str(), 370.0f, 36.0f, [&] {
             if (known && file) {
@@ -2567,7 +2585,7 @@ void App::invitations_card(float width) {
             ImGui::SameLine(0.0f, px(10));
             if (ui::button("Decline", Kind::Secondary, 120.0f)) {
                 room_answered_.push_back(invitation->code);
-                launcher::room_decline(collection_->room, prefs_.get("online", "room"), invitation->code);
+                launcher::room_decline(room_url(), prefs_.get("online", "room"), invitation->code);
             }
             ImGui::SameLine(0.0f, px(10));
             if (ui::button("Block", Kind::Secondary, 100.0f)) {
@@ -2587,9 +2605,9 @@ void App::room_card(float width, const std::vector<size_t>& playable) {
     Card card(width, !room_.players.empty());  // (highlighted while there's someone to invite)
     const bool named = online_name_[0] != '\0';
     const bool invitable = prefs_.get("online", "invitable") != "0";
-    // (the game to invite to: one this player can play)
-    size_t which = slots_.size();
-    if (!playable.empty()) {
+    // (the game to invite to: one this player can play; a launcher of one game, that one)
+    size_t which = collection_ ? slots_.size() : 0;
+    if (collection_ && !playable.empty()) {
         std::vector<std::string> names;
         int chosen = 0;
         const std::string last = prefs_.get("online", "invite_game").empty() ? prefs_.get("online", "game") : prefs_.get("online", "invite_game");
@@ -2612,8 +2630,10 @@ void App::room_card(float width, const std::vector<size_t>& playable) {
     if (room_.players.empty()) {
         const char* empty = room_at_ == 0 ? "Looking…"
                             : !room_.ok   ? "Couldn't reach the online service."
-                                          : "Nobody else is here right now. Players show here while their Online page is open, up to 10 seconds after "
-                                            "they open it.";
+                            : collection_ ? "Nobody else is here right now. Players show here while their Online page is open, up to 10 seconds "
+                                            "after they open it."
+                                          : "Nobody else is here right now. Players show here while their launcher's Game page is open, up "
+                                            "to 10 seconds after they open it.";
         empty_row(width, empty, room_at_ == 0);
     }
     for (size_t n = 0; n < room_.players.size(); n++) {
@@ -2624,7 +2644,7 @@ void App::room_card(float width, const std::vector<size_t>& playable) {
         std::string detail;
         if (which < slots_.size()) {
             const std::string& game = slots_[which]->name;
-            detail = std::find(player.games.begin(), player.games.end(), slots_[which]->id) != player.games.end()
+            detail = std::find(player.games.begin(), player.games.end(), room_game(which)) != player.games.end()
                          ? "Has " + game + "."
                          : "Hasn't added " + game + " yet: they can when invited.";
         }
@@ -2646,9 +2666,11 @@ void App::room_card(float width, const std::vector<size_t>& playable) {
     }
     inset_separator(width);
     row(width, "Let others invite me",
-        named ? "While your Online page is open, you're in the waiting room under your name, and others can invite you to a match. An "
-                "invitation never interrupts a game: it waits here."
-              : "With a name, you're in the waiting room while your Online page is open, and others can invite you to a match.",
+        (named ? std::string("While your ") + (collection_ ? "Online" : "Game") + " page is open, you're in the waiting room under "
+                 "your name, and others can invite you to a match. An invitation never interrupts a game: it waits here."
+               : std::string("With a name, you're in the waiting room while your ") + (collection_ ? "Online" : "Game") +
+                 " page is open, and others can invite you to a match.")
+            .c_str(),
         42.0f, 24.0f, [&] {
             if (ui::toggle("##online_invitable", invitable)) {
                 prefs_.set("online", "invitable", invitable ? "0" : "1");
