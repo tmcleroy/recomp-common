@@ -45,6 +45,7 @@ struct Toggle {
 
 // What Play starts the game with
 struct Launch {
+    std::filesystem::path controls_folder;   // shared launcher controls/device settings, even for a collection
     std::string file;                        // the player's game file
     std::filesystem::path folder;            // the player's folder: settings.ini is in it, saves/ if asked for
     std::function<bool(const char *)> on;    // a Display switch's state, by its key
@@ -184,6 +185,18 @@ struct Description {
 
     // Controllers page. With actions, each player's keys and buttons can be chosen (bindings.h).
     recomp::BindTable bindings;
+    bool per_game_controls = false;
+    std::function<void(PageContext &)> hardware_controls;
+    std::function<void(PageContext &, int player)> controller_settings;
+    std::function<void(PageContext &)> global_controls;
+    std::function<bool(const SDL_Event &)> controls_event;
+    std::function<bool()> controls_capturing;
+    // Optional physical-device capture, polled after controller_settings draws.
+    std::function<SDL_Scancode(int player)> keyboard_binding;
+    // Hosts opt into physical capture and independent player key namespaces. Defaults preserve legacy behavior.
+    std::function<bool()> physical_keyboard_capture;
+    std::function<int(int player)> keyboard_layout;
+    bool player_scoped_keys = false;
     const char *controls_heading = "WHILE PLAYING";
     std::vector<InfoRow> controls;            // what is fixed, as rows of text
 };

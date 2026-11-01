@@ -28,3 +28,10 @@ include(../launcher.cmake)
 # The stand-in for the game program, beside the launcher
 add_executable(example game.cpp ${RECOMP_COMMON_SRC}/settings.cpp)
 target_include_directories(example PRIVATE ${RECOMP_COMMON_SRC})
+
+enable_testing()
+foreach(test player_bindings window_layout)
+    add_executable(${test}_test "${CMAKE_CURRENT_SOURCE_DIR}/../../tests/${test}_test.cpp")
+    target_link_libraries(${test}_test PRIVATE SDL3::SDL3)
+    add_test(NAME ${test} COMMAND ${test}_test)
+endforeach()

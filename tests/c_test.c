@@ -24,6 +24,10 @@ static void setValue(void* user, int feature, int v) {
   ((int*)user)[feature] = v;
 }
 
+static double level = 1;
+static double sliderValue(void* user, int index) { (void)user; (void)index; return level; }
+static void setSlider(void* user, int index, double value) { (void)user; (void)index; level = value; }
+
 int main(void) {
   static const char* const kinds[] = {"Off", "Some", "All", NULL};
   static const RMenuRow rows[] = {
@@ -85,6 +89,20 @@ int main(void) {
   rmenu_buttons(menu, RMENU_BACK, NULL);
   CHECK(!rmenu_isOpen(menu));
   rmenu_free(menu);
+  {
+    RMenuConfig sliders = {0};
+    const RMenuRow page[] = {{RMENU_ROW_PAGE, 0, 0, "Adjustments", ""}};
+    const RMenuSlider controls[] = {{"Adjustments", "Level", "A host parameter", "", 0, 2, .1, 1, 1, false}};
+    sliders.rows = page; sliders.rowCount = 1;
+    sliders.sliders = controls; sliders.sliderCount = 1;
+    sliders.sliderValue = sliderValue; sliders.setSlider = setSlider;
+    menu = rmenu_new(); rmenu_configure(menu, &sliders); rmenu_open(menu);
+    rmenu_buttons(menu, RMENU_RIGHT, NULL);
+    rmenu_buttons(menu, RMENU_RIGHT, NULL); CHECK(level > 1.09 && level < 1.11);
+    rmenu_buttons(menu, RMENU_LEFT | RMENU_FAST, NULL); CHECK(level > .09 && level < .11);
+    rmenu_buttons(menu, RMENU_CONFIRM, NULL); CHECK(level == 1);
+    rmenu_free(menu);
+  }
   puts("c_test: all as it should be");
   return 0;
 }
