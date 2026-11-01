@@ -45,13 +45,13 @@ struct Toggle {
 
 // What Play starts the game with
 struct Launch {
-    std::filesystem::path controls_folder;   // shared launcher controls/device settings, even for a collection
     std::string file;                        // the player's game file
     std::filesystem::path folder;            // the player's folder: settings.ini is in it, saves/ if asked for
     std::function<bool(const char *)> on;    // a Display switch's state, by its key
     // (a collection) the file chosen for another of its games, by the game's id: empty if none (a game that reads
     // another's files too, say)
     std::function<std::string(const char *)> file_of;
+    std::filesystem::path controls_folder;   // shared launcher controls/device settings, even for a collection
 };
 
 // A folder the player may choose for the game (a custom soundtrack's music files, say): a row of the Sound card with
