@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Optional host controller/capture hooks, player-scoped keys, signed pad axes and numeric overlay sliders (C++ and C).
+
 Versions follow [semantic versioning](https://semver.org/). Before 1.0 the interface may change in
 a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 

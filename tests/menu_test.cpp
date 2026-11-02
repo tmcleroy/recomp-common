@@ -270,6 +270,25 @@ int main() {
         g_values.clear();
     }
 
+    {
+        double value = 1;
+        MenuConfig config;
+        config.groups = {{{MenuRow::Pages}}};
+        config.sliders.push_back({"Adjustments", "Level", "A host parameter", "", 0, 2, .1, 1, 1});
+        config.sliderValue = [&](size_t) { return value; };
+        config.setSlider = [&](size_t, double v) { value = v; };
+        Menu slider;
+        slider.Configure(config); slider.Open();
+        slider.Buttons(kMenuRight); // automatically discovered slider-only page
+        slider.Buttons(kMenuRight); CHECK(value > 1.09 && value < 1.11);
+        slider.Buttons(kMenuLeft | kMenuFast); CHECK(value > .09 && value < .11);
+        slider.Buttons(kMenuConfirm); CHECK(value == 1);
+        for (int i = 0; i < 50; ++i) slider.Buttons(kMenuRight);
+        CHECK(value == 2);
+        for (int i = 0; i < 50; ++i) slider.Buttons(kMenuLeft);
+        CHECK(value == 0);
+        slider.Buttons(kMenuConfirm); CHECK(value == 1);
+    }
     puts("menu_test: all as it should be");
     return 0;
 }

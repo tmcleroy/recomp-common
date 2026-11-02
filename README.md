@@ -169,3 +169,23 @@ rule: nothing from any game, and no keys, ever go in this repository.
 itself be distributed under terms compatible with it, keep the notices at the top of the files, and
 ship the license text. [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) says where everything came
 from.
+
+
+## Host controller extensions and sliders
+
+Optional Description callbacks let a host draw hardware assignment, game-specific controller settings
+and global shortcut controls; capture can use physical-device events without depending on a port's
+headers. Hosts may opt into player-scoped key namespaces and an inherited keyboard layout. Defaults
+retain the original key-conflict behavior. Signed stick half-axes round-trip alongside existing trigger bindings.
+
+MenuConfig can supply bounded numeric sliders, their value/set callbacks and optional stepping, plus
+ordered detail rows with headings/conditional visibility. Left/Right adjusts, Fast makes larger steps,
+Confirm restores the default. Pages containing only sliders are discovered automatically. The equivalent
+RMenuConfig/RMenuSlider/RMenuPage fields are available to C hosts; zero-initialize configs as before.
+No game, machine timing, DSP or physical-device backend belongs to this library.
+
+
+Ports may opt into LAUNCHER_ROOMY_WINDOW for a centered initial client area occupying 88% of usable
+desktop height and up to min(1440 logical pixels, 88% of usable width). Explicit --size and screenshots
+retain their requested geometry. LAUNCHER_CONTENT_MAX_WIDTH optionally widens the content column;
+its default remains 720, so other hosts keep their original look.
