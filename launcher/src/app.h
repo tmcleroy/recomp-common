@@ -179,6 +179,7 @@ private:
     // Game file.
     void choose_game_file(size_t which);
     void use_game_file(size_t which, const std::string& path);
+    void clear_game_file(size_t which);
     // A file the folder the download was unpacked to had for a game, its check already done: its file, unless the
     // player chose one meanwhile, or the game's is usable (Description::find_beside)
     void adopt_file(size_t which, const std::string& path, const launcher::FileCheck& file);

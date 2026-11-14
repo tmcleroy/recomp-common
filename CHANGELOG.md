@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Clear a game's file**: a game with a file chosen has a **Clear** button beside Choose… (on the Games list and the
+  game's page), which forgets it (`launcher.ini`) and leaves the file where it is. Not while it is being checked or played.
 - `tools/sync-common.sh` dates the copy's files now, not at the commit (a build noticed none of them changed: a link
   error, the new code not compiled), and lists the commits in `src/` and `launcher/` a sync brings since the last.
 - **Watch a running match** (from liquidmetalxy-debug, #64): a port that gives `Online::watch_argument` and
