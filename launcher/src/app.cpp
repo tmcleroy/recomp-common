@@ -1338,6 +1338,26 @@ void App::use_game_file(size_t which, const std::string& path) {
     });
 }
 
+// The game's file forgotten (Clear): none chosen, as before one was, until another is chosen or dropped. The file
+// itself is left where it is. What is found near the program or beside the download is looked for once a start, so
+// not again now.
+void App::clear_game_file(size_t which) {
+    Slot& one = *slots_[which];
+    if (one.checking) {
+        return;
+    }
+    if (one.checker.joinable()) {
+        one.checker.join();
+    }
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        one.file_path.clear();
+        one.file = FileCheck{};
+    }
+    prefs_.set(one.file_section, one.about->file_key, "");
+    prefs_.save();
+}
+
 // A file the folder the download was unpacked to had for a game (Description::find_beside), its check already done
 // on that thread: it becomes the game's unless the player chose one meanwhile, or the game's is usable. On this
 // thread, so that launcher.ini is written by one thread only.
@@ -2227,7 +2247,14 @@ void App::file_card(size_t which, float width) {
         status = file.message;
     }
     ImVec2 row_top = ImGui::GetCursorScreenPos();
-    row(width, shown.c_str(), status.c_str(), 130.0f, 36.0f, [&] {
+    const bool clearable = !one.file_path.empty() && !one.checking && !one.game.running();
+    row(width, shown.c_str(), status.c_str(), clearable ? 230.0f : 130.0f, 36.0f, [&] {
+        if (clearable) {
+            if (ui::button("Clear", Kind::Secondary, 90.0f)) {
+                clear_game_file(which);
+            }
+            ImGui::SameLine(0.0f, px(10));
+        }
         if (ui::button("Choose…", Kind::Secondary, 130.0f, !one.checking)) {
             // (the system's file dialog wants a mouse or a keyboard)
             if (ui::gamepad_in_use()) {
@@ -3519,11 +3546,18 @@ void App::library_page(float width) {
         ImGui::PushID(static_cast<int>(which));
         ImVec2 row_top = ImGui::GetCursorScreenPos();
         // (Play first, so that the ring coming into the row from the left is on it)
-        row(width, one.name.c_str(), status.c_str(), 230.0f, 36.0f, [&] {
+        const bool clearable = !one.file_path.empty() && !one.checking && !one.game.running();
+        row(width, one.name.c_str(), status.c_str(), clearable ? 330.0f : 230.0f, 36.0f, [&] {
             if (ui::button(one.game.running() ? "Playing…" : "Play", Kind::Primary, 110.0f, usable && !one.game.running())) {
                 play(which);
             }
             ImGui::SameLine(0.0f, px(10));
+            if (clearable) {
+                if (ui::button("Clear", Kind::Secondary, 90.0f)) {
+                    clear_game_file(which);
+                }
+                ImGui::SameLine(0.0f, px(10));
+            }
             if (ui::button("Choose…", Kind::Secondary, 110.0f, !one.checking)) {
                 if (ui::gamepad_in_use()) {
                     open_browser(which, false);
