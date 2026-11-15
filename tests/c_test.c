@@ -81,6 +81,8 @@ int main(void) {
   static uint32_t pixels[256 * 224];
   rmenu_note(menu, "Nothing is kept in slot 2.");
   rmenu_draw(menu, pixels, 256, 224);
+  rmenu_setCompact(menu, 1);
+  rmenu_draw(menu, pixels, 256, 224);
   CHECK(pixels[0] != 0);
   rmenu_buttons(menu, RMENU_BACK, NULL);
   CHECK(!rmenu_isOpen(menu));
