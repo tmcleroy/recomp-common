@@ -543,12 +543,19 @@ void Menu::Draw(uint32_t *pixels, int width, int height) const {
         descriptionLines = std::max(descriptionLines, TextLines(rowDescription.c_str(), d, inner));
     }
     descriptionLines = std::max(descriptionLines, TextLines(note.c_str(), d, inner));
-    const float around = 8 + 16 + 6 + 8 + descriptionLines * kLineHeight + 4 + hintLines * kLineHeight + 8;
     const float kDivider = m_compact ? 5.0f : 9.0f; // (the room a line between groups takes)
     // (a row's height, in dots: room for the letters with what reaches below the line (g, p, y) and a gap, up to a
     // little more when there are few rows)
     const float rowLeast = m_compact ? 10.0f : 15.0f, rowMost = m_compact ? 12.0f : 22.0f;
     const float dividers = static_cast<float>(std::count_if(m_rows.begin(), m_rows.end(), [](const Row &row) { return row.divider; }));
+    // (compact: the rows first, eight of them at least where there are so many, and the description in what is left,
+    // cut short if it needs more: a long one would otherwise leave a screen of few lines a row or two)
+    if (m_compact) {
+        const float rowsRoom = static_cast<float>(std::min<size_t>(m_rows.size(), 8)) * rowLeast + dividers * kDivider;
+        const float left = height / d - (8 + 16 + 6 + 8 + 4 + hintLines * kLineHeight + 8) - rowsRoom;
+        descriptionLines = std::min(descriptionLines, std::max(2, static_cast<int>(left / kLineHeight)));
+    }
+    const float around = 8 + 16 + 6 + 8 + descriptionLines * kLineHeight + 4 + hintLines * kLineHeight + 8;
     const float room = height / d - around - dividers * kDivider;
     const size_t shown = std::min(m_rows.size(), static_cast<size_t>(std::max(room / rowLeast, 1.0f)));
     const float rowHeight = std::clamp(room / shown, rowLeast, rowMost) * d;
@@ -614,7 +621,18 @@ void Menu::Draw(uint32_t *pixels, int width, int height) const {
         }
     }
     y += 8 * d;
-    canvas.Text(x, y, d, inner, note.empty() ? dim : white, note.empty() ? description.c_str() : note.c_str());
+    // (cut to its lines, with ".." at the end, where compact left it fewer than it needs)
+    std::string said = note.empty() ? description : note;
+    if (TextLines(said.c_str(), d, inner) > descriptionLines) {
+        while (said.size() > 1 && TextLines((said + "..").c_str(), d, inner) > descriptionLines) {
+            said.pop_back();
+            while (said.size() > 1 && (static_cast<unsigned char>(said.back()) & 0xC0) == 0x80) {
+                said.pop_back(); // (the whole of a character of several bytes)
+            }
+        }
+        said += "..";
+    }
+    canvas.Text(x, y, d, inner, note.empty() ? dim : white, said.c_str());
     y += descriptionLines * kLineHeight * d + 4 * d;
     canvas.Text(x, y, d, inner, dim, hint.c_str());
 }
