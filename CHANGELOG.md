@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Input delay for hosting**: a port that gives `Online::delay_argument` has an **Input delay** choice (0 to 8 frames)
+  under Host, which Host and Invite pass to the game once the player has chosen one (`[online] delay`). Other ports are
+  as before.
 - **Compact menu** (`Menu::SetCompact`, `rmenu_setCompact`): the rows in the small letters and close together, for a
   screen of few lines (an arcade monitor at 224 or 240 lines), where the usual rows, twice as large, run into each other
   and only a few fit. Off unless the host asks.
