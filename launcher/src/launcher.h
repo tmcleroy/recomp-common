@@ -189,9 +189,10 @@ struct Description {
     // once its check found it good, else "". Called while drawing: keep it quick (remember what `check` found).
     std::function<bool(const std::string &feature, const std::string &file)> feature_shown;
     // Optional: whether one choice of a feature's is offered (by its number; 0, off, always is): one that needs
-    // something the player may not have, as feature_shown, but for a choice. False leaves it out of the feature's
-    // dropdown, unless it is the one chosen now. Called while drawing: keep it quick.
-    std::function<bool(const std::string &feature, int choice, const std::string &file)> choice_shown;
+    // something the player may not have, as feature_shown, but for a choice; given the game's file as feature_shown
+    // is, and the game's own folder (its settings, saves...). False leaves it out of the feature's dropdown, unless it
+    // is the one chosen now. Called while drawing: keep it quick.
+    std::function<bool(const std::string &feature, int choice, const std::string &file, const std::filesystem::path &folder)> choice_shown;
     // Optional: a game file near the program (a build inside the source tree), or ""
     std::function<std::string(const std::filesystem::path &program_folder)> find_nearby;
     // Optional: where in the folder the download was unpacked to (recomp::InstallFolder, folders.h) this game's

@@ -1571,7 +1571,7 @@ std::vector<bool> App::hidden_choices(const Slot& one, size_t feature) {
     std::vector<bool> hidden(info.choices.size(), false);
     bool any = false;
     for (size_t choice = 1; choice < info.choices.size(); choice++) {
-        hidden[choice] = !one.about->choice_shown(info.name, static_cast<int>(choice), good ? one.file_path : std::string());
+        hidden[choice] = !one.about->choice_shown(info.name, static_cast<int>(choice), good ? one.file_path : std::string(), one.folder);
         any = any || hidden[choice];
     }
     return any ? hidden : std::vector<bool>{};
