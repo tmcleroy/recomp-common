@@ -1558,6 +1558,25 @@ bool App::feature_shown(const Slot& one, size_t feature) {
     return one.about->feature_shown(one.features[feature].name, good ? one.file_path : std::string());
 }
 
+std::vector<bool> App::hidden_choices(const Slot& one, size_t feature) {
+    const recomp::FeatureInfo& info = one.features[feature];
+    if (!one.about->choice_shown || info.choices.empty()) {
+        return {};
+    }
+    bool good;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        good = !one.checking && one.file.result == FileCheck::Result::Good;
+    }
+    std::vector<bool> hidden(info.choices.size(), false);
+    bool any = false;
+    for (size_t choice = 1; choice < info.choices.size(); choice++) {
+        hidden[choice] = !one.about->choice_shown(info.name, static_cast<int>(choice), good ? one.file_path : std::string());
+        any = any || hidden[choice];
+    }
+    return any ? hidden : std::vector<bool>{};
+}
+
 void App::load_features(Slot& one) {
     one.features.clear();
     one.features_error.clear();
@@ -3874,7 +3893,7 @@ void App::title_page(size_t which, float width) {
             return std::any_of(s.where.begin(), s.where.end(), [&](const auto& at) { return at.first == which && at.second == i; });
         });
         if (!shared && feature_shown(one, i)) {
-            rows.push_back({&one.features[i], values[i], "", i});
+            rows.push_back({&one.features[i], values[i], "", i, hidden_choices(one, i)});
         }
     }
     feature_list(
@@ -4407,7 +4426,7 @@ void App::features_page(float width) {
             if (!feature_shown(one, i)) {
                 continue;
             }
-            rows.push_back({&one.features[i], values[i], "", i});
+            rows.push_back({&one.features[i], values[i], "", i, hidden_choices(one, i)});
         }
         feature_list(
             width, rows, "No optional features yet.", [&](const FeatureRow& feature, int value) { set_feature(one, feature.index, value); },
@@ -4452,7 +4471,7 @@ void App::features_page(float width) {
         if (differ) {
             note += std::string(note.empty() ? "" : " ") + Tr("Not the same in every game yet: what you choose here is.");
         }
-        rows.push_back({&shared.info, value, note, i});
+        rows.push_back({&shared.info, value, note, i, hidden_choices(*slots_[where[0].first], where[0].second)});
     }
     // (the menu's choices: as the first game that has the feature has them, and set for every one)
     feature_list(
@@ -4595,9 +4614,19 @@ void App::feature_list(float width, const std::vector<FeatureRow>& rows, const c
             } else {
                 // One of several things: the first means off
                 int chosen = rows[i].value;
+                // (the choices the port leaves out are not listed, but for the one chosen now)
+                std::vector<std::string> labels;
+                std::vector<int> numbers;
+                for (size_t c = 0; c < feature.choices.size(); c++) {
+                    if (c >= rows[i].hidden.size() || !rows[i].hidden[c] || static_cast<int>(c) == chosen) {
+                        labels.push_back(feature.choices[c]);
+                        numbers.push_back(static_cast<int>(c));
+                    }
+                }
+                int at = static_cast<int>(std::find(numbers.begin(), numbers.end(), chosen) - numbers.begin());
                 row(width, feature.title.c_str(), detail.c_str(), 190.0f, 36.0f, [&] {
-                    if (ui::dropdown("##choice", feature.choices, chosen, 190.0f)) {
-                        set(rows[i], chosen);
+                    if (ui::dropdown("##choice", labels, at, 190.0f) && at >= 0 && at < static_cast<int>(numbers.size())) {
+                        set(rows[i], numbers[static_cast<size_t>(at)]);
                     }
                 });
                 if (feature.flags & recomp::kFeatureMenuChoices) {

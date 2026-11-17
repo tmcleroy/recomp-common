@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **A choice the player can't use is left out** (`Description::choice_shown`): as `feature_shown`, but for one of
+  a feature's choices (one that needs a file the player may not have, say). The Features page's dropdown leaves it out
+  unless it is the one chosen now.
 - **Input delay for hosting**: a port that gives `Online::delay_argument` has an **Input delay** choice (0 to 8 frames)
   under Host, which Host and Invite pass to the game once the player has chosen one (`[online] delay`). Other ports are
   as before.
