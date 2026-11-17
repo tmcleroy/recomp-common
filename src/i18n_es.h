@@ -191,6 +191,7 @@ inline constexpr Entry kSpanish[] = {
     {"FIND YOUR GAMES", "BUSCA TUS JUEGOS"},
     {"Add ROM sets…", "Añadir conjuntos de ROMs…"},
     {"Choose folder…", "Elegir carpeta…"},
+    {"TOOLS", "HERRAMIENTAS"},
     {"GAMES", "JUEGOS"},
     {"Leave out the games you have not set up, here and on the Features and Controllers pages.", "Ocultar los juegos que no has configurado, aquí y en las páginas Opciones y Mandos."},
     {"Every game is set up.", "Todos los juegos están configurados."},
