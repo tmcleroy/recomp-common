@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Tools** (`Collection::tools`): files a collection ships beside its games (a page for the browser, say), each a row
+  of a Tools card on the Games page whose button has the system open it. A row whose file is not there is not shown;
+  none on Android.
 - **Country flags in the waiting room**: **Your country** (under Let others invite me; none unless chosen,
   `[online] country`) is sent with the check-in as `country`, and a player whose service passes it back
   (`RoomPlayer::country`) has their flag and country beside their name. Every ISO country's flag, from flag-icons
