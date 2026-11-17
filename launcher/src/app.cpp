@@ -3720,44 +3720,64 @@ void App::tools_card(float width) {
 
 // Where the player's things are, and portable mode (folders.h)
 void App::files_card(float width) {
-    const ui::Palette& p = ui::palette();
     const std::filesystem::path portable = recomp::PortableFolder(program_folder_);
     const bool home = std::getenv(LAUNCHER_HOME_ENV) && *std::getenv(LAUNCHER_HOME_ENV);
-    // (a collection's games each have a folder beside its own)
+    // (a collection's games each have a folder beside its own: on each game's page)
     const std::filesystem::path where = !portable.empty() && !home ? portable : folder_;
+    folder_card("YOUR FILES", where, !portable.empty() && !home, false, width);
+}
+
+// One game of a collection's folder, on its page: its settings, saves, save states and logs
+void App::game_files_card(const Slot& one, float width) {
+    const bool portable = !recomp::PortableFolder(program_folder_).empty();
+    folder_card("THIS GAME'S FILES", one.folder, portable, true, width);
+}
+
+// A folder of the player's, with a button that shows it, and what is kept there (`game`: one game's)
+void App::folder_card(const char* title, const std::filesystem::path& where, bool portable, bool game, float width) {
+    const ui::Palette& p = ui::palette();
     ui::gap(36);
-    ui::text("YOUR FILES", Font::Semibold, ui::size::kDetail, p.secondary);
+    ui::text(title, Font::Semibold, ui::size::kDetail, p.secondary);
     ui::gap(10);
     Card card(width);
 #ifdef __ANDROID__
+    (void)portable;
     // (no file manager to show it in: a computer sees it over USB)
     std::string shown = ui::fit_start(where.u8string(), Font::Regular, ui::size::kDetail, width - px(18 * 2));
     row(width, "Kept in the app's folder", shown.c_str(), 0.0f, 0.0f, [] {});
     card.end();
     ui::gap(10);
-    ui::text("Settings, save states, each board's memory, the logs, and the ROM sets you added. A computer sees them over USB, in "
-             "Android/data.",
+    ui::text(game ? "This game's settings, save states, its board's memory and its logs. A computer sees them over USB, in Android/data."
+                  : "Settings, save states, each board's memory, the logs, and the ROM sets you added. A computer sees them over USB, in "
+                    "Android/data.",
              Font::Regular, ui::size::kDetail, p.secondary, width);
 #else
     std::string shown = ui::fit_start(where.u8string(), Font::Regular, ui::size::kDetail, width - px(18 * 2 + 110 + 24));
-    row(width, !portable.empty() && !home ? "Kept with the launcher (portable)" : "Kept in your user folder", shown.c_str(), 110.0f, 36.0f, [&] {
+    row(width, portable ? "Kept with the launcher (portable)" : "Kept in your user folder", shown.c_str(), 110.0f, 36.0f, [&] {
         if (ui::button("Show", Kind::Secondary, 110.0f) && interactive_) {  // (pictures for a test open nothing)
+            std::error_code error;
+            std::filesystem::create_directories(where, error);  // (a game not played yet has none)
             SDL_OpenURL(file_url(where).c_str());
         }
     });
     card.end();
     ui::gap(10);
+    std::string about;
+    if (game) {
+        about = Tr("This game's settings, saves, save states and logs. Copy the folder to keep them, or send it with a report.");
+    } else {
 #ifdef __APPLE__
-    const char* beside = "beside the app (in the folder it is in)";
+        const char* beside = "beside the app (in the folder it is in)";
 #else
-    const char* beside = "beside the launcher";
+        const char* beside = "beside the launcher";
 #endif
-    const std::string about = !portable.empty() ? TrFormat("Settings, saves, save states and the logs. Take portable.txt away from {} to use "
-                                                           "your user folder again; nothing is moved.",
-                                                           {Tr(beside)})
-                                                : TrFormat("Settings, saves, save states and the logs. To keep them with the launcher instead, "
-                                                           "on a drive you carry, put a file named portable.txt {}.",
-                                                           {Tr(beside)});
+        about = portable ? TrFormat("Settings, saves, save states and the logs. Take portable.txt away from {} to use "
+                                    "your user folder again; nothing is moved.",
+                                    {Tr(beside)})
+                         : TrFormat("Settings, saves, save states and the logs. To keep them with the launcher instead, "
+                                    "on a drive you carry, put a file named portable.txt {}.",
+                                    {Tr(beside)});
+    }
     ui::text(about.c_str(), Font::Regular, ui::size::kDetail, p.secondary, width);
 #endif
 }
@@ -3899,6 +3919,7 @@ void App::title_page(size_t which, float width) {
         });
         card.end();
     }
+    game_files_card(one, width);  // (above its features, which can be a long list)
     ui::gap(36);
     ui::text("THIS GAME'S FEATURES", Font::Semibold, ui::size::kDetail, p.secondary);
     ui::gap(6);

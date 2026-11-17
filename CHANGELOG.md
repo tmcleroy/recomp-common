@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Each game's files on its page**: a collection's game page has a **This game's files** card (above its features):
+  the game's own folder (settings, saves, save states, logs) and a **Show** button that opens it. The collection's
+  Your files card on the Games page is as before (`App::folder_card` draws both).
 - **Tools** (`Collection::tools`): files a collection ships beside its games (a page for the browser, say), each a row
   of a Tools card on the Games page whose button has the system open it. A row whose file is not there is not shown;
   none on Android.

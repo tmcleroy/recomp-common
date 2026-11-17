@@ -303,6 +303,8 @@ private:
     static const char* own_version();
     static bool version_matches(const std::string& version);
     void files_card(float width);
+    void game_files_card(const Slot& one, float width);
+    void folder_card(const char* title, const std::filesystem::path& where, bool portable, bool game, float width);
     void tools_card(float width);
     void language_card(float width);
 
