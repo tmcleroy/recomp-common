@@ -303,6 +303,7 @@ private:
     static const char* own_version();
     static bool version_matches(const std::string& version);
     void files_card(float width);
+    void tools_card(float width);
     void language_card(float width);
 
     // The Multi game page (a collection's MultiModes): a mode's choices and games, and the run of one
