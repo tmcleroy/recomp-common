@@ -3680,8 +3680,8 @@ void App::library_page(float width) {
 // A collection's Tools (Collection::tools): each a file shipped beside the games, opened by the system
 void App::tools_card(float width) {
 #ifndef __ANDROID__
-    std::vector<std::pair<const Tool*, std::filesystem::path>> found;
-    for (const Tool& tool : collection_->tools) {
+    std::vector<std::pair<const launcher::Tool*, std::filesystem::path>> found;
+    for (const launcher::Tool& tool : collection_->tools) {
         std::error_code error;
         const std::filesystem::path places[] = {program_folder_ / tool.file, program_folder_ / ".." / "Resources" / tool.file};
         for (const std::filesystem::path& place : places) {
