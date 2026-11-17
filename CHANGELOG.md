@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Tools** (`Collection::tools`): files a collection ships beside its games (a page for the browser, say), each a row
+  of a Tools card on the Games page whose button has the system open it. A row whose file is not there is not shown;
+  none on Android.
 - **A choice the player can't use is left out** (`Description::choice_shown`): as `feature_shown`, but for one of
   a feature's choices (one that needs a file the player may not have, say). The Features page's dropdown leaves it out
   unless it is the one chosen now.

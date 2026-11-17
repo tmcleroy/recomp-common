@@ -3691,8 +3691,50 @@ void App::library_page(float width) {
             ui::text(text.c_str(), Font::Regular, ui::size::kDetail, p.danger, width);
         }
     }
+    tools_card(width);
     language_card(width);
     files_card(width);
+}
+
+// A collection's Tools (Collection::tools): each a file shipped beside the games, opened by the system
+void App::tools_card(float width) {
+#ifndef __ANDROID__
+    std::vector<std::pair<const launcher::Tool*, std::filesystem::path>> found;
+    for (const launcher::Tool& tool : collection_->tools) {
+        std::error_code error;
+        const std::filesystem::path places[] = {program_folder_ / tool.file, program_folder_ / ".." / "Resources" / tool.file};
+        for (const std::filesystem::path& place : places) {
+            if (std::filesystem::is_regular_file(place, error)) {
+                found.push_back({&tool, std::filesystem::weakly_canonical(place, error)});
+                break;
+            }
+        }
+    }
+    if (found.empty()) {
+        return;
+    }
+    ui::gap(24);
+    ui::text("TOOLS", Font::Semibold, ui::size::kDetail, ui::palette().secondary);
+    ui::gap(10);
+    Card card(width);
+    bool first = true;
+    for (const auto& [tool, path] : found) {
+        if (!first) {
+            inset_separator(width);
+        }
+        first = false;
+        ImGui::PushID(tool->file);
+        row(width, tool->title, tool->detail, 150.0f, 36.0f, [&] {
+            if (ui::button(tool->button, Kind::Secondary, 150.0f)) {
+                SDL_OpenURL(file_url(path).c_str());
+            }
+        });
+        ImGui::PopID();
+    }
+    card.end();
+#else
+    (void)width;
+#endif
 }
 
 // Where the player's things are, and portable mode (folders.h)

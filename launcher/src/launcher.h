@@ -306,6 +306,16 @@ struct MultiMode {
     int next_code = 3;
 };
 
+// A file the collection ships beside its games that the player opens in another program (a page for the browser, say):
+// a row of the Games page's Tools card, whose button has the system open it. `file` is its name beside the programs
+// (Linux, Windows) or in the app's Resources (macOS); a row whose file is in neither is not shown. Not on Android.
+struct Tool {
+    const char *title;
+    const char *detail;
+    const char *button; // "Open"
+    const char *file;   // "diorama.html"
+};
+
 struct Collection {
     const char *subtitle = "";
     const char *intro = "";       // the Games page's first lines
@@ -336,6 +346,8 @@ struct Collection {
     const char *room = nullptr;
     int room_protocol = 0;
     const char *file_name = "game file"; // what a game's file is called, as the Online page says it ("ROM set")
+    // The Games page's Tools card, after the games (none: no card)
+    std::vector<Tool> tools;
     // The category of the features the Online page shows too, as the Features page does (what a match shows: the
     // ping...), or nullptr
     const char *online_features = nullptr;
