@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Each game's files on its page**: a collection's game page has a **This game's files** card (above its features):
+  the game's own folder (settings, saves, save states, logs) and a **Show** button that opens it. The collection's
+  Your files card on the Games page is as before (`App::folder_card` draws both).
 - **A choice the player can't use is left out** (`Description::choice_shown`): as `feature_shown`, but for one of
   a feature's choices (one that needs a file the player may not have, say). The Features page's dropdown leaves it out
   unless it is the one chosen now.
