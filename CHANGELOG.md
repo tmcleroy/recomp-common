@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **A choice the player can't use is left out** (`Description::choice_shown`): as `feature_shown`, but for one of
+  a feature's choices (one that needs a file the player may not have, say). The Features page's dropdown leaves it out
+  unless it is the one chosen now.
 - **Country flags in the waiting room**: **Your country** (under Let others invite me; none unless chosen,
   `[online] country`) is sent with the check-in as `country`, and a player whose service passes it back
   (`RoomPlayer::country`) has their flag and country beside their name. Every ISO country's flag, from flag-icons
