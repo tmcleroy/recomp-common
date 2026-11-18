@@ -111,7 +111,10 @@ int main(void) {
     CHECK(rmenu_speed(other) == 2);
     rmenu_buttons(other, RMENU_BACK, NULL);
     CHECK(rmenu_buttons(other, RMENU_DOWN, NULL) == RMENU_NONE);
-    CHECK(rmenu_buttons(other, RMENU_CONFIRM, NULL) == RMENU_RESET_OPTIONS);
+    CHECK(rmenu_buttons(other, RMENU_CONFIRM, NULL) == RMENU_NONE); /* "are you sure?": No first */
+    CHECK(rmenu_speed(other) == 2);
+    CHECK(rmenu_buttons(other, RMENU_DOWN, NULL) == RMENU_NONE);
+    CHECK(rmenu_buttons(other, RMENU_CONFIRM, NULL) == RMENU_RESET_OPTIONS); /* Yes */
     CHECK(rmenu_speed(other) == 1);
     rmenu_draw(other, pixels, 256, 224);
     rmenu_free(other);

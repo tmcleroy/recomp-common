@@ -392,8 +392,31 @@ int main() {
         both.Buttons(kMenuRight);
         CHECK(both.Speed() == 1);
         CHECK(Press(both, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::Reset);
-        CHECK(Press(both, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::ResetOptions);
+        // (Reset all options asks first: No is chosen at first, and Back, Left and No leave the options as they are)
+        CHECK(Press(both, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::None);
+        CHECK(both.Speed() == 1);
+        CHECK(both.Buttons(kMenuConfirm).kind == Menu::Chosen::None); // (No)
+        CHECK(both.Speed() == 1 && both.IsOpen());
+        CHECK(both.Buttons(kMenuConfirm).kind == Menu::Chosen::None); // (back on its row: asked again)
+        CHECK(both.Buttons(kMenuBack).kind == Menu::Chosen::None);    // (Back: No, the menu still open)
+        CHECK(both.IsOpen());
+        CHECK(both.Buttons(kMenuConfirm).kind == Menu::Chosen::None);
+        CHECK(both.Buttons(kMenuLeft).kind == Menu::Chosen::None); // (Left: No)
+        CHECK(both.Buttons(kMenuConfirm).kind == Menu::Chosen::None);
+        {
+            std::vector<uint32_t> asking(320 * 240);
+            both.Draw(asking.data(), 320, 240);
+        }
+        CHECK(Press(both, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::ResetOptions); // (Yes)
         CHECK(both.Speed() == 0);
+        // (after Yes, back on the Reset all options row: Down goes on to Quit game)
+        CHECK(Press(both, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::Quit);
+        // (closed while asking: asked again from the start the next time)
+        both.Open();
+        Press(both, {kMenuUp, kMenuConfirm});
+        both.Close();
+        both.Open();
+        CHECK(both.Buttons(kMenuConfirm).kind == Menu::Chosen::None);
         std::vector<uint32_t> picture(320 * 240);
         both.Draw(picture.data(), 320, 240);
     }
