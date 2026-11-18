@@ -29,6 +29,8 @@
 #include "i18n.h"
 #include "layout.h"
 #include "online.h"
+#include "countries.h"
+#include "flags.h"
 #include "steam.h"
 #include "ui.h"
 
@@ -1556,6 +1558,25 @@ bool App::feature_shown(const Slot& one, size_t feature) {
     return one.about->feature_shown(one.features[feature].name, good ? one.file_path : std::string());
 }
 
+std::vector<bool> App::hidden_choices(const Slot& one, size_t feature) {
+    const recomp::FeatureInfo& info = one.features[feature];
+    if (!one.about->choice_shown || info.choices.empty()) {
+        return {};
+    }
+    bool good;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        good = !one.checking && one.file.result == FileCheck::Result::Good;
+    }
+    std::vector<bool> hidden(info.choices.size(), false);
+    bool any = false;
+    for (size_t choice = 1; choice < info.choices.size(); choice++) {
+        hidden[choice] = !one.about->choice_shown(info.name, static_cast<int>(choice), good ? one.file_path : std::string(), one.folder);
+        any = any || hidden[choice];
+    }
+    return any ? hidden : std::vector<bool>{};
+}
+
 void App::load_features(Slot& one) {
     one.features.clear();
     one.features_error.clear();
@@ -2599,6 +2620,7 @@ std::vector<std::string> App::host_arguments(const launcher::Online& online) con
     if (online.arcade_argument && prefs_.get("online", "arcade") == "1") {
         args.push_back(online.arcade_argument);
     }
+    delay_arguments(args, online);
     return args;
 }
 
@@ -2611,6 +2633,14 @@ std::vector<std::string> App::join_arguments(const launcher::Online& online, con
     return args;
 }
 
+void App::delay_arguments(std::vector<std::string>& args, const launcher::Online& online) const {
+    const std::string delay = prefs_.get("online", "delay");
+    if (online.delay_argument && delay.size() == 1 && delay[0] >= '0' && delay[0] <= '8') {
+        args.push_back(online.delay_argument);
+        args.push_back(delay);
+    }
+}
+
 void App::arcade_row(float width, const launcher::Online& online) {
     if (online.spectators_argument) {
         inset_separator(width);
@@ -2619,6 +2649,24 @@ void App::arcade_row(float width, const launcher::Online& online) {
             42.0f, 24.0f, [&] {
                 if (ui::toggle("##online_spectators", on)) {
                     prefs_.set("online", "spectators", on ? "0" : "1");
+                    prefs_.save();
+                }
+            });
+    }
+    if (online.delay_argument) {
+        inset_separator(width);
+        const std::string delay = prefs_.get("online", "delay");
+        int chosen = delay.size() == 1 && delay[0] >= '0' && delay[0] <= '8' ? delay[0] - '0' : 2;
+        std::vector<std::string> frames;
+        for (int n = 0; n <= 8; n++) {
+            frames.push_back(n == 1 ? Tr("1 frame") : TrFormat("{} frames", {std::to_string(n)}));
+        }
+        row(width, "Input delay",
+            "Frames each player's controls wait in the matches you host; the other player gets the same. Fewer feel quicker "
+            "but leave more to guess on a slow connection, which shows as corrections. 2 unless you choose.",
+            190.0f, 36.0f, [&] {
+                if (ui::dropdown("##online_delay", frames, chosen, 190.0f)) {
+                    prefs_.set("online", "delay", std::to_string(chosen));
                     prefs_.save();
                 }
             });
@@ -3067,6 +3115,7 @@ void App::follow_room(bool here) {
     launcher::RoomCheckIn me;
     me.secret = prefs_.get("online", "room");
     me.name = online_name_;
+    me.country = launcher::flags::known(prefs_.get("online", "country"));
     for (size_t which = 0; which < slots_.size(); which++) {
         if (can_play(which) || (slots_[which]->game.running())) {
             me.games.push_back(room_game(which));
@@ -3085,6 +3134,46 @@ void App::follow_room(bool here) {
         at = comma + 1;
     }
     room_fetch_ = std::async(std::launch::async, [url, me] { return launcher::room_check_in(url, me); });
+}
+
+// The country the player shows with their name in the waiting room ([online] country), chosen from every ISO country
+// by name; none unless chosen. Their flag beside the choice.
+void App::country_row(float width) {
+    inset_separator(width);
+    static std::vector<int> order;  // (the countries by name, in this language)
+    static std::string order_language;
+    if (order.empty() || order_language != recomp::i18n::Current()) {
+        order_language = recomp::i18n::Current();
+        order.clear();
+        for (int n = 0; n < launcher::kFlagCount; n++) {
+            order.push_back(n);
+        }
+        std::sort(order.begin(), order.end(), [](int a, int b) {
+            return std::strcmp(Tr(launcher::kCountryFlags[a].name), Tr(launcher::kCountryFlags[b].name)) < 0;
+        });
+    }
+    std::vector<std::string> names = {Tr("Not shown")};
+    const int mine = launcher::flags::find(prefs_.get("online", "country"));
+    int chosen = 0;
+    for (size_t i = 0; i < order.size(); i++) {
+        names.push_back(Tr(launcher::kCountryFlags[order[i]].name));
+        if (order[i] == mine) {
+            chosen = static_cast<int>(i) + 1;
+        }
+    }
+    row(width, "Your country",
+        "Shown with your name, as a flag, to the others in the waiting room. Only if you choose one: nothing works it out.",
+        306.0f, 36.0f, [&] {
+            const ImVec2 at = ImGui::GetCursorScreenPos();
+            ImGui::SetCursorScreenPos(ImVec2(at.x, at.y + px(7)));
+            launcher::flags::draw(SDL_GetRenderer(window_), mine < 0 ? "" : launcher::kCountryFlags[mine].code, 22.0f);
+            ImGui::SetCursorScreenPos(ImVec2(at.x + px(46), at.y));
+            if (ui::dropdown("##online_country", names, chosen, 260.0f)) {
+                prefs_.set("online", "country", chosen == 0 ? "" : launcher::kCountryFlags[order[static_cast<size_t>(chosen) - 1]].code);
+                prefs_.save();
+                room_at_ = 0;  // (said at once)
+            }
+        });
 }
 
 void App::block(const std::string& id) {
@@ -3119,6 +3208,7 @@ std::vector<std::string> App::invite_arguments(const launcher::Online& online, c
     if (online.arcade_argument && prefs_.get("online", "arcade") == "1") {
         args.push_back(online.arcade_argument);
     }
+    delay_arguments(args, online);
     return args;
 }
 
@@ -3245,9 +3335,18 @@ void App::room_card(float width, const std::vector<size_t>& playable) {
         if (!named) {
             detail += std::string(detail.empty() ? "" : " ") + Tr("Give yourself a name above to invite.");
         }
+        const int country = launcher::flags::find(player.country);
+        if (country >= 0) {
+            detail = std::string(Tr(launcher::kCountryFlags[country].name)) + (detail.empty() ? "" : " · " + detail);
+        }
         const launcher::Online* online = which < slots_.size() ? &slots_[which]->about->online : nullptr;
         ImGui::PushID(static_cast<int>(n));
-        row(width, player.name.c_str(), detail.c_str(), 240.0f, 36.0f, [&] {
+        row(width, player.name.c_str(), detail.c_str(), 284.0f, 36.0f, [&] {
+            // (their flag before the buttons: 30 points wide, then 14 of room; the space kept when they have none)
+            const ImVec2 at = ImGui::GetCursorScreenPos();
+            ImGui::SetCursorScreenPos(ImVec2(at.x, at.y + px(7)));
+            launcher::flags::draw(SDL_GetRenderer(window_), player.country, 22.0f);
+            ImGui::SetCursorScreenPos(ImVec2(at.x + px(44), at.y));
             if (ui::button("Invite", Kind::Secondary, 130.0f, named && online && online->invite_argument && !room_.id.empty() && can_play(which))) {
                 play(which, invite_arguments(*online, player));
             }
@@ -3273,6 +3372,7 @@ void App::room_card(float width, const std::vector<size_t>& playable) {
                 room_at_ = 0;  // (said at once)
             }
         });
+    country_row(width);
     const std::string blocked = prefs_.get("online", "blocked");
     if (!blocked.empty()) {
         inset_separator(width);
@@ -3591,50 +3691,112 @@ void App::library_page(float width) {
             ui::text(text.c_str(), Font::Regular, ui::size::kDetail, p.danger, width);
         }
     }
+    tools_card(width);
     language_card(width);
     files_card(width);
 }
 
+// A collection's Tools (Collection::tools): each a file shipped beside the games, opened by the system
+void App::tools_card(float width) {
+#ifndef __ANDROID__
+    std::vector<std::pair<const launcher::Tool*, std::filesystem::path>> found;
+    for (const launcher::Tool& tool : collection_->tools) {
+        std::error_code error;
+        const std::filesystem::path places[] = {program_folder_ / tool.file, program_folder_ / ".." / "Resources" / tool.file};
+        for (const std::filesystem::path& place : places) {
+            if (std::filesystem::is_regular_file(place, error)) {
+                found.push_back({&tool, std::filesystem::weakly_canonical(place, error)});
+                break;
+            }
+        }
+    }
+    if (found.empty()) {
+        return;
+    }
+    ui::gap(24);
+    ui::text("TOOLS", Font::Semibold, ui::size::kDetail, ui::palette().secondary);
+    ui::gap(10);
+    Card card(width);
+    bool first = true;
+    for (const auto& [tool, path] : found) {
+        if (!first) {
+            inset_separator(width);
+        }
+        first = false;
+        ImGui::PushID(tool->file);
+        row(width, tool->title, tool->detail, 150.0f, 36.0f, [&] {
+            if (ui::button(tool->button, Kind::Secondary, 150.0f)) {
+                SDL_OpenURL(file_url(path).c_str());
+            }
+        });
+        ImGui::PopID();
+    }
+    card.end();
+#else
+    (void)width;
+#endif
+}
+
 // Where the player's things are, and portable mode (folders.h)
 void App::files_card(float width) {
-    const ui::Palette& p = ui::palette();
     const std::filesystem::path portable = recomp::PortableFolder(program_folder_);
     const bool home = std::getenv(LAUNCHER_HOME_ENV) && *std::getenv(LAUNCHER_HOME_ENV);
-    // (a collection's games each have a folder beside its own)
+    // (a collection's games each have a folder beside its own: on each game's page)
     const std::filesystem::path where = !portable.empty() && !home ? portable : folder_;
+    folder_card("YOUR FILES", where, !portable.empty() && !home, false, width);
+}
+
+// One game of a collection's folder, on its page: its settings, saves, save states and logs
+void App::game_files_card(const Slot& one, float width) {
+    const bool portable = !recomp::PortableFolder(program_folder_).empty();
+    folder_card("THIS GAME'S FILES", one.folder, portable, true, width);
+}
+
+// A folder of the player's, with a button that shows it, and what is kept there (`game`: one game's)
+void App::folder_card(const char* title, const std::filesystem::path& where, bool portable, bool game, float width) {
+    const ui::Palette& p = ui::palette();
     ui::gap(36);
-    ui::text("YOUR FILES", Font::Semibold, ui::size::kDetail, p.secondary);
+    ui::text(title, Font::Semibold, ui::size::kDetail, p.secondary);
     ui::gap(10);
     Card card(width);
 #ifdef __ANDROID__
+    (void)portable;
     // (no file manager to show it in: a computer sees it over USB)
     std::string shown = ui::fit_start(where.u8string(), Font::Regular, ui::size::kDetail, width - px(18 * 2));
     row(width, "Kept in the app's folder", shown.c_str(), 0.0f, 0.0f, [] {});
     card.end();
     ui::gap(10);
-    ui::text("Settings, save states, each board's memory, the logs, and the ROM sets you added. A computer sees them over USB, in "
-             "Android/data.",
+    ui::text(game ? "This game's settings, save states, its board's memory and its logs. A computer sees them over USB, in Android/data."
+                  : "Settings, save states, each board's memory, the logs, and the ROM sets you added. A computer sees them over USB, in "
+                    "Android/data.",
              Font::Regular, ui::size::kDetail, p.secondary, width);
 #else
     std::string shown = ui::fit_start(where.u8string(), Font::Regular, ui::size::kDetail, width - px(18 * 2 + 110 + 24));
-    row(width, !portable.empty() && !home ? "Kept with the launcher (portable)" : "Kept in your user folder", shown.c_str(), 110.0f, 36.0f, [&] {
+    row(width, portable ? "Kept with the launcher (portable)" : "Kept in your user folder", shown.c_str(), 110.0f, 36.0f, [&] {
         if (ui::button("Show", Kind::Secondary, 110.0f) && interactive_) {  // (pictures for a test open nothing)
+            std::error_code error;
+            std::filesystem::create_directories(where, error);  // (a game not played yet has none)
             SDL_OpenURL(file_url(where).c_str());
         }
     });
     card.end();
     ui::gap(10);
+    std::string about;
+    if (game) {
+        about = Tr("This game's settings, saves, save states and logs. Copy the folder to keep them, or send it with a report.");
+    } else {
 #ifdef __APPLE__
-    const char* beside = "beside the app (in the folder it is in)";
+        const char* beside = "beside the app (in the folder it is in)";
 #else
-    const char* beside = "beside the launcher";
+        const char* beside = "beside the launcher";
 #endif
-    const std::string about = !portable.empty() ? TrFormat("Settings, saves, save states and the logs. Take portable.txt away from {} to use "
-                                                           "your user folder again; nothing is moved.",
-                                                           {Tr(beside)})
-                                                : TrFormat("Settings, saves, save states and the logs. To keep them with the launcher instead, "
-                                                           "on a drive you carry, put a file named portable.txt {}.",
-                                                           {Tr(beside)});
+        about = portable ? TrFormat("Settings, saves, save states and the logs. Take portable.txt away from {} to use "
+                                    "your user folder again; nothing is moved.",
+                                    {Tr(beside)})
+                         : TrFormat("Settings, saves, save states and the logs. To keep them with the launcher instead, "
+                                    "on a drive you carry, put a file named portable.txt {}.",
+                                    {Tr(beside)});
+    }
     ui::text(about.c_str(), Font::Regular, ui::size::kDetail, p.secondary, width);
 #endif
 }
@@ -3776,6 +3938,7 @@ void App::title_page(size_t which, float width) {
         });
         card.end();
     }
+    game_files_card(one, width);  // (above its features, which can be a long list)
     ui::gap(36);
     ui::text("THIS GAME'S FEATURES", Font::Semibold, ui::size::kDetail, p.secondary);
     ui::gap(6);
@@ -3793,7 +3956,7 @@ void App::title_page(size_t which, float width) {
             return std::any_of(s.where.begin(), s.where.end(), [&](const auto& at) { return at.first == which && at.second == i; });
         });
         if (!shared && feature_shown(one, i)) {
-            rows.push_back({&one.features[i], values[i], "", i});
+            rows.push_back({&one.features[i], values[i], "", i, hidden_choices(one, i)});
         }
     }
     feature_list(
@@ -4326,7 +4489,7 @@ void App::features_page(float width) {
             if (!feature_shown(one, i)) {
                 continue;
             }
-            rows.push_back({&one.features[i], values[i], "", i});
+            rows.push_back({&one.features[i], values[i], "", i, hidden_choices(one, i)});
         }
         feature_list(
             width, rows, "No optional features yet.", [&](const FeatureRow& feature, int value) { set_feature(one, feature.index, value); },
@@ -4371,7 +4534,7 @@ void App::features_page(float width) {
         if (differ) {
             note += std::string(note.empty() ? "" : " ") + Tr("Not the same in every game yet: what you choose here is.");
         }
-        rows.push_back({&shared.info, value, note, i});
+        rows.push_back({&shared.info, value, note, i, hidden_choices(*slots_[where[0].first], where[0].second)});
     }
     // (the menu's choices: as the first game that has the feature has them, and set for every one)
     feature_list(
@@ -4514,9 +4677,19 @@ void App::feature_list(float width, const std::vector<FeatureRow>& rows, const c
             } else {
                 // One of several things: the first means off
                 int chosen = rows[i].value;
+                // (the choices the port leaves out are not listed, but for the one chosen now)
+                std::vector<std::string> labels;
+                std::vector<int> numbers;
+                for (size_t c = 0; c < feature.choices.size(); c++) {
+                    if (c >= rows[i].hidden.size() || !rows[i].hidden[c] || static_cast<int>(c) == chosen) {
+                        labels.push_back(feature.choices[c]);
+                        numbers.push_back(static_cast<int>(c));
+                    }
+                }
+                int at = static_cast<int>(std::find(numbers.begin(), numbers.end(), chosen) - numbers.begin());
                 row(width, feature.title.c_str(), detail.c_str(), 190.0f, 36.0f, [&] {
-                    if (ui::dropdown("##choice", feature.choices, chosen, 190.0f)) {
-                        set(rows[i], chosen);
+                    if (ui::dropdown("##choice", labels, at, 190.0f) && at >= 0 && at < static_cast<int>(numbers.size())) {
+                        set(rows[i], numbers[static_cast<size_t>(at)]);
                     }
                 });
                 if (feature.flags & recomp::kFeatureMenuChoices) {

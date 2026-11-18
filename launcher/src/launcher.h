@@ -84,6 +84,10 @@ struct Online {
     // Arcade while waiting: when the player switches it on ([online] arcade), Host adds `arcade_argument`, and the
     // host plays the game alone until the other player comes, who joins the game as it is. nullptr: no such switch.
     const char *arcade_argument = nullptr; // "--net-arcade"
+    // Input delay: the host's choice of frames each player's controls wait ([online] delay, 0 to 8, under Host), which
+    // Host and Invite add as `delay_argument N` when the player has chosen one (the game's own default otherwise); the
+    // game tells the one joining. nullptr: no such choice.
+    const char *delay_argument = nullptr; // "--net-delay"
     // Inviting a player from the waiting room (Collection::room): Host with `invite_argument THEIRS:MINE` (the two
     // players' ids) and `invite_name_argument NAME` (theirs), and the player's own name with `name_argument`; the match
     // isn't listed. nullptr: no Invite.
@@ -184,6 +188,11 @@ struct Description {
     // have, say); false leaves it off the Features page (and a collection's game page). `file` is the chosen file
     // once its check found it good, else "". Called while drawing: keep it quick (remember what `check` found).
     std::function<bool(const std::string &feature, const std::string &file)> feature_shown;
+    // Optional: whether one choice of a feature's is offered (by its number; 0, off, always is): one that needs
+    // something the player may not have, as feature_shown, but for a choice; given the game's file as feature_shown
+    // is, and the game's own folder (its settings, saves...). False leaves it out of the feature's dropdown, unless it
+    // is the one chosen now. Called while drawing: keep it quick.
+    std::function<bool(const std::string &feature, int choice, const std::string &file, const std::filesystem::path &folder)> choice_shown;
     // Optional: a game file near the program (a build inside the source tree), or ""
     std::function<std::string(const std::filesystem::path &program_folder)> find_nearby;
     // Optional: where in the folder the download was unpacked to (recomp::InstallFolder, folders.h) this game's
@@ -297,6 +306,16 @@ struct MultiMode {
     int next_code = 3;
 };
 
+// A file the collection ships beside its games that the player opens in another program (a page for the browser, say):
+// a row of the Games page's Tools card, whose button has the system open it. `file` is its name beside the programs
+// (Linux, Windows) or in the app's Resources (macOS); a row whose file is in neither is not shown. Not on Android.
+struct Tool {
+    const char *title;
+    const char *detail;
+    const char *button; // "Open"
+    const char *file;   // "diorama.html"
+};
+
 struct Collection {
     const char *subtitle = "";
     const char *intro = "";       // the Games page's first lines
@@ -327,6 +346,8 @@ struct Collection {
     const char *room = nullptr;
     int room_protocol = 0;
     const char *file_name = "game file"; // what a game's file is called, as the Online page says it ("ROM set")
+    // The Games page's Tools card, after the games (none: no card)
+    std::vector<Tool> tools;
     // The category of the features the Online page shows too, as the Features page does (what a match shows: the
     // ping...), or nullptr
     const char *online_features = nullptr;

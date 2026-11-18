@@ -122,10 +122,13 @@ private:
         int value;
         std::string note;  // ("": none)
         size_t index;      // in the list it came from
+        std::vector<bool> hidden = {};  // (its choices left out of the dropdown: the port's choice_shown; empty: none)
     };
 
     // A game's feature on the pages: the port's feature_shown, given the game's file if it was found good
     bool feature_shown(const Slot& one, size_t feature);
+    // ... and which of its choices the port's choice_shown leaves out (empty: none)
+    std::vector<bool> hidden_choices(const Slot& one, size_t feature);
     Slot& slot() { return *slots_[slot_]; }
     const Slot& slot() const { return *slots_[slot_]; }
     // The collection's games that have a page of their own (their program here, their file chosen and usable), in
@@ -261,6 +264,8 @@ private:
     // Join's: the match (a code or an address), and the player's name, which the game shows the other player
     std::vector<std::string> join_arguments(const launcher::Online& online, const std::string& match, bool watching = false) const;
     void arcade_row(float width, const launcher::Online& online);
+    // The input delay the player chose for the matches they host (`delay_argument`), added to Host's and Invite's
+    void delay_arguments(std::vector<std::string>& args, const launcher::Online& online) const;
     void lobby_card(size_t which, float width, bool ready);
     // The Online page (a collection with a lobby: Collection::lobby): host in the lobby in any game, and every game's
     // open matches
@@ -290,6 +295,7 @@ private:
     void live_label(const char* text, float width, bool fetching);
     // A card's only row while there is nothing in it: `text`, with a spinner while `looking`
     void empty_row(float width, const char* text, bool looking);
+    void country_row(float width);
     void room_card(float width, const std::vector<size_t>& playable);
     void invitations_card(float width);
     std::vector<std::string> invite_arguments(const launcher::Online& online, const launcher::RoomPlayer& player) const;
@@ -300,6 +306,9 @@ private:
     static const char* own_version();
     static bool version_matches(const std::string& version);
     void files_card(float width);
+    void game_files_card(const Slot& one, float width);
+    void folder_card(const char* title, const std::filesystem::path& where, bool portable, bool game, float width);
+    void tools_card(float width);
     void language_card(float width);
 
     // The Multi game page (a collection's MultiModes): a mode's choices and games, and the run of one

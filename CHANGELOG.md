@@ -8,6 +8,24 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 - **Compact menu** (`Menu::SetCompact`, `rmenu_setCompact`): the rows in the small letters and close together, for a
   screen of few lines (an arcade monitor at 224 or 240 lines), where the usual rows, twice as large, run into each other
   and only a few fit. Off unless the host asks.
+- **Each game's files on its page**: a collection's game page has a **This game's files** card (above its features):
+  the game's own folder (settings, saves, save states, logs) and a **Show** button that opens it. The collection's
+  Your files card on the Games page is as before (`App::folder_card` draws both).
+- **Tools** (`Collection::tools`): files a collection ships beside its games (a page for the browser, say), each a row
+  of a Tools card on the Games page whose button has the system open it. A row whose file is not there is not shown;
+  none on Android.
+- **A choice the player can't use is left out** (`Description::choice_shown`): as `feature_shown`, but for one of
+  a feature's choices (one that needs a file the player may not have, say). The Features page's dropdown leaves it out
+  unless it is the one chosen now.
+- **Country flags in the waiting room**: **Your country** (under Let others invite me; none unless chosen,
+  `[online] country`) is sent with the check-in as `country`, and a player whose service passes it back
+  (`RoomPlayer::country`) has their flag and country beside their name. Every ISO country's flag, from flag-icons
+  (MIT), in `launcher/flags.png` (made by `tools/flags.sh`); a port's service must keep and return `country` (an
+  older one ignores it). Ports that give out a launcher include `launcher/flags-LICENSE.txt`. Needs SDL 3.4 for the
+  pictures (a system SDL before it shows the country's name alone).
+- **Input delay for hosting**: a port that gives `Online::delay_argument` has an **Input delay** choice (0 to 8 frames)
+  under Host, which Host and Invite pass to the game once the player has chosen one (`[online] delay`). Other ports are
+  as before.
 - **Clear a game's file**: a game with a file chosen has a **Clear** button beside Choose… (on the Games list and the
   game's page), which forgets it (`launcher.ini`) and leaves the file where it is. Not while it is being checked or played.
 - `tools/sync-common.sh` dates the copy's files now, not at the commit (a build noticed none of them changed: a link
