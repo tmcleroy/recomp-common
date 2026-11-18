@@ -100,6 +100,21 @@ RMenuChosen rmenu_buttons(RMenu *menu, unsigned pressed, int *id) {
     }
 }
 
+RMenuChosen rmenu_mouse(RMenu *menu, int what, float x, float y, int *id) {
+    const recomp::Menu::Chosen chosen = menu->menu.Mouse(static_cast<recomp::MenuMouse>(what), x, y);
+    if (id) {
+        *id = chosen.id;
+    }
+    switch (chosen.kind) {
+    case recomp::Menu::Chosen::Save: return RMENU_SAVE;
+    case recomp::Menu::Chosen::Load: return RMENU_LOAD;
+    case recomp::Menu::Chosen::Quit: return RMENU_QUIT;
+    case recomp::Menu::Chosen::Action: return RMENU_ACTION;
+    case recomp::Menu::Chosen::Command: return RMENU_COMMAND;
+    default: return RMENU_NONE;
+    }
+}
+
 int rmenu_slot(const RMenu *menu) {
     return menu->menu.Slot();
 }

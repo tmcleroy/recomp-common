@@ -84,6 +84,10 @@ int main(void) {
   CHECK(pixels[0] != 0);
   rmenu_buttons(menu, RMENU_BACK, NULL);
   CHECK(!rmenu_isOpen(menu));
+  /* the mouse, from C: the right button closes the first page, as Back */
+  rmenu_open(menu);
+  rmenu_mouse(menu, RMENU_MOUSE_BACK, 0, 0, NULL);
+  CHECK(!rmenu_isOpen(menu));
   rmenu_free(menu);
   {
     /* the arrows held repeat: a press, then none until 18 frames, then one */

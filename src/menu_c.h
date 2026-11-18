@@ -93,6 +93,10 @@ bool rmenu_isOpen(const RMenu* menu);
 // Buttons newly pressed (RMENU_... bits). Returns what the host is to do; *id (may be NULL) is the row's id
 // for RMENU_ACTION and the command's place for RMENU_COMMAND. The host closes the menu if that went well.
 RMenuChosen rmenu_buttons(RMenu* menu, unsigned pressed, int* id);
+// The mouse (menu.h, Menu::Mouse): what it did (RMENU_MOUSE_...) at x, y in the pixels of the picture last drawn
+// over. Returns as rmenu_buttons does.
+enum { RMENU_MOUSE_MOVE, RMENU_MOUSE_CLICK, RMENU_MOUSE_BACK, RMENU_MOUSE_WHEEL_UP, RMENU_MOUSE_WHEEL_DOWN };
+RMenuChosen rmenu_mouse(RMenu* menu, int what, float x, float y, int* id);
 int rmenu_slot(const RMenu* menu);
 void rmenu_setSlot(RMenu* menu, int slot);
 // the speed chosen, by its place in the config's speeds (0: full speed)
