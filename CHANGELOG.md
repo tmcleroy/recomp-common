@@ -5,6 +5,15 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The standard layout** (`menu_layout.h`, `recomp::layout`): `Standard()` lays out the first page and puts the
+  standard pages where they belong, so every port's menu is the same: Online, Display, Game (Speed and Mute at its
+  top, Board, Cheats and Sound under it), Stage; Alternative modes (Training mode under it, Dummy under that); the
+  states; the other pages and the board's own rows; Reset all options, Reset game, Quit game, Resume. The pages'
+  names as constants, and `Speeds()` (1/8 to 8x, Full in the middle) with `SpeedOf()`.
+- **The menu's controls on SDL 3** (`menu_sdl.h`, `recomp::sdl`): the keys and buttons that open and close it
+  (`MenuKey`, `MenuButton`, `MenuChord` for Start and Back together), its buttons held on the keyboard and every
+  gamepad (`MenuHeld`, the left stick too), and the mouse's events made into `Menu::Mouse` (`MouseEvent`, given where
+  the menu's picture is on the window; touches the system makes into mouse events are left alone).
 - **Reset game and Reset all options rows** (`MenuRow::Reset`, `MenuRow::ResetOptions`; C `RMENU_ROW_RESET`,
   `RMENU_ROW_RESET_OPTIONS`): the same words in every port, beside Quit game. Choosing one returns `Chosen::Reset` or
   `Chosen::ResetOptions` for the host to carry out; Reset all options puts the speed back to full first. A row's
