@@ -35,7 +35,7 @@ void rmenu_configure(RMenu *menu, const RMenuConfig *c) {
         static const recomp::MenuRow::Kind kKinds[] = {
             recomp::MenuRow::Save, recomp::MenuRow::Load, recomp::MenuRow::Slot, recomp::MenuRow::Speed,
             recomp::MenuRow::Pages, recomp::MenuRow::Action, recomp::MenuRow::Quit, recomp::MenuRow::Resume,
-            recomp::MenuRow::Mute, recomp::MenuRow::Reset, recomp::MenuRow::ResetOptions,
+            recomp::MenuRow::Mute, recomp::MenuRow::Reset, recomp::MenuRow::ResetOptions, recomp::MenuRow::Page,
         };
         config.groups.back().push_back({kKinds[row.kind], row.id, Str(row.title), Str(row.description)});
     }
@@ -60,6 +60,15 @@ void rmenu_configure(RMenu *menu, const RMenuConfig *c) {
         config.speeds.push_back(Str(c->speeds[i]));
     }
     config.speedDescription = Str(c->speedDescription);
+    config.normalSpeed = c->normalSpeed;
+    for (int i = 0; i < c->pageCount; i++) {
+        const RMenuPage &page = c->pages[i];
+        recomp::MenuPage to{Str(page.name), Str(page.parent), Str(page.description)};
+        if (page.speedAndMute) {
+            to.rows = {recomp::MenuRow::Speed, recomp::MenuRow::Mute};
+        }
+        config.pages.push_back(std::move(to));
+    }
     if (c->confirmName) {
         config.confirmName = c->confirmName;
     }

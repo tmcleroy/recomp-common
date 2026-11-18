@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Pages from C** (`menu_c.h`): `RMenuPage` (a page's parent, its row's words, Speed and Mute at its top),
+  `RMENU_ROW_PAGE` (a page's row on the first page) and `RMenuConfig::normalSpeed`, so a C port can have the standard
+  layout. A config with none of them is as before.
 - **The standard layout** (`menu_layout.h`, `recomp::layout`): `Standard()` lays out the first page and puts the
   standard pages where they belong, so every port's menu is the same: Online, Display, Game (Speed and Mute at its
   top, Board, Cheats and Sound under it), Stage; Alternative modes (Training mode under it, Dummy under that); the
