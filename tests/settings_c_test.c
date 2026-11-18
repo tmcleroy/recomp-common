@@ -45,6 +45,12 @@ int main(void) {
   CHECK(rsettings_get(path, "features", "preset", text, sizeof text) && !strcmp(text, "custom"));
   CHECK(!rsettings_get(path, "sound", "nothing", text, sizeof text) && !text[0]);
 
+  /* back to the enhanced preset: the features' own values out of the file, the sound's kept */
+  CHECK(rsettings_set_preset(path, features, 4, "enhanced"));
+  CHECK(rsettings_get(path, "features", "preset", text, sizeof text) && !strcmp(text, "enhanced"));
+  CHECK(!rsettings_get(path, "features", "lives", text, sizeof text));
+  CHECK(rsettings_get(path, "sound", "volume", text, sizeof text) && !strcmp(text, "7"));
+
   rsettings_list_features(features, 4, stdout);
   remove(path);
   puts("settings_c_test: all as it should be");

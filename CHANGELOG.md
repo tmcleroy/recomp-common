@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Reset all options asks first**: choosing it shows "Reset all options: are you sure?" with **No** (chosen at
+  first) and **Yes**; only Yes resets. Back, Left, No and closing the menu leave every option as it is. A tester reset
+  their settings by accident, meaning Reset game, the row beside it. A page's name too wide for the panel (a screen of
+  224 lines) is drawn in the small letters.
+- `rsettings_set_preset` (settings_c.h): a preset chosen from C, as `SetPreset`, for a C port's Reset all options.
 - **Pages from C** (`menu_c.h`): `RMenuPage` (a page's parent, its row's words, Speed and Mute at its top),
   `RMENU_ROW_PAGE` (a page's row on the first page) and `RMenuConfig::normalSpeed`, so a C port can have the standard
   layout. A config with none of them is as before.
