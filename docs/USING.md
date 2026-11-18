@@ -139,6 +139,22 @@ These are not enforced by the library; they are what makes every port feel the s
 - **A test flag** that opens the menu at a frame, presses given buttons and writes the picture
   (`--menu FRAME:KEYS[:shot.png]`), so the menu can be checked without a window.
 
+## An arcade monitor (SDL 3)
+
+`src/arcade_sdl.h` (header only) is what an arcade port needs for a CRT driven at the board's own rates (CRT
+Emudriver, or a custom resolution): full screen in exactly the board's resolution, or in a *super resolution* of the
+board's lines and 1920 columns or more (240 lines where the card has none of 224), at the refresh nearest the board's;
+and a choice of screen. The port gives it the board (`ArcadeBoard`: columns, lines, frame rate) and the player's
+choices, which it keeps as three features under an **Arcade monitor** heading, the first two set on the launcher:
+
+- *Full screen resolution* (`Off`, `ArcadeBoardName(board)`, `Super resolution`; `ArcadeDescription(board)`):
+  `SetFullscreenMode` when the window is made, `ArcadeFollow::Step` each frame.
+- *Screen* (Main, Second, Third, Fourth; `kScreenDescription`): `ChosenDisplay`, `CentreOnScreen`.
+- *Compact menu* (`kCompactDescription`): `Menu::SetCompact`, on by itself while `OnArcadeMode`.
+
+On an arcade mode the picture fills the screen (the monitor gives it its shape), with `ArcadeLines` keeping its lines
+one for one on a mode of more lines; and a vertical game is shown as the board sends it, for a monitor on its side.
+
 ## Text on its own
 
 `text.h` (namespace `recomp::text`) is a header with no dependencies: a `Canvas` over a pixel

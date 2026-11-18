@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **An arcade monitor** (`arcade_sdl.h`, SDL 3, header only): cps2recomp's full screen at the board's own resolution
+  or a super resolution (the board's lines and 1920 columns or more; 240 lines where the card has none of fewer), at
+  the refresh nearest the board's, and the screen to play on, for every arcade port. `ArcadeModeIndex` (the choice of
+  mode, pure, tested on made-up lists of modes), `ChosenDisplay`, `SetFullscreenMode`, `CentreOnScreen`,
+  `OnArcadeMode`, `ArcadeLines`, `ArcadeFollow`, and the features' words. See docs/USING.md.
 - **Each game's files on its page**: a collection's game page has a **This game's files** card (above its features):
   the game's own folder (settings, saves, save states, logs) and a **Show** button that opens it. The collection's
   Your files card on the Games page is as before (`App::folder_card` draws both).
