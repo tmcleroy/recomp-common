@@ -52,11 +52,14 @@ struct MenuRow {
         Quit,   // "Quit game": Chosen::Quit
         Resume, // closes the menu
         Mute,   // "Mute": off or on, through MenuConfig::muted and setMuted (left out without them)
+        Reset,  // "Reset game": Chosen::Reset (the host starts the game again, as if switched off and on)
+        ResetOptions, // "Reset all options": the speed back to full, and Chosen::ResetOptions (the host puts every
+                      // option back as it first was)
     };
     Kind kind;
     int id;                  // Action: handed back when chosen
     std::string title;       // Action; Page: the page's name
-    std::string description; // Action
+    std::string description; // Action; Reset, ResetOptions: in place of the menu's own words (what they leave as it is, say)
     MenuRow(Kind kind, int id = 0, std::string title = {}, std::string description = {})
         : kind(kind), id(id), title(std::move(title)), description(std::move(description)) {}
 };
@@ -137,7 +140,7 @@ struct MenuRepeat {
 class Menu {
 public:
     struct Chosen {
-        enum Kind { None, Save, Load, Quit, Action, Command } kind = None;
+        enum Kind { None, Save, Load, Quit, Action, Command, Reset, ResetOptions } kind = None;
         int id = 0; // Action: the row's id. Command: its place in MenuConfig::commands.
     };
 

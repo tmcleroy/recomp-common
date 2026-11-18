@@ -35,7 +35,7 @@ void rmenu_configure(RMenu *menu, const RMenuConfig *c) {
         static const recomp::MenuRow::Kind kKinds[] = {
             recomp::MenuRow::Save, recomp::MenuRow::Load, recomp::MenuRow::Slot, recomp::MenuRow::Speed,
             recomp::MenuRow::Pages, recomp::MenuRow::Action, recomp::MenuRow::Quit, recomp::MenuRow::Resume,
-            recomp::MenuRow::Mute,
+            recomp::MenuRow::Mute, recomp::MenuRow::Reset, recomp::MenuRow::ResetOptions,
         };
         config.groups.back().push_back({kKinds[row.kind], row.id, Str(row.title), Str(row.description)});
     }
@@ -96,6 +96,8 @@ RMenuChosen rmenu_buttons(RMenu *menu, unsigned pressed, int *id) {
     case recomp::Menu::Chosen::Quit: return RMENU_QUIT;
     case recomp::Menu::Chosen::Action: return RMENU_ACTION;
     case recomp::Menu::Chosen::Command: return RMENU_COMMAND;
+    case recomp::Menu::Chosen::Reset: return RMENU_RESET;
+    case recomp::Menu::Chosen::ResetOptions: return RMENU_RESET_OPTIONS;
     default: return RMENU_NONE;
     }
 }
@@ -111,6 +113,8 @@ RMenuChosen rmenu_mouse(RMenu *menu, int what, float x, float y, int *id) {
     case recomp::Menu::Chosen::Quit: return RMENU_QUIT;
     case recomp::Menu::Chosen::Action: return RMENU_ACTION;
     case recomp::Menu::Chosen::Command: return RMENU_COMMAND;
+    case recomp::Menu::Chosen::Reset: return RMENU_RESET;
+    case recomp::Menu::Chosen::ResetOptions: return RMENU_RESET_OPTIONS;
     default: return RMENU_NONE;
     }
 }

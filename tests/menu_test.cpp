@@ -382,6 +382,21 @@ int main() {
         CHECK(!mouse.IsOpen());
         CHECK(mouse.Mouse(MenuMouse::Click, 320, first).kind == Menu::Chosen::None); // (closed: nothing)
     }
+    {
+        // Reset game and Reset all options: the host's to do; Reset all options puts the speed back to full first
+        MenuConfig resets = Config();
+        resets.groups = {{{MenuRow::Speed}, {MenuRow::Reset}, {MenuRow::ResetOptions, 0, "", "Mine."}, {MenuRow::Quit}}};
+        Menu both;
+        both.Configure(std::move(resets));
+        both.Open();
+        both.Buttons(kMenuRight);
+        CHECK(both.Speed() == 1);
+        CHECK(Press(both, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::Reset);
+        CHECK(Press(both, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::ResetOptions);
+        CHECK(both.Speed() == 0);
+        std::vector<uint32_t> picture(320 * 240);
+        both.Draw(picture.data(), 320, 240);
+    }
     puts("menu_test: all as it should be");
     return 0;
 }

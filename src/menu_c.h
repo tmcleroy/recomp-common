@@ -34,6 +34,8 @@ typedef enum {
   RMENU_ROW_QUIT,    // "Quit game": RMENU_QUIT
   RMENU_ROW_RESUME,  // closes the menu
   RMENU_ROW_MUTE,    // "Sound": on or muted, through the config's muted and setMuted (left out without them)
+  RMENU_ROW_RESET,   // "Reset game": RMENU_RESET
+  RMENU_ROW_RESET_OPTIONS,  // "Reset all options": the speed to full, and RMENU_RESET_OPTIONS
 } RMenuRowKind;
 
 // A row of the first page. Rows with the same `group` are together; a line is drawn where it changes.
@@ -82,7 +84,7 @@ typedef struct {
   void (*setMuted)(void* user, int muted);
 } RMenuConfig;
 
-typedef enum { RMENU_NONE, RMENU_SAVE, RMENU_LOAD, RMENU_QUIT, RMENU_ACTION, RMENU_COMMAND } RMenuChosen;
+typedef enum { RMENU_NONE, RMENU_SAVE, RMENU_LOAD, RMENU_QUIT, RMENU_ACTION, RMENU_COMMAND, RMENU_RESET, RMENU_RESET_OPTIONS } RMenuChosen;
 
 RMenu* rmenu_new(void);
 void rmenu_free(RMenu* menu);

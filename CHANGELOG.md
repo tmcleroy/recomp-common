@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Reset game and Reset all options rows** (`MenuRow::Reset`, `MenuRow::ResetOptions`; C `RMENU_ROW_RESET`,
+  `RMENU_ROW_RESET_OPTIONS`): the same words in every port, beside Quit game. Choosing one returns `Chosen::Reset` or
+  `Chosen::ResetOptions` for the host to carry out; Reset all options puts the speed back to full first. A row's
+  `description` replaces the menu's own when the port has more to say.
 - **The mouse in the in-game menu** (`Menu::Mouse`, C `rmenu_mouse`): the host passes where the mouse is, in the pixels of
   the picture it last drew the menu over, and what it did. Over a row chooses it; a left click does what Confirm does
   there; the right button is Back; the wheel is Up and Down. A click away from the rows does nothing. Hosts that pass
