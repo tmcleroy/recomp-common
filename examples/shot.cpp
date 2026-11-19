@@ -18,7 +18,7 @@ using namespace recomp;
 
 namespace {
     // What a port's own rows are called here
-    enum { kInsertCoin = 1, kReset };
+    enum { kInsertCoin = 1 };
 
     std::map<size_t, int> g_values = {{0, 1}}; // the features' values: a port keeps these in its settings
 
@@ -27,7 +27,7 @@ namespace {
         config.groups = {
             {{MenuRow::Save}, {MenuRow::Load}, {MenuRow::Slot}},
             {{MenuRow::Pages}, {MenuRow::Speed}, {MenuRow::Action, kInsertCoin, "Insert coin", "Puts a coin in the first slot."}},
-            {{MenuRow::Action, kReset, "Reset", "Starts the machine again, as if switched off and on."}, {MenuRow::Quit}, {MenuRow::Resume}},
+            {{MenuRow::ResetOptions}, {MenuRow::Reset}, {MenuRow::Quit}, {MenuRow::Resume}},
         };
         config.features = {
             {"Cheats", "Endless time", "The round's clock stands still."},
@@ -76,6 +76,8 @@ int main(int argc, char **argv) {
         case Menu::Chosen::Action: printf("the port's own row %d\n", chosen.id); break;
         case Menu::Chosen::Command: printf("the game's command %d\n", chosen.id); break;
         case Menu::Chosen::Quit: printf("quit\n"); return 0;
+        case Menu::Chosen::Reset: printf("reset the game\n"); break;
+        case Menu::Chosen::ResetOptions: printf("every option back as it first was\n"); break;
         case Menu::Chosen::None: break;
         }
     }

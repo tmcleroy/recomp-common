@@ -10,6 +10,34 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   the refresh nearest the board's, and the screen to play on, for every arcade port. `ArcadeModeIndex` (the choice of
   mode, pure, tested on made-up lists of modes), `ChosenDisplay`, `SetFullscreenMode`, `CentreOnScreen`,
   `OnArcadeMode`, `ArcadeLines`, `ArcadeFollow`, and the features' words. See docs/USING.md.
+- **Reset all options asks first**: choosing it shows "Reset all options: are you sure?" with **No** (chosen at
+  first) and **Yes**; only Yes resets. Back, Left, No and closing the menu leave every option as it is. A tester reset
+  their settings by accident, meaning Reset game, the row beside it. A page's name too wide for the panel (a screen of
+  224 lines) is drawn in the small letters.
+- `rsettings_set_preset` (settings_c.h): a preset chosen from C, as `SetPreset`, for a C port's Reset all options.
+- **Pages from C** (`menu_c.h`): `RMenuPage` (a page's parent, its row's words, Speed and Mute at its top),
+  `RMENU_ROW_PAGE` (a page's row on the first page) and `RMenuConfig::normalSpeed`, so a C port can have the standard
+  layout. A config with none of them is as before.
+- **The standard layout** (`menu_layout.h`, `recomp::layout`): `Standard()` lays out the first page and puts the
+  standard pages where they belong, so every port's menu is the same: Online, Display, Game (Speed and Mute at its
+  top, Board, Cheats and Sound under it), Stage; Alternative modes (Training mode under it, Dummy under that); the
+  states; the other pages and the board's own rows; Reset all options, Reset game, Quit game, Resume. The pages'
+  names as constants, and `Speeds()` (1/8 to 8x, Full in the middle) with `SpeedOf()`.
+- **The menu's controls on SDL 3** (`menu_sdl.h`, `recomp::sdl`): the keys and buttons that open and close it
+  (`MenuKey`, `MenuButton`, `MenuChord` for Start and Back together), its buttons held on the keyboard and every
+  gamepad (`MenuHeld`, the left stick too), and the mouse's events made into `Menu::Mouse` (`MouseEvent`, given where
+  the menu's picture is on the window; touches the system makes into mouse events are left alone).
+- **Reset game and Reset all options rows** (`MenuRow::Reset`, `MenuRow::ResetOptions`; C `RMENU_ROW_RESET`,
+  `RMENU_ROW_RESET_OPTIONS`): the same words in every port, beside Quit game. Choosing one returns `Chosen::Reset` or
+  `Chosen::ResetOptions` for the host to carry out; Reset all options puts the speed back to full first. A row's
+  `description` replaces the menu's own when the port has more to say.
+- **The mouse in the in-game menu** (`Menu::Mouse`, C `rmenu_mouse`): the host passes where the mouse is, in the pixels of
+  the picture it last drew the menu over, and what it did. Over a row chooses it; a left click does what Confirm does
+  there; the right button is Back; the wheel is Up and Down. A click away from the rows does nothing. Hosts that pass
+  nothing are as before.
+- **Compact menu** (`Menu::SetCompact`, `rmenu_setCompact`): the rows in the small letters and close together, for a
+  screen of few lines (an arcade monitor at 224 or 240 lines), where the usual rows, twice as large, run into each other
+  and only a few fit. Off unless the host asks.
 - **Each game's files on its page**: a collection's game page has a **This game's files** card (above its features):
   the game's own folder (settings, saves, save states, logs) and a **Show** button that opens it. The collection's
   Your files card on the Games page is as before (`App::folder_card` draws both).
