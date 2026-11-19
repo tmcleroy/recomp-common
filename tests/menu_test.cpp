@@ -206,14 +206,15 @@ int main() {
         for (int width : {1, 256, 320, 896, 1920}) {
             const size_t count = static_cast<size_t>(width) * height;
             std::vector<uint32_t> pixels(count + 2 * 64, 0x12345678);
-            for (int page = 0; page < 2; page++) {
+            for (int page = 0; page < 4; page++) {
                 Menu drawn;
                 drawn.Configure(Config());
+                drawn.SetCompact(page >= 2); // (and compact, for a screen of few lines)
                 drawn.Open();
-                if (page) {
+                if (page & 1) {
                     Press(drawn, {kMenuDown, kMenuDown, kMenuDown, kMenuDown, kMenuConfirm});
                 }
-                drawn.Note(page ? "" : "Nothing is kept in slot 1.");
+                drawn.Note(page & 1 ? "" : "Nothing is kept in slot 1.");
                 drawn.Draw(pixels.data() + 64, width, height);
             }
             for (size_t i = 0; i < 64; i++) {

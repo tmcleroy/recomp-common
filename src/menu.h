@@ -166,6 +166,15 @@ public:
     }
     // Over a picture of 32-bit pixels (red in the low byte)
     void Draw(uint32_t *pixels, int width, int height) const;
+    // Compact: the rows in the small letters and close together, for a screen of few lines (an arcade monitor at its
+    // 224 or 240): the page's rows all on it at once where they fit, and letters that never run into the next row's.
+    // Off: the rows in letters twice as large (the usual)
+    void SetCompact(bool compact) {
+        m_compact = compact;
+    }
+    bool Compact() const {
+        return m_compact;
+    }
 
 private:
     struct Row {
@@ -191,6 +200,7 @@ private:
     int m_speed = -1; // (-1: not chosen yet, so full speed)
     int m_slot = 1;
     std::string m_note;
+    bool m_compact = false;
 };
 
 } // namespace recomp
