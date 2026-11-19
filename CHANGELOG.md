@@ -30,6 +30,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   the picture it last drew the menu over, and what it did. Over a row chooses it; a left click does what Confirm does
   there; the right button is Back; the wheel is Up and Down. A click away from the rows does nothing. Hosts that pass
   nothing are as before.
+- **Compact menu** (`Menu::SetCompact`, `rmenu_setCompact`): the rows in the small letters and close together, for a
+  screen of few lines (an arcade monitor at 224 or 240 lines), where the usual rows, twice as large, run into each other
+  and only a few fit. Off unless the host asks.
 - **Each game's files on its page**: a collection's game page has a **This game's files** card (above its features):
   the game's own folder (settings, saves, save states, logs) and a **Show** button that opens it. The collection's
   Your files card on the Games page is as before (`App::folder_card` draws both).
