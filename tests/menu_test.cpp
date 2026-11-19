@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <map>
+#include <vector>
 
 using namespace recomp;
 
@@ -342,6 +343,61 @@ int main() {
         g_values.clear();
     }
 
+    {
+        // The mouse: over a row chooses it, a click does what Confirm does there, the right button is Back, the wheel
+        // Up and Down; away from the rows nothing (in the pixels of the picture last drawn over)
+        Menu mouse;
+        mouse.Configure(Config());
+        mouse.Open();
+        std::vector<uint32_t> picture(640 * 480);
+        mouse.Draw(picture.data(), 640, 480);
+        CHECK(mouse.Mouse(MenuMouse::Click, 2, 2).kind == Menu::Chosen::None); // (the corner: no row)
+        // (where Save and Load are: down the middle of the picture, a click on each line in a menu of its own)
+        float first = -1, second = -1;
+        for (float y = 0; y < 480 && second < 0; y += 1) {
+            Menu probe;
+            probe.Configure(Config());
+            probe.Open();
+            probe.Draw(picture.data(), 640, 480);
+            const Menu::Chosen::Kind kind = probe.Mouse(MenuMouse::Click, 320, y).kind;
+            if (first < 0 && kind == Menu::Chosen::Save) {
+                first = y;
+            } else if (first >= 0 && kind == Menu::Chosen::Load) {
+                second = y;
+            }
+        }
+        CHECK(first >= 0 && second > first);
+        mouse.Draw(picture.data(), 640, 480);
+        CHECK(mouse.Mouse(MenuMouse::Click, 320, second).kind == Menu::Chosen::Load);
+        CHECK(mouse.Mouse(MenuMouse::Click, 320, first).kind == Menu::Chosen::Save);
+        // (the wheel: from Save down to Load and back)
+        mouse.Mouse(MenuMouse::WheelDown, 0, 0);
+        CHECK(mouse.Buttons(kMenuConfirm).kind == Menu::Chosen::Load);
+        mouse.Mouse(MenuMouse::WheelUp, 0, 0);
+        CHECK(mouse.Buttons(kMenuConfirm).kind == Menu::Chosen::Save);
+        // (Move alone chooses, does nothing more)
+        CHECK(mouse.Mouse(MenuMouse::Move, 320, second).kind == Menu::Chosen::None);
+        CHECK(mouse.Buttons(kMenuConfirm).kind == Menu::Chosen::Load);
+        // (the right button on the first page closes, as Back)
+        mouse.Mouse(MenuMouse::Back, 0, 0);
+        CHECK(!mouse.IsOpen());
+        CHECK(mouse.Mouse(MenuMouse::Click, 320, first).kind == Menu::Chosen::None); // (closed: nothing)
+    }
+    {
+        // Reset game and Reset all options: the host's to do; Reset all options puts the speed back to full first
+        MenuConfig resets = Config();
+        resets.groups = {{{MenuRow::Speed}, {MenuRow::Reset}, {MenuRow::ResetOptions, 0, "", "Mine."}, {MenuRow::Quit}}};
+        Menu both;
+        both.Configure(std::move(resets));
+        both.Open();
+        both.Buttons(kMenuRight);
+        CHECK(both.Speed() == 1);
+        CHECK(Press(both, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::Reset);
+        CHECK(Press(both, {kMenuDown, kMenuConfirm}).kind == Menu::Chosen::ResetOptions);
+        CHECK(both.Speed() == 0);
+        std::vector<uint32_t> picture(320 * 240);
+        both.Draw(picture.data(), 320, 240);
+    }
     puts("menu_test: all as it should be");
     return 0;
 }

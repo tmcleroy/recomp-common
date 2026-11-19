@@ -127,14 +127,35 @@ pointers and `user`. `tests/c_test.c` is a complete example.
 
 ## What a port is expected to do
 
-These are not enforced by the library; they are what makes every port feel the same.
+These make every port feel the same. Two headers do most of it: `menu_layout.h` lays the menu out, and
+`menu_sdl.h` (for a port on SDL 3) gives it its controls.
 
-- **Esc, F1 and a gamepad button open and close the menu.** Nothing but the menu's "Quit game" row
-  (and closing the window) ends the game; Esc does not.
-- **The first page** is save states, then what the game offers, then Reset / Quit game / Resume,
-  with Resume last.
-- **The game stands still** while the menu is open, and buttons held as it closes do not reach the
-  game until they are let go.
+- **The standard layout** (`recomp::layout::Standard`, after the features, commands and the port's own pages):
+  - Online > · Display > · Game > (and Stage >, Replays >)
+  - Alternative modes > (Training mode > Dummy >, and the other ways to play)
+  - Save state · Load state · Slot
+  - The other pages · Insert coin · Player 2 joins · Test menu (those the board has)
+  - Reset all options · Reset game · Quit game · Resume
+
+  Speed and Mute are at the top of the Game page; Board, Cheats and Sound are under it. Categories take the names in
+  `menu_layout.h` (`kDisplay`, `kCheats`, `kTraining`, ...). The speeds are `layout::Speeds` (1/8 to 8x, Full in the
+  middle). Every port has Reset game, Reset all options and Quit game.
+- **The controls** (`menu_sdl.h`):
+  - Esc, F1, a phone's Back, Tab (when the game hasn't got it), a gamepad's Guide, its left stick's click, and Start
+    and Back together open the menu and close it, from any page.
+  - In the menu, the arrows, the d-pad and the left stick choose, and held they go on (`MenuRepeat`). Enter, Space
+    and A confirm. Backspace and B go back a page.
+  - The mouse: over a row chooses it, a click confirms, the right button goes back, the wheel goes up and down
+    (`sdl::MouseEvent`, given where the menu's picture is on the window).
+
+  Nothing but the menu's "Quit game" row (and closing the window) ends the game; Esc does not.
+- **The keys while playing:**
+  - F5 saves the state, F9 loads it, F6 and F7 choose the slot.
+  - P stops the game and starts it again; O goes on by one frame; - and = change the speed.
+  - F11 or Alt+Enter: full screen. F12: a screenshot.
+  - Backspace: start over (in training). F2: the board's test switch; 9: its service switch.
+- **The game stands still** while the menu is open, and buttons held as it closes do not reach the game until they
+  are let go.
 - **With the menu closed nothing changes:** no cost per frame, no change to input timing.
 - **A test flag** that opens the menu at a frame, presses given buttons and writes the picture
   (`--menu FRAME:KEYS[:shot.png]`), so the menu can be checked without a window.

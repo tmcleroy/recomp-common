@@ -86,6 +86,42 @@ int main(void) {
   CHECK(pixels[0] != 0);
   rmenu_buttons(menu, RMENU_BACK, NULL);
   CHECK(!rmenu_isOpen(menu));
+  {
+    /* pages from C: Cheats under Game, whose top has Speed; a Game row on the first page */
+    static const RMenuRow pageRows[] = {
+      {RMENU_ROW_PAGE, 0, 0, "Game", NULL},
+      {RMENU_ROW_RESET_OPTIONS, 1, 0, NULL, NULL},
+    };
+    static const RMenuPage pages[] = {{"Game", "", NULL, 1}, {"Cheats", "Game", "Mine.", 0}};
+    static const char* const speeds[] = {"1/2", "Full", "2x"};
+    RMenuConfig paged = {0};
+    paged.rows = pageRows;
+    paged.rowCount = 2;
+    paged.features = features;
+    paged.featureCount = 1;
+    paged.speeds = speeds;
+    paged.speedCount = 3;
+    paged.normalSpeed = 1;
+    paged.pages = pages;
+    paged.pageCount = 2;
+    RMenu* other = rmenu_new();
+    rmenu_configure(other, &paged);
+    CHECK(rmenu_speed(other) == 1);
+    rmenu_open(other);
+    rmenu_buttons(other, RMENU_CONFIRM, NULL); /* into Game: Speed first */
+    rmenu_buttons(other, RMENU_RIGHT, NULL);
+    CHECK(rmenu_speed(other) == 2);
+    rmenu_buttons(other, RMENU_BACK, NULL);
+    CHECK(rmenu_buttons(other, RMENU_DOWN, NULL) == RMENU_NONE);
+    CHECK(rmenu_buttons(other, RMENU_CONFIRM, NULL) == RMENU_RESET_OPTIONS);
+    CHECK(rmenu_speed(other) == 1);
+    rmenu_draw(other, pixels, 256, 224);
+    rmenu_free(other);
+  }
+  /* the mouse, from C: the right button closes the first page, as Back */
+  rmenu_open(menu);
+  rmenu_mouse(menu, RMENU_MOUSE_BACK, 0, 0, NULL);
+  CHECK(!rmenu_isOpen(menu));
   rmenu_free(menu);
   {
     /* the arrows held repeat: a press, then none until 18 frames, then one */
