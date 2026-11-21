@@ -7,7 +7,7 @@ CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Wpedantic -Isrc
 B := build
 
 .PHONY: test example launcher launcher-shots audit clean
-test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings_c_test $(B)/folders_test $(B)/proxy_test $(B)/update_test $(B)/online_test $(B)/layout_test
+test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings_c_test $(B)/folders_test $(B)/proxy_test $(B)/update_test $(B)/online_test $(B)/layout_test $(B)/curl_args_test
 	@$(B)/menu_test
 	@$(B)/i18n_test
 	@$(B)/c_test
@@ -18,6 +18,7 @@ test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings
 	@$(B)/update_test
 	@$(B)/online_test
 	@$(B)/layout_test
+	@$(B)/curl_args_test
 	@if pkg-config --exists sdl3 2> /dev/null; then $(MAKE) -s $(B)/menu_sdl_test && $(B)/menu_sdl_test; else echo "menu_sdl_test: skipped (no SDL 3)"; fi
 	@if pkg-config --exists sdl3 2> /dev/null; then $(MAKE) -s $(B)/arcade_sdl_test && $(B)/arcade_sdl_test; else echo "arcade_sdl_test: skipped (no SDL 3)"; fi
 
@@ -29,6 +30,11 @@ $(B)/arcade_sdl_test: tests/arcade_sdl_test.cpp src/arcade_sdl.h
 $(B)/menu_test: tests/menu_test.cpp src/menu.cpp src/menu.h src/text.h src/i18n.h src/i18n_pt_br.h src/i18n_es.h
 	@mkdir -p $(B)
 	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined tests/menu_test.cpp src/menu.cpp -o $@
+
+# curl's arguments, as Windows' own requests read them (launcher/src/winhttp_curl.h)
+$(B)/curl_args_test: tests/curl_args_test.cpp launcher/src/winhttp_curl.h
+	@mkdir -p $(B)
+	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined tests/curl_args_test.cpp -o $@
 
 # The standard layout (menu_layout.h)
 $(B)/layout_test: tests/layout_test.cpp src/menu_layout.h src/menu.cpp src/menu.h
