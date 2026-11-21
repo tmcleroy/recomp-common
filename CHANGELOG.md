@@ -5,6 +5,12 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **A smaller font** (`text.h`): `kSmallFont`, 3x5 dots in a 4-dot cell (capitals, digits and ASCII's signs; small
+  letters drawn as capitals), with `Canvas::SmallText` and `SmallTextWidth`, for a readout over the picture that must
+  not cover it (cps2recomp's and sf3comp's input lag readout).
+- **Input delay, each player's own** (`launcher::Online::delay_own`): Join passes `delay_argument` too, and the Online
+  page's Input delay row says the delay is the player's own in every match, for a game whose machines each hold back
+  their own controls by their own delay. Off: as before, the host's for everyone.
 - **Windows: requests with WinHTTP, not a hidden curl.exe** (`launcher/src/winhttp_curl.h`). `run_program(curl_program(),
   …)` makes the request itself from curl's arguments (the ones the updates, the Online card and a game's online play
   use), as on Android, and starts the system's curl only for any other. A program that starts `curl.exe` with no

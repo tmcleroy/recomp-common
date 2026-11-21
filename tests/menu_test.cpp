@@ -3,6 +3,7 @@
 // The menu's rules, without a picture to compare: what rows there are, what the buttons do, and that
 // drawing stays inside the picture at any size.
 #include "menu.h"
+#include "text.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -420,6 +421,20 @@ int main() {
         CHECK(both.Buttons(kMenuConfirm).kind == Menu::Chosen::None);
         std::vector<uint32_t> picture(320 * 240);
         both.Draw(picture.data(), 320, 240);
+    }
+    {
+        // The smaller font (text.h, kSmallFont): 4 dots a character, small letters as capitals, anything else '?'
+        using namespace recomp::text;
+        CHECK(SmallTextWidth("LAG 3F", 1) == 24);
+        CHECK(SmallGlyphOf('a') == SmallGlyphOf('A'));
+        CHECK(SmallGlyphOf(0xE9) == SmallGlyphOf('?'));
+        CHECK(SmallGlyphOf('~') == kSmallFont[68] && SmallGlyphOf('`') == kSmallFont[64]);
+        std::vector<uint32_t> pixels(40 * 8, 0);
+        const Canvas canvas{pixels.data(), 40, 8};
+        canvas.SmallText(0, 0, 1, {255, 255, 255, 255}, "1");
+        int lit = 0;
+        for (const uint32_t p : pixels) lit += p != 0;
+        CHECK(lit == 8); // (the 1: 010 110 010 010 111)
     }
     puts("menu_test: all as it should be");
     return 0;
