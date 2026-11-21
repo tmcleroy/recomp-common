@@ -138,6 +138,7 @@ inline constexpr Entry kPortuguese[] = {
     {"1 frame", "1 quadro"},
     {"{} frames", "{} quadros"},
     {"Frames each player's controls wait in the matches you host; the other player gets the same. Fewer feel quicker but leave more to guess on a slow connection, which shows as corrections. 2 unless you choose.", "Quadros que os controles de cada jogador esperam nas partidas que você hospeda; o outro jogador recebe o mesmo. Menos parece mais rápido, mas deixa mais para adivinhar numa conexão lenta, o que aparece como correções. 2 se você não escolher."},
+    {"Frames your own controls wait in every match you host or join; the other player chooses theirs. Fewer feel quicker, but the other player sees more of your moves corrected on a slow connection. 2 unless you choose.", "Frames que seus próprios comandos esperam em toda partida que você hospedar ou entrar; o outro jogador escolhe os dele. Menos parece mais rápido, mas o outro jogador vê mais correções dos seus movimentos numa conexão lenta. 2 se você não escolher."},
     {"Arcade while waiting", "Arcade enquanto espera"},
     {"Play the game on your own until someone joins. They come into the game as it is, and press Start to challenge you.", "Jogue sozinho até alguém entrar. A pessoa entra no jogo como ele está e aperta Start para desafiar você."},
     {"Updates every 10 seconds", "Atualiza a cada 10 segundos"},

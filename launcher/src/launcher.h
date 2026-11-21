@@ -88,6 +88,8 @@ struct Online {
     // Host and Invite add as `delay_argument N` when the player has chosen one (the game's own default otherwise); the
     // game tells the one joining. nullptr: no such choice.
     const char *delay_argument = nullptr; // "--net-delay"
+    // ... or each player's own (delay_own): Join adds it too, and the row says so (the game tells the others its own)
+    bool delay_own = false;
     // Inviting a player from the waiting room (Collection::room): Host with `invite_argument THEIRS:MINE` (the two
     // players' ids) and `invite_name_argument NAME` (theirs), and the player's own name with `name_argument`; the match
     // isn't listed. nullptr: no Invite.
