@@ -23,8 +23,8 @@ int main() {
     CHECK(text.ok && text.fail && text.follow && text.show_error && text.connect_timeout == 15 && text.max_time == 60);
     CHECK(text.method == "GET" && text.headers.size() == 1 && text.user_agent == "recomp-launcher" && text.output_file.empty());
     auto file = curl_request({"-fsSL", "--connect-timeout", "15", "--speed-limit", "1024", "--speed-time", "60", "--retry", "2", "-A",
-                              "recomp-launcher", "-o", "C:\\Users\\Zoë\\x.zip", "https://github.com/a/b/releases/download/v1/x.zip"});
-    CHECK(file.ok && file.retry == 2 && file.speed_time == 60 && file.output_file == "C:\\Users\\Zoë\\x.zip");
+                              "recomp-launcher", "-o", "D:\\Jogos\\Zoë\\x.zip", "https://github.com/a/b/releases/download/v1/x.zip"});
+    CHECK(file.ok && file.retry == 2 && file.speed_time == 60 && file.output_file == "D:\\Jogos\\Zoë\\x.zip");
     // (online.cpp and a game's online play: a status after the body)
     auto post = curl_request({"-sS", "--max-time", "10", "-X", "POST", "-H", "content-type: application/json", "-w", "\\n%{http_code}",
                               "--data-binary", "{\"a\":1}", "https://x.workers.dev/match"});
