@@ -17,6 +17,19 @@ jobs:
       - uses: actions/checkout@v4
       - run: tools/audit.sh
 
+  # Windows' own requests (launcher/src/winhttp_curl.h), which the launcher and the games make in place of a hidden
+  # curl.exe, against GitHub
+  windows-requests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Requests with WinHTTP, read as curl's arguments
+        shell: bash
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -DRECOMP_WINHTTP=1 tests/winhttp_test.cpp -o winhttp_test.exe -static -lwinhttp
+          ./winhttp_test.exe
+          g++ -std=c++17 -O2 -Wall -Wextra -Isrc -DRECOMP_WINHTTP=1 -c launcher/src/run_program.cpp -o run_program.o
+
   test:
     strategy:
       fail-fast: false

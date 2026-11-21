@@ -90,7 +90,8 @@ release script puts beside it, unpacks it, checks every file that changed, and o
 taking away the files the new version no longer has; if anything fails nothing is changed. Then the new launcher
 starts. A release so carries only its archives and one small manifest per system. A copy that is not a release's
 download (a build) is only told of the new version. Downloads go through the system's `curl`, unpacking through
-its `tar` (`ditto` on macOS).
+its `tar` (`ditto` on macOS). On Windows the launcher makes curl's requests itself, with WinHTTP
+(`src/winhttp_curl.h`), instead of starting a hidden `curl.exe`, which antivirus programs take for a downloader.
 
 **Android** (`launcher.cmake` with the NDK): the launcher is a library (`lib<exe>-launcher.so`) that the port's
 activity, an SDL activity, loads, and so is each game (`lib<exe>.so`), which runs in a process of its own. What the

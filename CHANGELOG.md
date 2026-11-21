@@ -5,6 +5,14 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Windows: requests with WinHTTP, not a hidden curl.exe** (`launcher/src/winhttp_curl.h`). `run_program(curl_program(),
+  …)` makes the request itself from curl's arguments (the ones the updates, the Online card and a game's online play
+  use), as on Android, and starts the system's curl only for any other. A program that starts `curl.exe` with no
+  window to fetch from the internet is what downloaders do: Windows Defender's machine learning flagged a port's game
+  as `Program:Win32/Wacapew.A!ml`. The launcher (`launcher.cmake`) turns it on; a port that compiles
+  `run_program.cpp` into its game turns it on there with `RECOMP_WINHTTP=1` and links `winhttp`. Proxies: the
+  `HTTPS_PROXY`/`HTTP_PROXY` (an http one) that `UseSystemProxy` sets, else Windows' own and its automatic script;
+  a SOCKS one is left to curl. CI's Windows job makes the requests against GitHub.
 - **An arcade monitor** (`arcade_sdl.h`, SDL 3, header only): cps2recomp's full screen at the board's own resolution
   or a super resolution (the board's lines and 1920 columns or more; 240 lines where the card has none of fewer), at
   the refresh nearest the board's, and the screen to play on, for every arcade port. `ArcadeModeIndex` (the choice of
