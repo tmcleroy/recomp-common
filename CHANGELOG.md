@@ -5,6 +5,17 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The Online page, reordered from players' feedback**: an optional link to where the players talk at the top
+  (`Collection::community_url`, with its title, detail and button); the open matches, then Host a match, with the
+  host's match choices in it (`Collection::online_host_features`: features of `online_features` shown under Host
+  rather than under In a match); the waiting room with the player first, saying whether the others see them, ready
+  to play; a **You** card at the bottom with the name, country, Let others invite me and the blocked players (the
+  name stays at the top of Host a match until the launcher closes when the page was opened without one); Join with
+  a code folded under it, for unlisted matches only. `feature_row` is one feature's row, as `feature_list` draws it.
+- **A game's own online defaults**: `Online::spectators_default` (Allow spectators until the player switches it) and
+  `Online::delay_default` (the Input delay row's, and what Host, Invite and Join pass until the player chooses: the
+  delay is always passed now).
+- **The lobby and the waiting room every 3 seconds** (10 while the launcher isn't the window in front; were 10 and 20).
 - **A smaller font** (`text.h`): `kSmallFont`, 3x5 dots in a 4-dot cell (capitals, digits and ASCII's signs; small
   letters drawn as capitals), with `Canvas::SmallText` and `SmallTextWidth`, for a readout over the picture that must
   not cover it (cps2recomp's and sf3comp's input lag readout).
