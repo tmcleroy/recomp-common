@@ -3088,21 +3088,27 @@ void App::you_card(float width) {
     ui::gap(24);
     layout::label("YOU");
     Card card(width);
-    row(width, "Your name",
-        collection_->room ? "With a name, the matches you host are listed in the lobby under it, and you're in the waiting room. Without "
-                            "one, your matches are joined only by their code."
-                          : "With a name, the matches you host are listed in the lobby under it. Without one, they're joined only by their code.",
-        190.0f, 36.0f, [&] {
-            if (ui::text_field("##online_you_name", online_name_, sizeof(online_name_), "Your name", 190.0f)) {
-                prefs_.set("online", "name", online_name_);
-                prefs_.save();
-                room_at_ = 0;  // (said at once)
-            }
-        });
+    bool first = true;
+    // (the name: here, unless it is at the top of Host a match this time, name_up_top_)
+    if (!name_up_top_) {
+        first = false;
+        row(width, "Your name",
+            collection_->room ? "With a name, the matches you host are listed in the lobby under it, and you're in the waiting room. Without "
+                                "one, your matches are joined only by their code."
+                              : "With a name, the matches you host are listed in the lobby under it. Without one, they're joined only by their code.",
+            190.0f, 36.0f, [&] {
+                if (ui::text_field("##online_you_name", online_name_, sizeof(online_name_), "Your name", 190.0f)) {
+                    prefs_.set("online", "name", online_name_);
+                    prefs_.save();
+                }
+            });
+    }
     if (collection_->room) {
         const bool named = online_name_[0] != '\0';
         const bool invitable = prefs_.get("online", "invitable") != "0";
-        inset_separator(width);
+        if (!first) {
+            inset_separator(width);
+        }
         row(width, "Let others invite me",
             (named ? TrFormat("While your {} page is open, you're in the waiting room under your name, and others can invite you to a match. "
                               "An invitation never interrupts a game: it waits here.",
