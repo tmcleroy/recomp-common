@@ -635,8 +635,13 @@ std::filesystem::path App::Slot::program() const {
 }
 
 bool App::Slot::has_program() const {
-    std::error_code error;
-    return std::filesystem::exists(program(), error);
+    const auto now = std::chrono::steady_clock::now();
+    if (program_looked == std::chrono::steady_clock::time_point{} || now - program_looked > std::chrono::seconds(2)) {
+        std::error_code error;
+        program_here = std::filesystem::exists(program(), error);
+        program_looked = now;
+    }
+    return program_here;
 }
 
 App::App(SDL_Window* window)
@@ -819,19 +824,33 @@ std::vector<std::string> App::hardwares() const {
     return list.size() > 1 ? list : std::vector<std::string>();
 }
 
-std::string App::hardware_chosen() const {
+void App::know_filters() const {
     const std::string chosen = prefs_.get("games", "hardware");
     const std::vector<std::string> list = hardwares();
-    return std::find(list.begin(), list.end(), chosen) != list.end() ? chosen : std::string();
+    hardware_chosen_ = std::find(list.begin(), list.end(), chosen) != list.end() ? chosen : std::string();
+    filters_known_ = true;  // (the hardware first: titled() below asks on_hardware())
+    installed_only_ = collection_ && prefs_.get("games", "installed_only") == "1" && !titled().empty();
+}
+
+std::string App::hardware_chosen() const {
+    if (!filters_known_) {
+        know_filters();
+    }
+    return hardware_chosen_;
 }
 
 bool App::on_hardware(size_t which) const {
-    const std::string chosen = hardware_chosen();
-    return chosen.empty() || slots_[which]->hardware == chosen;
+    if (!filters_known_) {
+        know_filters();
+    }
+    return hardware_chosen_.empty() || slots_[which]->hardware == hardware_chosen_;
 }
 
 bool App::installed_only() const {
-    return collection_ && prefs_.get("games", "installed_only") == "1" && !titled().empty();
+    if (!filters_known_) {
+        know_filters();
+    }
+    return installed_only_;
 }
 
 bool App::shown(size_t which) const {
@@ -1758,6 +1777,7 @@ bool App::consume(const SDL_Event& event) {
 }
 
 void App::frame() {
+    forget_filters();  // (a game set up or left, or launcher.ini changed, since the last frame)
     std::string picked;
     bool picked_folder = false;
     int picked_choice = -1;
@@ -3757,6 +3777,7 @@ void App::library_page(float width) {
             if (ui::dropdown("##hardware", names, chosen, 190.0f)) {
                 keep_page([&] {
                     prefs_.set("games", "hardware", chosen > 0 ? list[static_cast<size_t>(chosen) - 1] : "");
+                    forget_filters();
                     prefs_.save();
                     group_order();
                 });
@@ -3781,6 +3802,7 @@ void App::library_page(float width) {
         row(width, "Only the games you have", detail.c_str(), 42.0f, 24.0f, [&] {
             if (ui::toggle("##installed-only", only)) {
                 prefs_.set("games", "installed_only", only ? "0" : "1");
+                forget_filters();
                 prefs_.save();
             }
         });

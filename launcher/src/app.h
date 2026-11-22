@@ -12,6 +12,7 @@
 #include <SDL3/SDL.h>
 
 #include <atomic>
+#include <chrono>
 #include <filesystem>
 #include <future>
 #include <memory>
@@ -109,7 +110,11 @@ private:
 
         explicit Slot(const std::filesystem::path& settings_path) : settings(settings_path) {}
         std::filesystem::path program() const;
+        // (looked for on the disk at most every two seconds: the pages ask for each game many times a frame, and
+        // a look on the disk is slow on Windows)
         bool has_program() const;
+        mutable bool program_here = false;
+        mutable std::chrono::steady_clock::time_point program_looked{};
     };
     // A feature more than one of a collection's games has, set for all of them at once
     struct Shared {
@@ -153,6 +158,13 @@ private:
     // (launcher.ini [games] hardware; "": all)
     std::vector<std::string> hardwares() const;
     std::string hardware_chosen() const;
+    // hardware_chosen() and installed_only(), worked out once a frame (frame() and a change of either forgets
+    // them): every game's row on the pages asks for them, and each answer reads launcher.ini and every game
+    void forget_filters() { filters_known_ = false; }
+    mutable bool filters_known_ = false;
+    mutable bool installed_only_ = false;
+    mutable std::string hardware_chosen_;
+    void know_filters() const;
     // Whether the game is on the list as the hardware chosen has it
     bool on_hardware(size_t which) const;
     // order_ with each series' games together, where its first game with a page is (else its first game)
