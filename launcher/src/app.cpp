@@ -801,8 +801,11 @@ std::vector<size_t> App::titled() const {
     std::vector<size_t> list;
     for (size_t which : order_) {
         const Slot& one = *slots_[which];
+        if (!one.has_program() || !on_hardware(which)) {
+            continue;  // (before the lock: on_hardware() may work out the filters, which asks titled())
+        }
         std::lock_guard<std::mutex> lock(mutex_);
-        if (one.has_program() && !one.file_path.empty() && !one.checking && one.file.usable() && on_hardware(which)) {
+        if (!one.file_path.empty() && !one.checking && one.file.usable()) {
             list.push_back(which);
         }
     }
