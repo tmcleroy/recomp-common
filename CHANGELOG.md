@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Fix: the launcher hung on Windows with "Only the games you have" on** (a collection's Features page). Each
+  game's row asked `shown()`, which read launcher.ini and looked for every game's program on the disk; the Features
+  page asks it for every game of every feature, thousands of looks on the disk a frame. `hardware_chosen()` and
+  `installed_only()` are now worked out once a frame, and `Slot::has_program()` looks on the disk at most every two
+  seconds.
 - **The Online page, reordered from players' feedback**: an optional link to where the players talk at the top
   (`Collection::community_url`, with its title, detail and button); the open matches, then Host a match, with the
   host's match choices in it (`Collection::online_host_features`: features of `online_features` shown under Host
