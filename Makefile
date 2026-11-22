@@ -22,10 +22,10 @@ test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings
 	@if pkg-config --exists sdl3 2> /dev/null; then $(MAKE) -s $(B)/menu_sdl_test && $(B)/menu_sdl_test; else echo "menu_sdl_test: skipped (no SDL 3)"; fi
 	@if pkg-config --exists sdl3 2> /dev/null; then $(MAKE) -s $(B)/arcade_sdl_test && $(B)/arcade_sdl_test; else echo "arcade_sdl_test: skipped (no SDL 3)"; fi
 
-# The arcade monitor's choice of mode (arcade_sdl.h; needs SDL 3, no screen)
-$(B)/arcade_sdl_test: tests/arcade_sdl_test.cpp src/arcade_sdl.h
+# The arcade monitor's choice of mode and the rest of its page (arcade_sdl.h, arcade_screen.h; needs SDL 3, no screen)
+$(B)/arcade_sdl_test: tests/arcade_sdl_test.cpp src/arcade_sdl.h src/arcade_screen.h src/arcade_screen.cpp
 	@mkdir -p $(B)
-	$(CXX) $(CXXFLAGS) $$(pkg-config --cflags sdl3) tests/arcade_sdl_test.cpp $$(pkg-config --libs sdl3) -o $@
+	$(CXX) $(CXXFLAGS) $$(pkg-config --cflags sdl3) tests/arcade_sdl_test.cpp src/arcade_screen.cpp $$(pkg-config --libs sdl3) -o $@
 
 $(B)/menu_test: tests/menu_test.cpp src/menu.cpp src/menu.h src/text.h src/i18n.h src/i18n_pt_br.h src/i18n_es.h
 	@mkdir -p $(B)

@@ -6,7 +6,16 @@ recomp-common is licensed under the GNU General Public License v3.0 (see `LICENS
 
 `src/` (the in-game menu, its text, the settings rules) has none from other projects: every file was
 written for this project and the ports it came out of, and its only dependencies are the C and C++
-standard libraries.
+standard libraries (and SDL 3, for `menu_sdl.h`, `arcade_sdl.h` and `arcade_screen.cpp`).
+
+### Switchres (an arcade monitor's modes, downloaded)
+
+`src/switchres.cmake` downloads **Switchres 2.2.2** (https://github.com/antonioginer/switchres, its
+release's archive, checked against its SHA-256) for a Windows build of a port that uses
+`arcade_screen.h`, and compiles its common and Windows sources, as published, into the program.
+**GPL-2.0-or-later** (used under the GPL-3.0). Copyright 2010-2021 Chris Kennedy, Antonio Giner,
+Alexandre Wodarczyk, Gil Delescluse. Nothing of it is stored in this repository. A port that gives out
+such a build lists it with its other components.
 
 `launcher/` contains code from one other project, and its build downloads three libraries.
 

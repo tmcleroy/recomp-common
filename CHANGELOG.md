@@ -5,6 +5,12 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The arcade monitor's modes at the board's exact rate, and synced to the screen** (`arcade_screen.h`, from
+  cps2recomp): Make the mode at the board's rate with a Monitor preset (Switchres 2.2.2, downloaded at build time by
+  `switchres.cmake`, Windows), Keep the board's pace (off: the frames paced by the screen's refreshes in an arcade mode),
+  and a frame delay where the screen's refreshes are known (Windows). `ArcadeScreen` puts it together for a port;
+  `arcade_sdl.h` has the choices' words, and its `SetFullscreenMode` logs the mode chosen.
+
 - **Fix: the launcher hung on Windows with "Only the games you have" on** (a collection's Features page). Each
   game's row asked `shown()`, which read launcher.ini and looked for every game's program on the disk; the Features
   page asks it for every game of every feature, thousands of looks on the disk a frame. `hardware_chosen()` and

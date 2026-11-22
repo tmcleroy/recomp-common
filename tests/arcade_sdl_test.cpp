@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Tommy McLeroy. Part of recomp-common: https://github.com/tmcleroy/recomp-common
 // The arcade monitor's choice of mode (arcade_sdl.h), on made-up lists of modes: no screen needed.
-#include "../src/arcade_sdl.h"
+#include "../src/arcade_screen.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -66,6 +66,23 @@ int main() {
     CHECK(ArcadeBoardName(cps2) == "384 x 224");
     CHECK(ArcadeDescription(cps2).find("59.64 Hz") != std::string::npos && ArcadeDescription(cps2).find("240 lines") != std::string::npos);
     CHECK(ArcadeDescription(cave).find("240 lines (") == std::string::npos);
+    // (the rest of the page: arcade_screen.h)
+    CHECK(sizeof kMonitorNames / sizeof kMonitorNames[0] == static_cast<size_t>(kMonitorPresetCount));
+    CHECK(SwitchresDescription(cps2).find("59.640 Hz") != std::string::npos);
+    CHECK(BoardPaceDescription(cps2).find("0.6% off at 60 Hz") != std::string::npos);
+    {
+        // (no window: never an arcade mode, never paced by the screen; off Windows no Switchres)
+        ArcadeScreen screen(cps2);
+        ArcadeChoices choices;
+        choices.mode = ArcadeMode::Board;
+        CHECK(!screen.OnArcade(nullptr) && !screen.Paced(nullptr, choices, false));
+#ifndef _WIN32
+        MadeMode made;
+        std::string error;
+        CHECK(!SwitchresBuilt() && !SwitchresMake(0, kMonitorPresets[0], 384, 224, 59.637, made, error) && !error.empty() && !SwitchresActive());
+#endif
+        screen.Close();
+    }
     puts("arcade_sdl_test: all as it should be");
     return 0;
 }
