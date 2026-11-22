@@ -289,6 +289,7 @@ private:
     // The Online page (a collection with a lobby: Collection::lobby): host in the lobby in any game, and every game's
     // open matches
     void online_page(float width);
+    void community_card(float width, const char* url, const char* title, const char* detail, const char* button);
     void load_online();
     // How often the lobby is fetched and the waiting room checked in at (ms): every 3 seconds, or 10 while the launcher
     // isn't the window in front (a player in the room is gone 15 seconds after their last check-in: online/)
