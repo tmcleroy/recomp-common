@@ -176,6 +176,24 @@ choices, which it keeps as three features under an **Arcade monitor** heading, t
 On an arcade mode the picture fills the screen (the monitor gives it its shape), with `ArcadeLines` keeping its lines
 one for one on a mode of more lines; and a vertical game is shown as the board sends it, for a monitor on its side.
 
+`src/arcade_screen.h` (with `arcade_screen.cpp`, and on Windows Switchres: `include(recomp-common/switchres.cmake)`,
+`recomp_switchres(<target>)`) is the rest of the page, three more features under the same heading:
+
+- *Make the mode at the board's rate* (on/off, launcher only, only where `SwitchresBuilt()`; `SwitchresDescription(board)`)
+  and *Monitor* (`kMonitorNames`, launcher only; `kMonitorDescription`): full screen has Switchres make the board's or
+  the super resolution's mode at exactly the board's rate within that monitor's ranges and switches the desktop to it,
+  the desktop back at the end; the listed modes where it can't.
+- *Keep the board's pace* (on/off, off by default; `BoardPaceDescription(board)`): off, in full screen at an arcade mode
+  the frames are paced by the screen (VSync on, one frame a refresh), with a frame delay where the system says when it
+  refreshes (Windows); on, the board's clock as in a window. Online always the board's clock.
+
+The port keeps one `ArcadeScreen` and fills an `ArcadeChoices` from its features each frame: `SetFullscreen` when the
+window is made, `Follow` each frame (instead of `ArcadeFollow`), `OnArcade` (instead of `OnArcadeMode`), `Paced` to
+know whether the screen paces this frame (VSync on; no frame timer), `WorkDone` just before the picture is drawn and
+shown, `Shown` just after (it waits as the frame delay says, and gives the next frame's time), `BoardPace` on the board's
+clock, `Menu` while the in-game menu is up, `Close` at the end. The game's log says the mode chosen or made, and every
+ten seconds the rate measured and the frame delay.
+
 ## Text on its own
 
 `text.h` (namespace `recomp::text`) is a header with no dependencies: a `Canvas` over a pixel

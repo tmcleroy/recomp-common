@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The arcade monitor's modes at the board's exact rate, and synced to the screen** (`arcade_screen.h`, from
+  cps2recomp): Make the mode at the board's rate with a Monitor preset (Switchres 2.2.2, downloaded at build time by
+  `switchres.cmake`, Windows), Keep the board's pace (off: the frames paced by the screen's refreshes in an arcade mode),
+  and a frame delay where the screen's refreshes are known (Windows). `ArcadeScreen` puts it together for a port;
+  `arcade_sdl.h` has the choices' words, and its `SetFullscreenMode` logs the mode chosen.
 - **The Discord link for every launcher**: a game of its own (`Description::community_url`, title, detail and
   button, as `Collection` has them) shows it at the top of its Online page, or on the Game page under Play when it
   has none. The words "Join us on Discord", its line and "Open Discord" are in Spanish and Portuguese here, for
