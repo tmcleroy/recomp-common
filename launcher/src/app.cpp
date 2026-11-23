@@ -2862,6 +2862,22 @@ bool App::can_play(size_t which) const {
 }
 
 // The Online page: host in the lobby in any of the games, and every game's open matches, each to join
+// A link to where the players talk (Collection::community_url, Description::community_url): a row with the button
+// that opens it in the browser, then a gap. Nothing without one.
+void App::community_card(float width, const char* url, const char* title, const char* detail, const char* button) {
+    if (!url) {
+        return;
+    }
+    Card community(width, true);
+    row(width, title, detail, 150.0f, 36.0f, [&] {
+        if (ui::button(button, Kind::Primary, 150.0f)) {
+            SDL_OpenURL(url);
+        }
+    });
+    community.end();
+    ui::gap(24);
+}
+
 void App::online_page(float width) {
     const ui::Palette& p = ui::palette();
     load_online();
@@ -2892,16 +2908,8 @@ void App::online_page(float width) {
     }
 #endif
     // The players' meeting place (Collection::community_url), first, so that nobody misses it
-    if (collection_->community_url) {
-        Card community(width, true);
-        row(width, collection_->community_title, collection_->community_detail, 150.0f, 36.0f, [&] {
-            if (ui::button(collection_->community_button, Kind::Primary, 150.0f)) {
-                SDL_OpenURL(collection_->community_url);
-            }
-        });
-        community.end();
-        ui::gap(24);
-    }
+    community_card(width, collection_->community_url, collection_->community_title, collection_->community_detail,
+                   collection_->community_button);
     if (collection_->room) {
         invitations_card(width);
     }
@@ -3634,6 +3642,9 @@ void App::game_page(float width) {
     layout::heading(LAUNCHER_GAME_NAME, about_.file_intro, width);
     bool ready = play_button(0, width);
     ui::gap(28);
+    if (!about_.online_page) {  // (with an Online page of its own, the link is at the top of that)
+        community_card(width, about_.community_url, about_.community_title, about_.community_detail, about_.community_button);
+    }
     notice_card(width);
 #ifdef LAUNCHER_UPDATE_REPO
     update_card(width, true, true);  // (at the top, new version or not, as a collection's Games page has it)
@@ -3707,6 +3718,7 @@ void App::notice_card(float width) {
 // A launcher of one game's Online page (Description::online_page): what the Game page's Online card has, on a page
 void App::single_online_page(float width) {
     layout::heading("Online", about_.online.detail, width);
+    community_card(width, about_.community_url, about_.community_title, about_.community_detail, about_.community_button);
     bool ready;
     {
         std::lock_guard<std::mutex> lock(mutex_);

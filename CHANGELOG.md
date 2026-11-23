@@ -10,7 +10,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   `switchres.cmake`, Windows), Keep the board's pace (off: the frames paced by the screen's refreshes in an arcade mode),
   and a frame delay where the screen's refreshes are known (Windows). `ArcadeScreen` puts it together for a port;
   `arcade_sdl.h` has the choices' words, and its `SetFullscreenMode` logs the mode chosen.
-
+- **The Discord link for every launcher**: a game of its own (`Description::community_url`, title, detail and
+  button, as `Collection` has them) shows it at the top of its Online page, or on the Game page under Play when it
+  has none. The words "Join us on Discord", its line and "Open Discord" are in Spanish and Portuguese here, for
+  every game.
 - **Fix: the launcher hung on Windows with "Only the games you have" on** (a collection's Features page). Each
   game's row asked `shown()`, which read launcher.ini and looked for every game's program on the disk; the Features
   page asks it for every game of every feature, thousands of looks on the disk a frame. `hardware_chosen()` and
