@@ -166,6 +166,12 @@ struct Description {
     bool online_page = false;
     // The port's own pages after Game (and Online), before Features, rather than first
     bool own_pages_after_game = false;
+    // A link to where the players talk (a Discord server, say), as Collection::community_url has it: at the top of
+    // the Online page (online_page), else on the Game page under Play. nullptr: none.
+    const char *community_url = nullptr;
+    const char *community_title = "";
+    const char *community_detail = "";
+    const char *community_button = "Open";
     // Optional: the Game page's notice (Notice above), asked each time the page is drawn, with the player's folder
     std::function<Notice(const std::filesystem::path &folder)> notice;
     // false: no Game page (and no game file, check or Display card): the port's pages have Play

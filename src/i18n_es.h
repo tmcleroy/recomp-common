@@ -413,6 +413,10 @@ inline constexpr Entry kSpanish[] = {
     {"Couldn't reach the online service: the others can't see you.", "No se pudo conectar con el servicio en línea: los demás no te ven."},
     {"Ready to play: the others here see you and can invite you to a match.", "Listo para jugar: los demás aquí te ven y pueden invitarte a una partida."},
     {"With a name, the matches you host are listed in the lobby under it, and you're in the waiting room. Without one, your matches are joined only by their code.", "Con un nombre, las partidas que creas aparecen con él en el lobby, y estás en la sala de espera. Sin nombre, solo se unen a tus partidas con su código."},
+    // (the link to where the players talk: Collection::community_url, Description::community_url, worded so)
+    {"Join us on Discord", "Únete a nosotros en Discord"},
+    {"Find players for a match, tell us what to fix or add, and hear about new versions first.", "Encuentra rivales, dinos qué arreglar o añadir, y entérate antes que nadie de las nuevas versiones."},
+    {"Open Discord", "Abrir Discord"},
 };
 
 } // namespace recomp::i18n

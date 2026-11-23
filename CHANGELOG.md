@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The Discord link for every launcher**: a game of its own (`Description::community_url`, title, detail and
+  button, as `Collection` has them) shows it at the top of its Online page, or on the Game page under Play when it
+  has none. The words "Join us on Discord", its line and "Open Discord" are in Spanish and Portuguese here, for
+  every game.
 - **Fix: the launcher hung on Windows with "Only the games you have" on** (a collection's Features page). Each
   game's row asked `shown()`, which read launcher.ini and looked for every game's program on the disk; the Features
   page asks it for every game of every feature, thousands of looks on the disk a frame. `hardware_chosen()` and
