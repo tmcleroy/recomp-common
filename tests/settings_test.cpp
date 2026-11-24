@@ -4,6 +4,7 @@
 // a file keeps everything nobody asked to change.
 #include "settings.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -150,6 +151,108 @@ int main() {
         // (numbers it has not, and a feature that is not one: every choice)
         CHECK((MenuChoices(Loaded("[menu]\nshader=9,x,2\n"), shader) == std::vector<bool>{true, false, true, false}));
         CHECK((MenuChoices(Loaded("[menu]\nhealth=1\n"), features[3]) == std::vector<bool>{true, true, true}));
+    }
+    // A choice kept by name (FeatureInfo::ids): a list put in another order (a choice moved from the end to the middle)
+    // keeps every saved choice's meaning, and an older build that knows only the numbers reads what a newer wrote
+    {
+        // (as an older build had it: by number, 13 the one added last; and now, moved up, with names)
+        const std::vector<std::string> oldOrder = {"Off", "CRT", "CRT Lottes", "CRT Royale", "CRT Guest", "CRT Light",
+                                                   "Scanlines: light", "Scanlines: strong", "Scanlines: OSSC", "Scanlines: dark",
+                                                   "xBRZ", "ScaleFX", "Your own", "CRT Newpixie"};
+        const std::vector<std::string> oldIds = {"off", "crt", "crt-lottes", "crt-royale", "crt-guest", "crt-light",
+                                                 "scanlines-light", "scanlines-strong", "scanlines-ossc", "scanlines-dark",
+                                                 "xbrz", "scalefx", "your-own", "crt-newpixie"};
+        const std::vector<FeatureInfo> before = {{"shader", "Display", "Shader", "", kFeatureMenuChoices, oldOrder}};
+        FeatureInfo shader = {"shader", "Display", "Shader", "", kFeatureMenuChoices, {}};
+        shader.ids = {"off", "crt", "crt-lottes", "crt-royale", "crt-guest", "crt-light", "crt-newpixie", "scanlines-light",
+                      "scanlines-strong", "scanlines-ossc", "scanlines-dark", "xbrz", "scalefx", "your-own", "made-later"};
+        for (const std::string &id : shader.ids) {
+            const auto at = std::find(oldIds.begin(), oldIds.end(), id);
+            shader.choices.push_back(at == oldIds.end() ? "Made later" : oldOrder[static_cast<size_t>(at - oldIds.begin())]);
+        }
+        shader.numbered = oldIds;
+        const std::vector<FeatureInfo> now = {shader};
+        auto choiceName = [](const std::vector<FeatureInfo> &list, const Ini &ini) {
+            return list[0].choices[static_cast<size_t>(FeatureValues(ini, list)[0])];
+        };
+        // Every old number reads as the same choice, and is made over once into both keys
+        for (int number = 0; number < 14; number++) {
+            Ini ini = Loaded("[features]\npreset=custom\nshader=" + std::to_string(number) + "\n");
+            CHECK(choiceName(before, ini) == oldOrder[static_cast<size_t>(number)]);
+            CHECK(choiceName(now, ini) == oldOrder[static_cast<size_t>(number)]);
+            CHECK(MigrateFeatures(ini, now));
+            CHECK(ini.get("features", "shader_id") == oldIds[static_cast<size_t>(number)]);
+            CHECK(ini.get("features", "shader") == std::to_string(number));
+            CHECK(choiceName(now, ini) == oldOrder[static_cast<size_t>(number)] && choiceName(before, ini) == oldOrder[static_cast<size_t>(number)]);
+            CHECK(!MigrateFeatures(ini, now)); // (once)
+        }
+        // (off as words, and a number past the old list: off)
+        CHECK(FeatureValues(Loaded("[features]\nshader=off\n"), now)[0] == 0 && FeatureValues(Loaded("[features]\nshader=40\n"), now)[0] == 0);
+        // Written by a newer build, every choice: name_id, and the old number beside it, which the older build reads as
+        // the same choice; one with no old number, none (the older build: as the preset has it, off)
+        for (int choice = 0; choice < static_cast<int>(shader.choices.size()); choice++) {
+            Ini ini = Loaded("[features]\npreset=pure\n");
+            SetFeature(ini, now, 0, choice);
+            CHECK(ini.get("features", "shader_id") == shader.ids[static_cast<size_t>(choice)]);
+            CHECK(FeatureValues(ini, now)[0] == choice);
+            if (shader.ids[static_cast<size_t>(choice)] == "made-later") {
+                CHECK(ini.get("features", "shader").empty() && FeatureValues(ini, before)[0] == 0);
+            } else {
+                CHECK(choiceName(before, ini) == shader.choices[static_cast<size_t>(choice)]);
+            }
+        }
+        // name_id wins over a number that disagrees (an older build's change after a newer's), and is made to agree
+        {
+            Ini ini = Loaded("[features]\npreset=custom\nshader_id=crt-newpixie\nshader=6\n");
+            CHECK(choiceName(now, ini) == "CRT Newpixie");
+            CHECK(MigrateFeatures(ini, now) && ini.get("features", "shader") == "13");
+        }
+        // An id this build does not know (a newer build's): its number; left as it is
+        {
+            Ini ini = Loaded("[features]\npreset=custom\nshader_id=crt-future\nshader=2\n");
+            CHECK(choiceName(now, ini) == "CRT Lottes");
+            CHECK(!MigrateFeatures(ini, now) && ini.get("features", "shader_id") == "crt-future");
+        }
+        // A preset takes both out
+        {
+            Ini ini = Loaded("[features]\npreset=custom\nshader_id=xbrz\nshader=10\n");
+            SetPreset(ini, now, "enhanced");
+            CHECK(ini.get("features", "shader_id").empty() && ini.get("features", "shader").empty());
+        }
+        // The favourites: old numbers read as the same choices and made over; written by name and by old number, and
+        // the older build offers the same ones
+        {
+            Ini ini = Loaded("[menu]\nshader=1,6,12,13\n");
+            const std::vector<bool> offered = MenuChoices(ini, shader);
+            CHECK(offered[0] && offered[1] && offered[6] && offered[7] && offered[13] && !offered[2] && !offered[12] && !offered[14]);
+            CHECK(MigrateFeatures(ini, now));
+            CHECK(ini.get("menu", "shader_id") == "crt,crt-newpixie,scanlines-light,your-own");
+            CHECK(ini.get("menu", "shader") == "1,6,12,13");
+            CHECK(MenuChoices(ini, shader) == offered && !MigrateFeatures(ini, now));
+            std::vector<bool> mine(shader.choices.size(), false);
+            mine[2] = mine[6] = mine[14] = true;
+            SetMenuChoices(ini, shader, mine);
+            CHECK(ini.get("menu", "shader_id") == "crt-lottes,crt-newpixie,made-later" && ini.get("menu", "shader") == "2,13");
+            CHECK((MenuChoices(ini, before[0]) == std::vector<bool>{true, false, true, false, false, false, false, false, false,
+                                                                    false, false, false, false, true}));
+            CHECK(MenuChoices(ini, shader) == (std::vector<bool>{true, false, true, false, false, false, true, false, false,
+                                                                 false, false, false, false, false, true}));
+            // (only one with no old number: the older build offers off alone; every one: neither key)
+            std::vector<bool> later(shader.choices.size(), false);
+            later[14] = true;
+            SetMenuChoices(ini, shader, later);
+            CHECK(ini.get("menu", "shader_id") == "made-later" && ini.get("menu", "shader") == "0");
+            SetMenuChoices(ini, shader, std::vector<bool>(shader.choices.size(), true));
+            CHECK(ini.get("menu", "shader_id").empty() && ini.get("menu", "shader").empty());
+        }
+        // The list as text carries the ids and the old order; a reader that knows nothing of them sees the choices
+        {
+            const std::vector<FeatureInfo> back = ParseFeatureList(FeatureListText(now));
+            CHECK(back.size() == 1 && back[0].choices == shader.choices && back[0].ids == shader.ids && back[0].numbered == shader.numbered);
+            FeatureInfo gap = shader;
+            gap.numbered[3] = "";
+            CHECK(ParseFeatureList(FeatureListText({gap}))[0].numbered == gap.numbered);
+        }
     }
     std::error_code error;
     std::filesystem::remove(std::filesystem::temp_directory_path() / "recomp_common_settings_test.ini", error);
