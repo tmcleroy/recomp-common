@@ -28,6 +28,7 @@
 #include "gamepads.h"
 #include "i18n.h"
 #include "layout.h"
+#include "menu_buttons.h"
 #include "online.h"
 #include "countries.h"
 #include "flags.h"
@@ -540,6 +541,21 @@ void use_language(const recomp::Ini& prefs) {
 #endif
 }
 
+// The gamepad's buttons that open the games' in-game menu (menu_buttons.h): launcher.ini's [launcher] menu_button, or
+// the port's own (RECOMP_MENU_BUTTON_DEFAULT; LAUNCHER_MENU_BUTTON). The games are told in RECOMP_MENU_BUTTON.
+static recomp::MenuButtons chosen_menu_buttons(const recomp::Ini& prefs) {
+    return recomp::ParseMenuButtons(prefs.get("launcher", "menu_button").c_str(), recomp::DefaultMenuButtons());
+}
+
+static void use_menu_buttons(const recomp::Ini& prefs) {
+    const char* key = recomp::MenuButtonsKey(chosen_menu_buttons(prefs));
+#ifdef _WIN32
+    _putenv_s("RECOMP_MENU_BUTTON", key);
+#else
+    setenv("RECOMP_MENU_BUTTON", key, 1);
+#endif
+}
+
 int play_directly(const std::string& id, const std::vector<std::string>& extra) {
     // Straight into the game with the file chosen earlier (e.g. a Steam shortcut in Game Mode).
     std::vector<Target> all = targets();
@@ -561,6 +577,7 @@ int play_directly(const std::string& id, const std::vector<std::string>& extra) 
     recomp::Ini prefs(player_folder(LAUNCHER_GAME_NAME, LAUNCHER_HOME_ENV) / "launcher.ini");
     prefs.load();
     use_language(prefs);
+    use_menu_buttons(prefs);
     if (about.game_page && !about.check(prefs.get(target->file_section, about.file_key)).usable()) {
         say(SDL_MESSAGEBOX_INFORMATION, target->name, about.file_not_set_up);
         return 1;
@@ -655,6 +672,7 @@ App::App(SDL_Window* window)
       about_(the_description()) {
     prefs_.load();
     use_language(prefs_);
+    use_menu_buttons(prefs_);
     // (controllers SDL doesn't know: gamecontrollerdb.txt beside the launcher or in its folder, as the game reads it)
     recomp::AddGamepadMappings({program_folder_, folder_});
     for (const Target& target : targets()) {
@@ -5159,6 +5177,32 @@ void App::controllers_page(float width) {
         }
     }
     SDL_free(pads);
+
+    // Which of a gamepad's buttons open the in-game menu (menu_buttons.h), in every game: Start and Select together
+    // always do (Steam often takes Guide), and the keyboard's Esc and F1 are not this choice's
+    ui::text("IN-GAME MENU", Font::Semibold, ui::size::kDetail, p.secondary);
+    ui::gap(10);
+    {
+        Card menu(width);
+        std::vector<std::string> names;
+        int index = 0;
+        const recomp::MenuButtons chosen = chosen_menu_buttons(prefs_);
+        for (const recomp::MenuButtonsChoice& choice : recomp::kMenuButtonsChoices) {
+            index = choice.value == chosen ? static_cast<int>(names.size()) : index;
+            names.push_back(choice.name);
+        }
+        row(width, "Menu button",
+            "The gamepad buttons that open the in-game menu. Start and Select together always do; Esc and F1 on the keyboard too.",
+            300.0f, 36.0f, [&] {
+                if (ui::dropdown("##menu-button", names, index, 300.0f)) {
+                    prefs_.set("launcher", "menu_button", recomp::kMenuButtonsChoices[static_cast<size_t>(index)].key);
+                    prefs_.save();
+                    use_menu_buttons(prefs_);
+                }
+            });
+        menu.end();
+    }
+    ui::gap(24);
 
     if (bind_slot_ >= static_cast<int>(slots_.size()) || (bind_slot_ >= 0 && !slots_[static_cast<size_t>(bind_slot_)]->has_program())) {
         bind_slot_ = -1;

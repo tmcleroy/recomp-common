@@ -4,7 +4,8 @@
 // keyboard and gamepads, and the mouse.
 //
 //   Open and close (from any page): Esc, F1, a phone's Back, Tab (unless the game has it); a gamepad's Guide, its
-//     left stick's click, or Start and Back (Select) together.
+//     left stick's click, or Start and Back (Select) together. Which of the gamepad's is the player's choice
+//     (menu_buttons.h: the launcher's Menu button); Start and Back together always are.
 //   In the menu: the arrows, the d-pad and the left stick choose (held: on and on, with MenuRepeat); Enter, Space
 //     and A (south) confirm; Backspace and B (east) go back a page. The mouse: over a row chooses it, a click
 //     confirms, the right button goes back, the wheel goes up and down.
@@ -13,6 +14,7 @@
 #pragma once
 
 #include "menu.h"
+#include "menu_buttons.h"
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_gamepad.h>
@@ -32,9 +34,17 @@ inline bool MenuKey(SDL_Scancode key, bool tabFree = true) {
     return key == SDL_SCANCODE_ESCAPE || key == SDL_SCANCODE_F1 || key == SDL_SCANCODE_AC_BACK || (tabFree && key == SDL_SCANCODE_TAB);
 }
 
-// A gamepad button that opens and closes the menu by itself (one the game has not been given)
+// A gamepad button that opens and closes the menu by itself (one the game has not been given), as `buttons` has them:
+// Guide (but with Start+Select only), the left stick's click (with guide-stick only). Start and Back are MenuChord's.
+inline bool MenuButton(SDL_GamepadButton button, MenuButtons buttons) {
+    return (button == SDL_GAMEPAD_BUTTON_GUIDE && buttons != MenuButtons::Chord) ||
+           (button == SDL_GAMEPAD_BUTTON_LEFT_STICK && buttons == MenuButtons::GuideStick);
+}
+
+// ... as the player chose (RECOMP_MENU_BUTTON from the launcher, or the port's own: menu_buttons.h), read once
 inline bool MenuButton(SDL_GamepadButton button) {
-    return button == SDL_GAMEPAD_BUTTON_GUIDE || button == SDL_GAMEPAD_BUTTON_LEFT_STICK;
+    static const MenuButtons chosen = MenuButtonsFromEnvironment();
+    return MenuButton(button, chosen);
 }
 
 // Start and Back held together on a gamepad, whatever the game has them as: Step is true when they have just come
