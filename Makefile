@@ -7,7 +7,7 @@ CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Wpedantic -Isrc
 B := build
 
 .PHONY: test example launcher launcher-shots audit clean
-test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings_c_test $(B)/folders_test $(B)/proxy_test $(B)/update_test $(B)/online_test $(B)/layout_test $(B)/curl_args_test
+test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings_c_test $(B)/folders_test $(B)/proxy_test $(B)/update_test $(B)/online_test $(B)/layout_test $(B)/curl_args_test $(B)/menu_buttons_test $(B)/menu_buttons_port_test
 	@$(B)/menu_test
 	@$(B)/i18n_test
 	@$(B)/c_test
@@ -19,6 +19,8 @@ test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings
 	@$(B)/online_test
 	@$(B)/layout_test
 	@$(B)/curl_args_test
+	@$(B)/menu_buttons_test
+	@$(B)/menu_buttons_port_test
 	@if pkg-config --exists sdl3 2> /dev/null; then $(MAKE) -s $(B)/menu_sdl_test && $(B)/menu_sdl_test; else echo "menu_sdl_test: skipped (no SDL 3)"; fi
 	@if pkg-config --exists sdl3 2> /dev/null; then $(MAKE) -s $(B)/arcade_sdl_test && $(B)/arcade_sdl_test; else echo "arcade_sdl_test: skipped (no SDL 3)"; fi
 
@@ -41,8 +43,18 @@ $(B)/layout_test: tests/layout_test.cpp src/menu_layout.h src/menu.cpp src/menu.
 	@mkdir -p $(B)
 	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined tests/layout_test.cpp src/menu.cpp -o $@
 
+# The menu's gamepad buttons as the player chose them (menu_buttons.h), with recomp-common's own choice and with a
+# port's (RECOMP_MENU_BUTTON_DEFAULT)
+$(B)/menu_buttons_test: tests/menu_buttons_test.cpp src/menu_buttons.h
+	@mkdir -p $(B)
+	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined tests/menu_buttons_test.cpp -o $@
+$(B)/menu_buttons_port_test: tests/menu_buttons_test.cpp src/menu_buttons.h
+	@mkdir -p $(B)
+	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined '-DRECOMP_MENU_BUTTON_DEFAULT="guide"' -DEXPECTED_DEFAULT=MenuButtons::Guide \
+	  tests/menu_buttons_test.cpp -o $@
+
 # The menu's SDL controls (menu_sdl.h; needs SDL 3)
-$(B)/menu_sdl_test: tests/menu_sdl_test.cpp src/menu_sdl.h src/menu.cpp src/menu.h
+$(B)/menu_sdl_test: tests/menu_sdl_test.cpp src/menu_sdl.h src/menu_buttons.h src/menu.cpp src/menu.h
 	@mkdir -p $(B)
 	$(CXX) $(CXXFLAGS) $$(pkg-config --cflags sdl3) tests/menu_sdl_test.cpp src/menu.cpp $$(pkg-config --libs sdl3) -o $@
 

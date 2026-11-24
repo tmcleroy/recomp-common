@@ -5,6 +5,13 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The menu button, the player's choice**: a Menu button row on the launcher's Controllers page (launcher.ini
+  `[launcher] menu_button`, given to the games in `RECOMP_MENU_BUTTON`) chooses which of a gamepad's buttons open the
+  in-game menu: Guide, left-stick click or Start+Select (as before, and recomp-common's own), Guide or Start+Select, or
+  Start+Select only. Start and Select together always open it; Esc and F1 are unchanged. `sdl::MenuButton(button)`
+  follows it (`sdl::MenuButton(button, choice)` for a given one; `menu_buttons.h`). A port starts its players on
+  another with `RECOMP_MENU_BUTTON_DEFAULT` for its game and `LAUNCHER_MENU_BUTTON` for its launcher. The words are in
+  Spanish and Portuguese.
 - **The arcade monitor's modes at the board's exact rate, and synced to the screen** (`arcade_screen.h`, from
   cps2recomp): Make the mode at the board's rate with a Monitor preset (Switchres 2.2.2, downloaded at build time by
   `switchres.cmake`, Windows), Keep the board's pace (off: the frames paced by the screen's refreshes in an arcade mode),

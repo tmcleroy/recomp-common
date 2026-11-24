@@ -142,7 +142,12 @@ These make every port feel the same. Two headers do most of it: `menu_layout.h` 
   middle). Every port has Reset game, Reset all options and Quit game.
 - **The controls** (`menu_sdl.h`):
   - Esc, F1, a phone's Back, Tab (when the game hasn't got it), a gamepad's Guide, its left stick's click, and Start
-    and Back together open the menu and close it, from any page.
+    and Back together open the menu and close it, from any page. Which of the gamepad's do is the player's choice, the
+    launcher's **Menu button** (Controllers page; `menu_buttons.h`, given to the game in `RECOMP_MENU_BUTTON`): Guide,
+    left-stick click or Start+Select (recomp-common's own), Guide or Start+Select, or Start+Select only. Start and Back
+    together always do. A port asks `sdl::MenuButton(button)` rather than naming the buttons itself, and changes what
+    its players start with by building its game with `RECOMP_MENU_BUTTON_DEFAULT` and its launcher with
+    `LAUNCHER_MENU_BUTTON` (the same key: `guide`, say).
   - In the menu, the arrows, the d-pad and the left stick choose, and held they go on (`MenuRepeat`). Enter, Space
     and A confirm. Backspace and B go back a page.
   - The mouse: over a row chooses it, a click confirms, the right button goes back, the wheel goes up and down
