@@ -329,8 +329,11 @@ Menu::Chosen Menu::Buttons(unsigned pressed) {
             }
         } else {
             const int choices = static_cast<int>(feature.choices.size());
-            auto offered = [&](int choice) { return choice == 0 || choice == value || !m_config.offered || m_config.offered(row.index, choice); };
-            int to = value;
+            // (a value past the list's end, of a list built at run time that has become shorter, as its last: Left
+            // goes back into it)
+            const int now = std::clamp(value, 0, choices - 1);
+            auto offered = [&](int choice) { return choice == 0 || choice == now || !m_config.offered || m_config.offered(row.index, choice); };
+            int to = now;
             if (press) {
                 // (around, to the next one offered: off at the latest)
                 do {
@@ -338,7 +341,7 @@ Menu::Chosen Menu::Buttons(unsigned pressed) {
                 } while (!offered(to));
             } else {
                 // (to the next one offered that way; none: as it is)
-                for (int at = value + step; at >= 0 && at < choices; at += step) {
+                for (int at = now + step; at >= 0 && at < choices; at += step) {
                     if (offered(at)) {
                         to = at;
                         break;

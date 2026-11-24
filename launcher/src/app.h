@@ -24,6 +24,7 @@
 #include "game_process.h"
 #include "launcher.h"
 #include "online.h"
+#include "own_shaders.h"
 #include "settings.h"
 #ifdef LAUNCHER_UPDATE_REPO
 #include "update.h"
@@ -108,6 +109,10 @@ private:
         // What another game's menu changed of a feature they share while this one was running: set when it
         // ends, unless its own menu changed the same feature
         std::vector<std::pair<std::string, int>> pending;
+        // Its own shader preset (own_shaders.h) when it was started, and another game's menu's choice of one while it
+        // ran, as `pending` (has_pending_own: there is one)
+        std::string own_shader_before, pending_own;
+        bool has_pending_own = false;
 
         explicit Slot(const std::filesystem::path& settings_path) : settings(settings_path) {}
         std::filesystem::path program() const;
@@ -420,6 +425,18 @@ private:
     char feature_search_[128] = {};  // what the Features page is narrowed to ("": all of them)
     bool focus_search_ = false;      // Ctrl+F (or Cmd+F): into the search box
     std::vector<std::string> menu_choices_open_;  // the features whose choices for the game's menu are shown
+
+    // The player's own shader presets (Description::own_shaders, own_shaders.h): the shared folder ("" for none), what
+    // was found in it (looked at again every two seconds while its rows are drawn), and the games the rows set (those
+    // of the feature list being drawn)
+    std::filesystem::path own_shaders_;
+    std::vector<recomp::shaders::Preset> own_found_;
+    std::chrono::steady_clock::time_point own_looked_{};
+    std::vector<Slot*> own_shader_slots_;
+    bool own_shader_feature(const recomp::FeatureInfo& info) const;
+    // The rows under the feature: Your own preset and the folder's (set_choice chooses the feature's own choice)
+    void own_shader_rows(float width, const FeatureRow& feature, const std::function<void(int)>& set_choice);
+    void set_own_shader(const std::string& name);
 
     std::string steam_message_;  // what Add to Steam did
     char online_address_[256] = {};  // the Online card's Join address (launcher.ini [online] address)

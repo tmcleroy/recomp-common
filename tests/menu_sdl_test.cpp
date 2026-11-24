@@ -21,6 +21,18 @@ int main() {
     CHECK(sdl::MenuKey(SDL_SCANCODE_ESCAPE) && sdl::MenuKey(SDL_SCANCODE_F1) && sdl::MenuKey(SDL_SCANCODE_TAB));
     CHECK(!sdl::MenuKey(SDL_SCANCODE_TAB, false) && !sdl::MenuKey(SDL_SCANCODE_A));
     CHECK(sdl::MenuButton(SDL_GAMEPAD_BUTTON_GUIDE) && !sdl::MenuButton(SDL_GAMEPAD_BUTTON_SOUTH));
+    // (the gamepad's buttons that open the menu by themselves, for each of the player's choices: Start and Back are
+    // the chord's, whatever the choice)
+    for (int b = 0; b < SDL_GAMEPAD_BUTTON_COUNT; b++) {
+        const auto button = static_cast<SDL_GamepadButton>(b);
+        const bool guide = button == SDL_GAMEPAD_BUTTON_GUIDE, stick = button == SDL_GAMEPAD_BUTTON_LEFT_STICK;
+        CHECK(sdl::MenuButton(button, MenuButtons::GuideStick) == (guide || stick));
+        CHECK(sdl::MenuButton(button, MenuButtons::Guide) == guide);
+        CHECK(!sdl::MenuButton(button, MenuButtons::Chord));
+    }
+    CHECK(!sdl::MenuButton(SDL_GAMEPAD_BUTTON_INVALID, MenuButtons::GuideStick));
+    // (this program has no RECOMP_MENU_BUTTON: recomp-common's own, the left stick's click too)
+    CHECK(sdl::MenuButton(SDL_GAMEPAD_BUTTON_LEFT_STICK) == (DefaultMenuButtons() == MenuButtons::GuideStick));
     static bool keys[SDL_SCANCODE_COUNT] = {};
     keys[SDL_SCANCODE_DOWN] = keys[SDL_SCANCODE_BACKSPACE] = true;
     CHECK(sdl::MenuHeld(keys, nullptr, 0) == (kMenuDown | kMenuBack));

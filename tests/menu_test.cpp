@@ -137,6 +137,30 @@ int main() {
         both.Configure(faster);
         CHECK(both.Speed() == 2); // (chosen, kept)
     }
+    {
+        // A choice whose list is built at run time (the files found, say: own_shaders.h): configured again with more
+        // while open, the row stays where it was and Right goes on into the new ones; with fewer, a value past the end
+        // is drawn as the last and Left goes back into the list
+        MenuConfig files = Config();
+        files.features[1].choices = {"The first one found", "a"};
+        Menu built;
+        built.Configure(files);
+        built.Open();
+        g_values[1] = 0;
+        Press(built, {kMenuDown, kMenuDown, kMenuDown, kMenuDown, kMenuConfirm, kMenuDown, kMenuRight, kMenuRight});
+        CHECK(g_values[1] == 1);
+        files.features[1].choices = {"The first one found", "a", "b", "c"};
+        built.Configure(files);
+        Press(built, {kMenuRight, kMenuRight});
+        CHECK(g_values[1] == 3);
+        files.features[1].choices = {"The first one found", "a"};
+        built.Configure(files);
+        std::vector<uint32_t> picture(320 * 240);
+        built.Draw(picture.data(), 320, 240);
+        Press(built, {kMenuLeft});
+        CHECK(g_values[1] == 0);
+        g_values[1] = 0;
+    }
 
     // The host's rows hand back their ids
     chosen = Press(menu, {kMenuDown, kMenuConfirm});

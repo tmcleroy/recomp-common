@@ -142,7 +142,12 @@ These make every port feel the same. Two headers do most of it: `menu_layout.h` 
   middle). Every port has Reset game, Reset all options and Quit game.
 - **The controls** (`menu_sdl.h`):
   - Esc, F1, a phone's Back, Tab (when the game hasn't got it), a gamepad's Guide, its left stick's click, and Start
-    and Back together open the menu and close it, from any page.
+    and Back together open the menu and close it, from any page. Which of the gamepad's do is the player's choice, the
+    launcher's **Menu button** (Controllers page; `menu_buttons.h`, given to the game in `RECOMP_MENU_BUTTON`): Guide,
+    left-stick click or Start+Select (recomp-common's own), Guide or Start+Select, or Start+Select only. Start and Back
+    together always do. A port asks `sdl::MenuButton(button)` rather than naming the buttons itself, and changes what
+    its players start with by building its game with `RECOMP_MENU_BUTTON_DEFAULT` and its launcher with
+    `LAUNCHER_MENU_BUTTON` (the same key: `guide`, say).
   - In the menu, the arrows, the d-pad and the left stick choose, and held they go on (`MenuRepeat`). Enter, Space
     and A confirm. Backspace and B go back a page.
   - The mouse: over a row chooses it, a click confirms, the right button goes back, the wheel goes up and down
@@ -227,6 +232,28 @@ free_play = 0            ; a feature's own value wins over the preset: 0, 1, or 
   can all write to one file.
 
 With every feature off (the `pure` preset, or no file) a game must run exactly as the original.
+
+## The player's own shader presets
+
+`own_shaders.h` (namespace `recomp::shaders`, header only) is for a port whose Shader feature draws through RetroArch's
+`.slangp` presets (librashader) and has a choice, "Your own", for the player's. The port keeps its built-in presets
+and its librashader code; this is the rest:
+
+- **One folder for every game**: `shaders/` in the launcher's own folder (beside `launcher.ini`). The launcher makes
+  it when it starts (`Description::own_shaders` names the feature and its Your own choice) and tells the games it
+  starts in `RECOMP_SHADERS`; a game started on its own finds it beside its own folder with `SharedFolder(game_folder,
+  LAUNCHER_GAME_NAME)`. A game's own `shaders/` (`GameFolder`) comes first, and its preset of a name wins.
+- **Found by name**: `Find(GameFolder(..), SharedFolder(..))` lists every `.slangp` in either folder and the folders
+  under it (a RetroArch pack goes in whole), each by its path there (`crt-pack/newpixie-crt.slangp`).
+- **Kept by name**: `[shader] own` in each game's `settings.ini` (`Chosen`, `Choose`); none is the first found.
+  `Pick` gives the preset to draw with, or why there is none.
+- **The same list in the launcher and the menu**: `MakeChoices` ("The first one found", then each preset, and a chosen
+  one that is gone at the end), whose `IndexOf` and `NameAt` turn a place into a name and back. The launcher draws it
+  under the feature as **Your own preset** (looked at again every two seconds) with the folder's row and **Open
+  shaders folder**; a game's menu builds it anew each time it opens (`Menu::Configure` before `Open`) as a feature of
+  its own, `kTitle`, with `MenuDescription(shared, game_own)` saying where the folders are. Choosing one chooses Your
+  own. A preset that fails to load should say librashader's reason, in the menu (`Menu::Note`) or over the picture,
+  and in the log.
 
 ## The launcher
 
