@@ -1780,6 +1780,10 @@ void App::load_features(Slot& one) {
         return;
     }
     one.features = recomp::ParseFeatureList(GameProcess::output_of(one.program(), {"--list-features"}));
+    // (a file from before a feature was kept by name: made over once, settings.h)
+    if (recomp::MigrateFeatures(one.settings, one.features)) {
+        one.settings.save();
+    }
 }
 
 // A collection's features that more than one of its games (those here) has, by the same name and with the same

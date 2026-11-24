@@ -227,6 +227,14 @@ free_play = 0            ; a feature's own value wins over the preset: 0, 1, or 
   preset `custom`, writes down the features that were following the preset so that nothing else
   changes, and never rewrites a value that was already in the file. `recomp::SetPreset` chooses a
   preset.
+- **A choice kept by name**: a feature whose choices may be put in another order later gives each one a stable
+  name in `FeatureInfo::ids` (the first, off, `off`), and in `numbered` the ids its numbers meant before it had them
+  (in that old order). Its value is then kept as `name_id = <id>` and, beside it, `name = <the id's old number>` (none
+  for an id with no old number), so an older build that knows only the numbers reads the same choice; the menu's
+  choices offered the same way (`[menu] name_id = crt,xbrz` and `name = 1,10`). Reads go by `name_id` (an id this
+  build does not know: the number). `recomp::MigrateFeatures(ini, features)` makes a file from before the ids over
+  once, and the two keys agree; the launcher does it as it reads a game's features, and a game should as it starts.
+  `--list-features` carries the ids and the old order as a seventh and eighth field.
 - `recomp::Ini` is the file itself: `load`, `get`, `set`, `save`. It keeps every line it was not
   asked to change, comments and other sections included, so the launcher, the game and the player
   can all write to one file.

@@ -5,6 +5,13 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **A feature's choice kept by name** (`FeatureInfo::ids`, `numbered`; `settings.h`): a feature can give its choices
+  stable names, so their list can be put in another order without a saved choice changing its meaning. It is kept as
+  `[features] name_id = <id>` with the old number beside it (`name = N`, by the order `numbered` gives), and the
+  menu's offered choices as `[menu] name_id` with their old numbers, so an older build reads the same choice and the
+  same favourites. Reads prefer the name. `MigrateFeatures` makes an older file over once (the launcher does it as
+  it reads a game's features; `SetFeature` does it too), and `--list-features` carries the ids as a seventh and eighth
+  field, which older readers pass over. A feature without ids is kept by number, as before.
 - **The player's own shader presets** (`own_shaders.h`): one shared `shaders/` folder in the launcher's own folder for
   every game (made by the launcher and given to the games in `RECOMP_SHADERS`; a game's own `shaders/` still works and
   comes first), every `.slangp` in it and its folders found, and the player's choice kept by name in `settings.ini`
