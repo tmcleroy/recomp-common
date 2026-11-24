@@ -15,7 +15,7 @@ inline constexpr Entry kPortuguese[] = {
     {"Keeps the game as it is now in the slot.", "Guarda o jogo como está agora no slot."},
     {"Load state", "Carregar estado"},
     {"Goes back to the game kept in the slot.", "Volta ao jogo guardado no slot."},
-    {"Left/Right: the slot (1-9) that Save state and Load state use.", "Esquerda/Direita: o slot (1-9) usado por Salvar estado e Carregar estado."},
+    {"Left/Right: the slot (1-{}) that Save state and Load state use.", "Esquerda/Direita: o slot (1-{}) usado por Salvar estado e Carregar estado."},
     {"Speed", "Velocidade"},
     {"Mute", "Mudo"},
     {"On", "Ligado"},

@@ -69,7 +69,7 @@ menu.Configure(std::move(config));
 | Row kind | What it is | What `Buttons` returns when chosen |
 |---|---|---|
 | `Save`, `Load` | "Save state", "Load state" | `Chosen::Save`, `Chosen::Load` (use `Slot()`) |
-| `Slot` | The slot, 1 to 9 | nothing: the menu keeps it (`Slot()`, `SetSlot()`) |
+| `Slot` | The slot, 1 to `slots` (9 unless the config says) | nothing: the menu keeps it (`Slot()`, `SetSlot()`) |
 | `Speed` | One of `speeds`; left out if there are none | nothing: the menu keeps it (`Speed()`, `SetSpeed()`) |
 | `Pages` | Stands for several rows: the commands of no category, then a row per category | a command: `Chosen::Command` with its index |
 | `Action` | The port's own row: a title, a description, an id | `Chosen::Action` with the id |

@@ -70,6 +70,19 @@ int main() {
     CHECK(menu.Slot() == 9);
     Press(menu, {kMenuRight, kMenuConfirm});
     CHECK(menu.Slot() == 2);
+    // ... and as many slots as the config gives
+    {
+        MenuConfig more = Config();
+        more.slots = 99;
+        Menu many;
+        many.Configure(more);
+        many.SetSlot(0);
+        CHECK(many.Slot() == 99);
+        many.SetSlot(100);
+        CHECK(many.Slot() == 1);
+        many.SetSlot(42);
+        CHECK(many.Slot() == 42);
+    }
 
     // A command of no category is on the first page
     Menu::Chosen chosen = Press(menu, {kMenuDown, kMenuConfirm});
