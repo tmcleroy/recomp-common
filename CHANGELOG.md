@@ -5,6 +5,19 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The player's own shader presets** (`own_shaders.h`): one shared `shaders/` folder in the launcher's own folder for
+  every game (made by the launcher and given to the games in `RECOMP_SHADERS`; a game's own `shaders/` still works and
+  comes first), every `.slangp` in it and its folders found, and the player's choice kept by name in `settings.ini`
+  (`[shader] own`), not by place. A port names its Shader feature's Your own choice in `Description::own_shaders`, and
+  the launcher draws **Your own preset** (the presets found, built anew as the folder changes; choosing one chooses Your
+  own, for every game that has the feature) and the folder's row with its path and **Open shaders folder** (on
+  Android, where no button can open it, the row says so). A game's menu changing it is the other games' choice too,
+  as its features are. Updates never touch the folder (the update test checks). The words are in Spanish and
+  Portuguese.
+- **Fix: a feature's description stayed in English** on the Features page when a note followed it ("Only in …", "Not
+  the same in every game yet"): it is now translated before the note is put after it.
+- **A menu feature's choices built at run time**: a value past the end of a list that has become shorter is shown as
+  its last choice, and Left goes back into the list (it stayed stuck before).
 - **The menu button, the player's choice**: a Menu button row on the launcher's Controllers page (launcher.ini
   `[launcher] menu_button`, given to the games in `RECOMP_MENU_BUTTON`) chooses which of a gamepad's buttons open the
   in-game menu: Guide, left-stick click or Start+Select (as before, and recomp-common's own), Guide or Start+Select, or

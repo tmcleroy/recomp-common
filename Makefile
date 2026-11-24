@@ -7,7 +7,7 @@ CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Wpedantic -Isrc
 B := build
 
 .PHONY: test example launcher launcher-shots audit clean
-test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings_c_test $(B)/folders_test $(B)/proxy_test $(B)/update_test $(B)/online_test $(B)/layout_test $(B)/curl_args_test $(B)/menu_buttons_test $(B)/menu_buttons_port_test
+test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings_c_test $(B)/folders_test $(B)/proxy_test $(B)/update_test $(B)/online_test $(B)/layout_test $(B)/curl_args_test $(B)/menu_buttons_test $(B)/menu_buttons_port_test $(B)/own_shaders_test $(B)/own_shaders_test20
 	@$(B)/menu_test
 	@$(B)/i18n_test
 	@$(B)/c_test
@@ -21,6 +21,8 @@ test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings
 	@$(B)/curl_args_test
 	@$(B)/menu_buttons_test
 	@$(B)/menu_buttons_port_test
+	@$(B)/own_shaders_test
+	@$(B)/own_shaders_test20
 	@if pkg-config --exists sdl3 2> /dev/null; then $(MAKE) -s $(B)/menu_sdl_test && $(B)/menu_sdl_test; else echo "menu_sdl_test: skipped (no SDL 3)"; fi
 	@if pkg-config --exists sdl3 2> /dev/null; then $(MAKE) -s $(B)/arcade_sdl_test && $(B)/arcade_sdl_test; else echo "arcade_sdl_test: skipped (no SDL 3)"; fi
 
@@ -88,6 +90,15 @@ $(B)/proxy_test: tests/proxy_test.cpp src/proxy.h
 $(B)/folders_test: tests/folders_test.cpp src/folders.h
 	@mkdir -p $(B)
 	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined tests/folders_test.cpp -o $@
+
+# The player's own shader presets (own_shaders.h)
+$(B)/own_shaders_test: tests/own_shaders_test.cpp src/own_shaders.h src/folders.h src/settings.cpp src/settings.h src/i18n.h src/i18n_es.h src/i18n_pt_br.h
+	@mkdir -p $(B)
+	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined tests/own_shaders_test.cpp src/settings.cpp -o $@
+# (and as a port of C++20 has it, where a path's UTF-8 is of char8_t)
+$(B)/own_shaders_test20: tests/own_shaders_test.cpp src/own_shaders.h src/folders.h src/settings.cpp src/settings.h src/i18n.h src/i18n_es.h src/i18n_pt_br.h
+	@mkdir -p $(B)
+	$(CXX) $(CXXFLAGS) -std=c++20 tests/own_shaders_test.cpp src/settings.cpp -o $@
 
 # The launcher's updates (launcher/src/update.h; needs curl and tar, or ditto, to run)
 $(B)/update_test: tests/update_test.cpp launcher/src/update.cpp launcher/src/update.h launcher/src/run_program.cpp launcher/src/run_program.h
