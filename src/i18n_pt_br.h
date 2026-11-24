@@ -424,7 +424,7 @@ inline constexpr Entry kPortuguese[] = {
     {"Shaders folder", "Pasta de shaders"},
     {"Open shaders folder", "Abrir pasta de shaders"},
     {"The first one found", "O primeiro encontrado"},
-    {"Your own presets go in {}.", "Seus próprios presets ficam em {}."},
+    {"Your own presets: see Shaders folder below.", "Seus próprios presets: veja Pasta de shaders abaixo."},
     {"None yet. Put a .slangp preset in the shaders folder below with the files it uses beside it (a RetroArch shader pack can go in whole, in a folder of its own), and choose it here. Until then, Your own draws without one.", "Nenhum ainda. Coloque um preset .slangp na pasta de shaders abaixo, com os arquivos que ele usa ao lado (um pacote de shaders do RetroArch pode ir inteiro, numa pasta própria), e escolha-o aqui. Até lá, O seu desenha sem nenhum."},
     {"What Your own draws with: a .slangp preset in the shaders folder below or a folder in it. Choosing one chooses Your own. A game's own shaders folder, beside its settings, comes first in its menu, and its preset of the same name is used instead.", "Com o que O seu desenha: um preset .slangp na pasta de shaders abaixo ou numa pasta dentro dela. Escolher um escolhe O seu. A pasta shaders do próprio jogo, ao lado das configurações dele, vem primeiro no menu dele, e o preset dela de mesmo nome é usado no lugar."},
     {"{}. One folder for every game, left alone by updates.", "{}. Uma pasta para todos os jogos, que as atualizações não tocam."},

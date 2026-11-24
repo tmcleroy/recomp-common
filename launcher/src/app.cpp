@@ -4878,7 +4878,7 @@ void App::feature_row(float width, const FeatureRow& feature, Set set, Offered o
         detail += " " + feature.note;
     }
     if (own_shader_feature(info)) {
-        detail += " " + TrFormat("Your own presets go in {}.", {own_shaders_.u8string()});
+        detail += std::string(" ") + Tr("Your own presets: see Shaders folder below.");  // (its path is there, once)
     }
     if (info.choices.empty()) {
         bool on = feature.value != 0;
