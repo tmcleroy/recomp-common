@@ -46,6 +46,7 @@ bool Menu::Favourites(size_t feature) const {
 void Menu::Configure(MenuConfig config) {
     m_config = std::move(config);
     m_speed = std::clamp(m_speed < 0 ? m_config.normalSpeed : m_speed, 0, std::max(static_cast<int>(m_config.speeds.size()) - 1, 0));
+    m_slot = std::min(m_slot, SlotCount());
     if (m_open) {
         Fill();
     }
@@ -284,7 +285,7 @@ Menu::Chosen Menu::Buttons(unsigned pressed) {
     const bool press = pressed & kMenuConfirm;
     // Rows with several values: Left and Right go through them (Confirm goes on to the next, around)
     const int step = (pressed & kMenuLeft) ? -1 : (press || (pressed & kMenuRight)) ? 1 : 0;
-    if (row.kind == kRowSlot && step) { // 1-9, around
+    if (row.kind == kRowSlot && step) { // 1 to SlotCount(), around
         SetSlot(m_slot + step);
         return {};
     }
@@ -439,7 +440,7 @@ void Menu::Draw(uint32_t *pixels, int width, int height) const {
         case kRowSlot:
             title = Tr("Slot");
             value = std::to_string(m_slot);
-            rowDescription = Tr("Left/Right: the slot (1-9) that Save state and Load state use.");
+            rowDescription = i18n::TrFormat("Left/Right: the slot (1-{}) that Save state and Load state use.", {std::to_string(SlotCount())});
             break;
         case kRowSpeed:
             title = Tr("Speed");

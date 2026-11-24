@@ -5,6 +5,9 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **More save-state slots, the port's choice** (`MenuConfig::slots`, `RMenuConfig::slots`): the Slot row goes from 1
+  to the number a port gives (9 unless it says), around both ways, and its description says the range. `SlotCount()`
+  gives it to the host for its own slot keys.
 - **A feature's choice kept by name** (`FeatureInfo::ids`, `numbered`; `settings.h`): a feature can give its choices
   stable names, so their list can be put in another order without a saved choice changing its meaning. It is kept as
   `[features] name_id = <id>` with the old number beside it (`name = N`, by the order `numbered` gives), and the
