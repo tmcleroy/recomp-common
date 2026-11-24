@@ -66,4 +66,5 @@ jobs:
           SDL_VIDEO_DRIVER=dummy SDL_RENDER_DRIVER=software EXAMPLE_HOME=build/launcher-shots/home build/launcher/example-launcher --screenshot build/launcher-shots/keys --press "dddre"
           SDL_VIDEO_DRIVER=dummy SDL_RENDER_DRIVER=software EXAMPLE_HOME=build/launcher-shots/home build/launcher/example-launcher --screenshot build/launcher-shots/pad --press "]RADA[B"
           test -s build/launcher-shots/keys.png && test -s build/launcher-shots/pad.png
+          (cd build/launcher-shots/home && test -d shaders)  # (the player's own shader presets' folder, made by the launcher)
           build/launcher/example --list-features | grep -q "Off|Player 1|Both"

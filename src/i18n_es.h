@@ -423,6 +423,21 @@ inline constexpr Entry kSpanish[] = {
     {"Join us on Discord", "Únete a nosotros en Discord"},
     {"Find players for a match, tell us what to fix or add, and hear about new versions first.", "Encuentra rivales, dinos qué arreglar o añadir, y entérate antes que nadie de las nuevas versiones."},
     {"Open Discord", "Abrir Discord"},
+    // (the player's own shader presets: own_shaders.h, and the launcher's rows of them)
+    {"Your own preset", "Tu propio preset"},
+    {"Shaders folder", "Carpeta de shaders"},
+    {"Open shaders folder", "Abrir carpeta de shaders"},
+    {"The first one found", "El primero que se encuentre"},
+    {"Your own presets go in {}.", "Tus propios presets van en {}."},
+    {"None yet. Put a .slangp preset in the shaders folder below with the files it uses beside it (a RetroArch shader pack can go in whole, in a folder of its own), and choose it here. Until then, Your own draws without one.", "Ninguno todavía. Pon un preset .slangp en la carpeta de shaders de abajo, con los archivos que usa a su lado (un paquete de shaders de RetroArch puede ir entero, en una carpeta propia), y elígelo aquí. Hasta entonces, El tuyo dibuja sin ninguno."},
+    {"What Your own draws with: a .slangp preset in the shaders folder below or a folder in it. Choosing one chooses Your own. A game's own shaders folder, beside its settings, comes first in its menu, and its preset of the same name is used instead.", "Con qué dibuja El tuyo: un preset .slangp en la carpeta de shaders de abajo o en una carpeta dentro de ella. Elegir uno elige El tuyo. La carpeta shaders propia de un juego, junto a sus ajustes, va primero en su menú, y su preset del mismo nombre se usa en su lugar."},
+    {"{}. One folder for every game, left alone by updates.", "{}. Una carpeta para todos los juegos, que las actualizaciones no tocan."},
+    {"{}. One folder for every game, left alone by updates. On Android it is in the app's own storage: the phone's file manager usually can't open it, a computer connected over USB usually can (Android/data). There is no import here yet.", "{}. Una carpeta para todos los juegos, que las actualizaciones no tocan. En Android está en el almacenamiento propio de la app: el gestor de archivos del teléfono normalmente no puede abrirla, un ordenador conectado por USB normalmente sí (Android/data). Aún no hay forma de importar aquí."},
+    {"no .slangp preset in the shaders folder", "ningún preset .slangp en la carpeta de shaders"},
+    {"{} is not in the shaders folder", "{} no está en la carpeta de shaders"},
+    {"{} (this game's)", "{} (de este juego)"},
+    {"{} (not found)", "{} (no encontrado)"},
+    {"What Shader's Your own draws with, kept by its name: a .slangp preset in {} (one folder for every game: the launcher's Open shaders folder opens it) or in a folder there, with the files it uses beside it. This game's own shaders folder, {}, comes first. Choosing one chooses Your own.", "Con qué dibuja El tuyo del Shader, guardado por su nombre: un preset .slangp en {} (una carpeta para todos los juegos: el Abrir carpeta de shaders del lanzador la abre) o en una carpeta allí, con los archivos que usa a su lado. La carpeta shaders propia de este juego, {}, va primero. Elegir uno elige El tuyo."},
 };
 
 } // namespace recomp::i18n

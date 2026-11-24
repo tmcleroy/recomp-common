@@ -149,6 +149,7 @@ expected to follow (what opens the menu, what "Quit game" means, the order of th
 | `src/settings.h`, `settings.cpp` | The settings file and the rules for features: presets, values, choices. |
 | `src/settings_c.h`, `settings_c.cpp` | The same rules for hosts written in C. |
 | `src/folders.h` | Where the player's things are: the folder a download was unpacked to, and portable mode. |
+| `src/own_shaders.h` | The player's own shader presets: one shared folder for every game, the presets found in it, the choice kept by name. |
 | `src/gamepads.h` | Mappings for controllers SDL doesn't know, from a `gamecontrollerdb.txt` (needs SDL). |
 | `launcher/` | The launcher: `launcher.cmake` (what a port includes), `src/` (`launcher.h` is what a port fills in), `example/`. |
 | `src/text.h` | A 5x7 dot-matrix font on a canvas of 32-bit pixels; usable on its own for a port's readouts. |

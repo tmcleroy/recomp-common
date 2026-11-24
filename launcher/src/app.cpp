@@ -578,6 +578,10 @@ int play_directly(const std::string& id, const std::vector<std::string>& extra) 
     prefs.load();
     use_language(prefs);
     use_menu_buttons(prefs);
+    if (the_description().own_shaders.feature) {
+        // (the player's own shader presets: the shared folder, made, and the game told of it)
+        recomp::shaders::Prepare(recomp::shaders::LauncherFolder(player_folder(LAUNCHER_GAME_NAME, LAUNCHER_HOME_ENV)));
+    }
     if (about.game_page && !about.check(prefs.get(target->file_section, about.file_key)).usable()) {
         say(SDL_MESSAGEBOX_INFORMATION, target->name, about.file_not_set_up);
         return 1;
@@ -673,6 +677,12 @@ App::App(SDL_Window* window)
     prefs_.load();
     use_language(prefs_);
     use_menu_buttons(prefs_);
+    // (the player's own shader presets: the shared folder, made now so the player can put them in before a game ever
+    // ran, and the games told of it)
+    if (about_.own_shaders.feature) {
+        own_shaders_ = recomp::shaders::LauncherFolder(folder_);
+        recomp::shaders::Prepare(own_shaders_);
+    }
     // (controllers SDL doesn't know: gamecontrollerdb.txt beside the launcher or in its folder, as the game reads it)
     recomp::AddGamepadMappings({program_folder_, folder_});
     for (const Target& target : targets()) {
@@ -1583,6 +1593,7 @@ void App::play(size_t which, const std::vector<std::string>& extra) {
     std::filesystem::create_directories(one.folder / "logs", error);
     one.settings.save();
     one.values_before = recomp::FeatureValues(one.settings, one.features);
+    one.own_shader_before = recomp::shaders::Chosen(one.settings);
     Target target;
     target.about = one.about;
     target.file_section = one.file_section;
@@ -1758,6 +1769,29 @@ void App::after_game(Slot& one) {
     }
     one.pending.clear();
     one.values_before.clear();
+    // (its own shader preset, as its features: chosen in its menu, it is the others' too)
+    if (about_.own_shaders.feature) {
+        const std::string chosen = recomp::shaders::Chosen(one.settings);
+        if (chosen != one.own_shader_before) {
+            for (auto& other : slots_) {
+                if (other.get() == &one || std::none_of(other->features.begin(), other->features.end(),
+                                                        [&](const recomp::FeatureInfo& f) { return own_shader_feature(f); })) {
+                    continue;
+                }
+                if (other->game.running()) {
+                    other->pending_own = chosen;
+                    other->has_pending_own = true;
+                } else if (recomp::shaders::Chosen(other->settings) != chosen) {
+                    recomp::shaders::Choose(other->settings, chosen);
+                    other->settings.save();
+                }
+            }
+        } else if (one.has_pending_own && chosen != one.pending_own) {
+            recomp::shaders::Choose(one.settings, one.pending_own);
+            one.settings.save();
+        }
+        one.has_pending_own = false;
+    }
 }
 
 // ---- frame -------------------------------------------------------------------------------
@@ -4190,6 +4224,7 @@ void App::title_page(size_t which, float width) {
             rows.push_back({&one.features[i], values[i], "", i, hidden_choices(one, i)});
         }
     }
+    own_shader_slots_ = {&one};
     feature_list(
         width, rows, "Nothing of its own: every feature it has is on the Features page.",
         [&](const FeatureRow& feature, int value) { set_feature(one, feature.index, value); },
@@ -4722,6 +4757,7 @@ void App::features_page(float width) {
             }
             rows.push_back({&one.features[i], values[i], "", i, hidden_choices(one, i)});
         }
+        own_shader_slots_ = {&one};
         feature_list(
             width, rows, "No optional features yet.", [&](const FeatureRow& feature, int value) { set_feature(one, feature.index, value); },
             [&](const FeatureRow& feature) { return recomp::MenuChoices(one.settings, one.features[feature.index]); },
@@ -4766,6 +4802,15 @@ void App::features_page(float width) {
             note += std::string(note.empty() ? "" : " ") + Tr("Not the same in every game yet: what you choose here is.");
         }
         rows.push_back({&shared.info, value, note, i, hidden_choices(*slots_[where[0].first], where[0].second)});
+    }
+    // (the player's own shader preset: set for every game that has the feature, shown as the first has it)
+    own_shader_slots_.clear();
+    for (const Shared& shared : shared_) {
+        if (own_shader_feature(shared.info)) {
+            for (const auto& at : shared.where) {
+                own_shader_slots_.push_back(slots_[at.first].get());
+            }
+        }
     }
     // (the menu's choices: as the first game that has the feature has them, and set for every one)
     feature_list(
@@ -4828,6 +4873,9 @@ void App::feature_row(float width, const FeatureRow& feature, Set set, Offered o
     const recomp::FeatureInfo& info = *feature.info;
     ImGui::PushID(info.name.c_str());
     std::string detail = feature.note.empty() ? info.description : info.description + " " + feature.note;
+    if (own_shader_feature(info)) {
+        detail += " " + TrFormat("Your own presets go in {}.", {own_shaders_.u8string()});
+    }
     if (info.choices.empty()) {
         bool on = feature.value != 0;
         row(width, info.title.c_str(), detail.c_str(), 42.0f, 24.0f, [&] {
@@ -4853,10 +4901,84 @@ void App::feature_row(float width, const FeatureRow& feature, Set set, Offered o
                 set(feature, numbers[static_cast<size_t>(at)]);
             }
         });
+        if (own_shader_feature(info)) {
+            own_shader_rows(width, feature, [&](int value) { set(feature, value); });
+        }
         if (info.flags & recomp::kFeatureMenuChoices) {
             menu_choices(width, feature, offered(feature), [&](const std::vector<bool>& to) { set_offered(feature, to); });
         }
     }
+    ImGui::PopID();
+}
+
+// ---- the player's own shader presets (own_shaders.h) ---------------------------------------
+
+bool App::own_shader_feature(const recomp::FeatureInfo& info) const {
+    const launcher::OwnShaders& own = about_.own_shaders;
+    return own.feature && !own_shaders_.empty() && info.name == own.feature && own.choice > 0 &&
+           own.choice < static_cast<int>(info.choices.size());
+}
+
+void App::set_own_shader(const std::string& name) {
+    for (Slot* one : own_shader_slots_) {
+        recomp::shaders::Choose(one->settings, name);
+        one->settings.save();
+    }
+}
+
+// Under the feature's row: Your own preset (the presets in the shared folder, built anew as it changes: chosen, the
+// feature's own choice is chosen too), and the folder's row with its path and Open shaders folder
+void App::own_shader_rows(float width, const FeatureRow& feature, const std::function<void(int)>& set_choice) {
+    namespace shaders = recomp::shaders;
+    const auto now = std::chrono::steady_clock::now();
+    if (own_looked_ == std::chrono::steady_clock::time_point{} || now - own_looked_ > std::chrono::seconds(2)) {
+        own_found_ = shaders::Scan(own_shaders_);
+        own_looked_ = now;
+    }
+    const std::string chosen = own_shader_slots_.empty() ? std::string() : shaders::Chosen(own_shader_slots_.front()->settings);
+    const shaders::Choices list = shaders::MakeChoices(own_found_, chosen);
+    const bool differ = std::any_of(own_shader_slots_.begin(), own_shader_slots_.end(),
+                                    [&](const Slot* one) { return shaders::Chosen(one->settings) != chosen; });
+    ImGui::PushID("own shaders");
+    inset_separator(width);
+    std::string detail =
+        own_found_.empty()
+            ? Tr("None yet. Put a .slangp preset in the shaders folder below with the files it uses beside it (a RetroArch shader "
+                 "pack can go in whole, in a folder of its own), and choose it here. Until then, Your own draws without one.")
+            : Tr("What Your own draws with: a .slangp preset in the shaders folder below or a folder in it. Choosing one chooses Your "
+                 "own. A game's own shaders folder, beside its settings, comes first in its menu, and its preset of the same name is "
+                 "used instead.");
+    if (differ) {
+        detail += std::string(" ") + Tr("Not the same in every game yet: what you choose here is.");
+    }
+    int at = list.IndexOf(chosen);
+    row(width, "Your own preset", detail.c_str(), 190.0f, 36.0f, [&] {
+        if (ui::dropdown("##own preset", list.labels, at, 190.0f)) {
+            set_own_shader(list.NameAt(at));
+            if (feature.value != about_.own_shaders.choice) {
+                set_choice(about_.own_shaders.choice);
+            }
+            own_looked_ = {};  // (looked at again)
+        }
+    });
+    inset_separator(width);
+#ifdef __ANDROID__
+    // (no file manager reaches the app's own folder from the phone, and no import here: a computer over USB can)
+    const std::string where =
+        TrFormat("{}. One folder for every game, left alone by updates. On Android it is in the app's own storage: the phone's file "
+                 "manager usually can't open it, a computer connected over USB usually can (Android/data). There is no import here yet.",
+                 {own_shaders_.u8string()});
+    row(width, "Shaders folder", where.c_str(), 0.0f, 0.0f, [] {});
+#else
+    const std::string where = TrFormat("{}. One folder for every game, left alone by updates.", {own_shaders_.u8string()});
+    row(width, "Shaders folder", where.c_str(), 190.0f, 36.0f, [&] {
+        if (ui::button("Open shaders folder", Kind::Secondary, 190.0f)) {
+            std::error_code error;
+            std::filesystem::create_directories(own_shaders_, error);  // (taken away since the launcher started)
+            SDL_OpenURL(file_url(own_shaders_).c_str());
+        }
+    });
+#endif
     ImGui::PopID();
 }
 
