@@ -50,6 +50,23 @@ constexpr size_t kMost = 4000;  // (presets listed at most: the whole of RetroAr
 constexpr const char *kFirstFound = "The first one found"; // (the lists' first choice: none chosen)
 constexpr const char *kTitle = "Your own preset";          // (the launcher's row, and the in-game menu's)
 
+// A path as UTF-8 text and back, in C++17 and C++20 alike (where u8string is of char8_t, and u8path is deprecated)
+inline std::string Utf8(const std::filesystem::path &path) {
+#if defined(__cpp_char8_t)
+    const std::u8string text = path.u8string();
+    return std::string(text.begin(), text.end());
+#else
+    return path.u8string();
+#endif
+}
+inline std::filesystem::path PathOf(const std::string &utf8) {
+#if defined(__cpp_char8_t)
+    return std::filesystem::path(std::u8string(utf8.begin(), utf8.end()));
+#else
+    return std::filesystem::u8path(utf8);
+#endif
+}
+
 // The shared folder in the launcher's own folder
 inline std::filesystem::path LauncherFolder(const std::filesystem::path &launcher_folder) {
     return launcher_folder / kFolder;
@@ -60,7 +77,7 @@ inline std::filesystem::path LauncherFolder(const std::filesystem::path &launche
 inline bool Prepare(const std::filesystem::path &shared) {
     std::error_code error;
     std::filesystem::create_directories(shared, error);
-    const std::string path = shared.u8string();
+    const std::string path = Utf8(shared);
 #ifdef _WIN32
     _putenv_s(kEnvironment, path.c_str());
 #else
@@ -74,7 +91,7 @@ inline bool Prepare(const std::filesystem::path &shared) {
 // LAUNCHER_GAME_NAME). Not made here.
 inline std::filesystem::path SharedFolder(const std::filesystem::path &game_folder, const std::string &launcher_name) {
     if (const char *given = std::getenv(kEnvironment); given && *given) {
-        return std::filesystem::u8path(given);
+        return PathOf(given);
     }
     if (game_folder.empty()) {
         return {};
@@ -83,7 +100,7 @@ inline std::filesystem::path SharedFolder(const std::filesystem::path &game_fold
     if (!folder.has_filename() && folder.has_relative_path()) {
         folder = folder.parent_path(); // ("a/b/" is "a/b")
     }
-    return folder.parent_path() / std::filesystem::u8path(FolderName(launcher_name)) / kFolder;
+    return folder.parent_path() / PathOf(FolderName(launcher_name)) / kFolder;
 }
 
 // A game's own folder of presets, in its folder
@@ -119,10 +136,14 @@ inline std::vector<Preset> Scan(const std::filesystem::path &folder, bool game_o
         if (it.depth() > 8) {
             it.disable_recursion_pending();
         }
-        if (detail::Lower(it->path().extension().u8string()) != kExtension || !it->is_regular_file(ignored)) {
+        if (detail::Lower(Utf8(it->path().extension())) != kExtension || !it->is_regular_file(ignored)) {
             continue;
         }
-        found.push_back({it->path().lexically_relative(folder).generic_u8string(), it->path(), game_own});
+        std::string name = Utf8(it->path().lexically_relative(folder));
+#ifdef _WIN32
+        std::replace(name.begin(), name.end(), '\\', '/');  // ('/' between folders everywhere)
+#endif
+        found.push_back({name, it->path(), game_own});
     }
     std::sort(found.begin(), found.end(), [](const Preset &a, const Preset &b) {
         const std::string la = detail::Lower(a.name), lb = detail::Lower(b.name);
@@ -229,7 +250,7 @@ inline std::string MenuDescription(const std::filesystem::path &shared, const st
     return i18n::TrFormat("What Shader's Your own draws with, kept by its name: a .slangp preset in {} (one folder for every game: the "
                           "launcher's Open shaders folder opens it) or in a folder there, with the files it uses beside it. This game's "
                           "own shaders folder, {}, comes first. Choosing one chooses Your own.",
-                          {shared.u8string(), game_own.u8string()});
+                          {Utf8(shared), Utf8(game_own)});
 }
 
 }  // namespace recomp::shaders
