@@ -4872,7 +4872,11 @@ template <typename Set, typename Offered, typename SetOffered>
 void App::feature_row(float width, const FeatureRow& feature, Set set, Offered offered, SetOffered set_offered) {
     const recomp::FeatureInfo& info = *feature.info;
     ImGui::PushID(info.name.c_str());
-    std::string detail = feature.note.empty() ? info.description : info.description + " " + feature.note;
+    // (in the player's language before anything is put after it: the whole is not in the tables)
+    std::string detail = Tr(info.description);
+    if (!feature.note.empty()) {
+        detail += " " + feature.note;
+    }
     if (own_shader_feature(info)) {
         detail += " " + TrFormat("Your own presets go in {}.", {own_shaders_.u8string()});
     }

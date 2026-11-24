@@ -14,6 +14,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   Android, where no button can open it, the row says so). A game's menu changing it is the other games' choice too,
   as its features are. Updates never touch the folder (the update test checks). The words are in Spanish and
   Portuguese.
+- **Fix: a feature's description stayed in English** on the Features page when a note followed it ("Only in …", "Not
+  the same in every game yet"): it is now translated before the note is put after it.
 - **A menu feature's choices built at run time**: a value past the end of a list that has become shorter is shown as
   its last choice, and Left goes back into the list (it stayed stuck before).
 - **The menu button, the player's choice**: a Menu button row on the launcher's Controllers page (launcher.ini
