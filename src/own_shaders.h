@@ -247,10 +247,19 @@ inline Choices MakeChoices(const std::vector<Preset> &found, const std::string &
 // The in-game menu's row of them, its description: where the folders are, in the player's language. (A host builds the
 // row's choices anew, MakeChoices, each time it opens the menu, so a preset put in meanwhile is there.)
 inline std::string MenuDescription(const std::filesystem::path &shared, const std::filesystem::path &game_own) {
+#ifdef __ANDROID__
+    // (no button opens it there, and no import yet: said as it is)
+    return i18n::TrFormat("What Shader's Your own draws with, kept by its name: a .slangp preset in {} or in a folder there, with the "
+                          "files it uses beside it. On Android that is the app's own storage: a computer connected over USB can usually "
+                          "reach it, the phone's file manager usually can't, and there is no import yet. This game's own shaders "
+                          "folder, {}, comes first. Choosing one chooses Your own.",
+                          {Utf8(shared), Utf8(game_own)});
+#else
     return i18n::TrFormat("What Shader's Your own draws with, kept by its name: a .slangp preset in {} (one folder for every game: the "
                           "launcher's Open shaders folder opens it) or in a folder there, with the files it uses beside it. This game's "
                           "own shaders folder, {}, comes first. Choosing one chooses Your own.",
                           {Utf8(shared), Utf8(game_own)});
+#endif
 }
 
 }  // namespace recomp::shaders

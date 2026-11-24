@@ -434,6 +434,7 @@ inline constexpr Entry kPortuguese[] = {
     {"{} (this game's)", "{} (deste jogo)"},
     {"{} (not found)", "{} (não encontrado)"},
     {"What Shader's Your own draws with, kept by its name: a .slangp preset in {} (one folder for every game: the launcher's Open shaders folder opens it) or in a folder there, with the files it uses beside it. This game's own shaders folder, {}, comes first. Choosing one chooses Your own.", "Com o que O seu, do Shader, desenha, guardado pelo nome: um preset .slangp em {} (uma pasta para todos os jogos: o Abrir pasta de shaders do launcher a abre) ou numa pasta ali, com os arquivos que ele usa ao lado. A pasta shaders deste jogo, {}, vem primeiro. Escolher um escolhe O seu."},
+    {"What Shader's Your own draws with, kept by its name: a .slangp preset in {} or in a folder there, with the files it uses beside it. On Android that is the app's own storage: a computer connected over USB can usually reach it, the phone's file manager usually can't, and there is no import yet. This game's own shaders folder, {}, comes first. Choosing one chooses Your own.", "Com o que O seu, do Shader, desenha, guardado pelo nome: um preset .slangp em {} ou numa pasta ali, com os arquivos que ele usa ao lado. No Android isso fica no armazenamento do próprio app: um computador ligado por USB geralmente o alcança, o gerenciador de arquivos do celular geralmente não, e ainda não há como importar. A pasta shaders deste jogo, {}, vem primeiro. Escolher um escolhe O seu."},
 };
 
 } // namespace recomp::i18n
