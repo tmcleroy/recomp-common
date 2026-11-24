@@ -2247,6 +2247,16 @@ void App::sidebar(float height) {
                            : !row     ? own[static_cast<int>(kind)]
                            : row->series ? slots_[which]->series.c_str()
                                          : slots_[which]->name.c_str();
+        // (a mod's row under its game's: what its name has past the game's, "CSL Edition", where it begins with it)
+        std::string mod_name;
+        if (row && row->mod) {
+            const std::string& game = slots_[mod_parent(which)]->name;
+            const std::string& own_name = slots_[which]->name;
+            if (own_name.size() > game.size() + 1 && own_name.compare(0, game.size(), game) == 0 && own_name[game.size()] == ' ') {
+                mod_name = own_name.substr(game.size() + 1);
+                name = mod_name.c_str();
+            }
+        }
         // (a game with mods: its row opens and closes as a series' does)
         const bool has_mods = row && !row->series && !row->mod && !mods_of(which).empty();
         int fold = row && row->series ? (series_open(slots_[which]->series) ? 1 : 0) : has_mods ? (mods_open(slots_[which]->id) ? 1 : 0) : -1;
