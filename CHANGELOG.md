@@ -25,6 +25,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
   follows it (`sdl::MenuButton(button, choice)` for a given one; `menu_buttons.h`). A port starts its players on
   another with `RECOMP_MENU_BUTTON_DEFAULT` for its game and `LAUNCHER_MENU_BUTTON` for its launcher. The words are in
   Spanish and Portuguese.
+- **A game's mods under its row** (`CollectionGame::mod_of`): a collection's game that is a mod of another (a
+  community change of its ROM set) is listed under that game, whose sidebar row opens and closes like a series' row
+  (launcher.ini `[games] mods_open`), so a game's mods don't fill the list. The mods move with their game, are listed
+  after it on the Games page and its series' page ("A mod of …"), and going to a mod's page opens its game's row.
 - **The arcade monitor's modes at the board's exact rate, and synced to the screen** (`arcade_screen.h`, from
   cps2recomp): Make the mode at the board's rate with a Monitor preset (Switchres 2.2.2, downloaded at build time by
   `switchres.cmake`, Windows), Keep the board's pace (off: the frames paced by the screen's refreshes in an arcade mode),
