@@ -86,6 +86,7 @@ private:
         std::string name;                // its name; its player folder is named by it
         std::string series;              // a collection's game's series (launcher::CollectionGame::series), or ""
         std::string released, hardware;  // (launcher::CollectionGame's: for sorting and the hardware choice)
+        std::string mod_of;              // the id of the game it is a mod of (launcher::CollectionGame::mod_of), or ""
         std::string exe;                 // its program, beside the launcher
         std::string file_section;        // launcher.ini: where its file is ("game", or "game.<id>")
         std::string video_section;       // its Display switches ("video", or "video.<id>")
@@ -178,12 +179,21 @@ private:
     struct Row {
         size_t game = 0;       // the game's; a series': its first game's
         bool series = false;   // the series' row
-        bool inside = false;   // a game's row under its series'
+        bool inside = false;   // a game's row under its series' (or a mod's under its game's)
+        bool mod = false;      // a mod's row under the game it is a mod of (Slot::mod_of)
     };
     std::vector<Row> rows() const;
     // launcher.ini, [games] open: the series whose rows are open (their names)
     bool series_open(const std::string& series) const;
     void open_series(const std::string& series, bool open);
+    // A game's mods (Slot::mod_of): the game a mod is of, when that game has a page (else the mod is a game of its
+    // own in the list: npos); the mods of a game that have a page, in the player's order; with_mods, a list of
+    // games with each one's mods after it. launcher.ini, [games] mods_open: the games whose mods' rows are open (ids)
+    size_t mod_parent(size_t which) const;
+    std::vector<size_t> mods_of(size_t which) const;
+    std::vector<size_t> with_mods(const std::vector<size_t>& list) const;
+    bool mods_open(const std::string& id) const;
+    void open_mods(const std::string& id, bool open);
     // A change to the sidebar's rows (a series opened or closed, a game moved), the page shown staying the one it was
     // (a game's in a series that closes: the series')
     void keep_page(const std::function<void()>& change);

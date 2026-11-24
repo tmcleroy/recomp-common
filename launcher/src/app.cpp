@@ -188,7 +188,7 @@ const launcher::Description& the_description() {
 // Who a game is, as the launcher keeps it: a port's one game, or one of a collection's.
 struct Target {
     const launcher::Description* about = nullptr;
-    std::string id, name, folder_name, exe, series, released, hardware, file_section = "game", video_section = "video"; // (folder_name: its folder's, a collection's game's)
+    std::string id, name, folder_name, exe, series, released, hardware, mod_of, file_section = "game", video_section = "video"; // (folder_name: its folder's, a collection's game's)
     std::filesystem::path folder;
 };
 
@@ -207,6 +207,7 @@ std::vector<Target> targets() {
             target.series = game.series ? game.series : "";
             target.released = game.released ? game.released : "";
             target.hardware = game.hardware ? game.hardware : "";
+            target.mod_of = game.mod_of ? game.mod_of : "";
             target.file_section = std::string("game.") + game.id;
             target.video_section = std::string("video.") + game.id;
             const char* own = game.home_env && *game.home_env ? std::getenv(game.home_env) : nullptr;
@@ -666,10 +667,19 @@ App::App(SDL_Window* window)
         slot->series = target.series;
         slot->released = target.released;
         slot->hardware = target.hardware;
+        slot->mod_of = target.mod_of;
         slot->file_section = target.file_section;
         slot->video_section = target.video_section;
         slot->folder = target.folder;
         slots_.push_back(std::move(slot));
+    }
+    // (a mod is in the series of the game it is a mod of: its row is under that game's)
+    for (auto& slot : slots_) {
+        for (const auto& game : slots_) {
+            if (!slot->mod_of.empty() && game->id == slot->mod_of) {
+                slot->series = game->series;
+            }
+        }
     }
     load_order();
     for (size_t which = 0; which < slots_.size(); which++) {
@@ -930,12 +940,17 @@ void App::set_page(const std::string& id) {
     if (id == "online" && collection_ && collection_->lobby) {
         page_ = 1;
     }
-    // (a game in a closed series: the series opened)
-    for (const std::vector<size_t>& unit : units()) {
-        for (size_t which : unit) {
-            if (grouped(unit) && slots_[which]->id == id && !series_open(slots_[which]->series)) {
-                open_series(slots_[which]->series, true);
-            }
+    // (a game in a closed series: the series opened; a mod: its game's mods too)
+    for (size_t which : titled()) {
+        if (slots_[which]->id != id) {
+            continue;
+        }
+        if (!slots_[which]->series.empty() && !series_open(slots_[which]->series)) {
+            open_series(slots_[which]->series, true);
+        }
+        size_t parent = mod_parent(which);
+        if (parent != std::string::npos && !mods_open(slots_[parent]->id)) {
+            open_mods(slots_[parent]->id, true);
         }
     }
     std::vector<Row> list = rows();
@@ -996,12 +1011,92 @@ void App::group_order() {
             std::copy_if(order_.begin(), order_.end(), std::back_inserter(grouped), same);
         }
     }
-    order_ = grouped;
+    // (a game's mods right after it, in the order they had: they move with it)
+    auto parent = [&](size_t which) {
+        const std::string& of = slots_[which]->mod_of;
+        auto at = std::find_if(grouped.begin(), grouped.end(), [&](size_t one) { return !of.empty() && slots_[one]->id == of; });
+        return at != grouped.end() && slots_[*at]->mod_of.empty() ? static_cast<long>(*at) : -1L;
+    };
+    order_.clear();
+    for (size_t which : grouped) {
+        if (parent(which) >= 0) {
+            continue;
+        }
+        order_.push_back(which);
+        for (size_t mod : grouped) {
+            if (parent(mod) == static_cast<long>(which)) {
+                order_.push_back(mod);
+            }
+        }
+    }
+}
+
+size_t App::mod_parent(size_t which) const {
+    const std::string& of = slots_[which]->mod_of;
+    if (of.empty()) {
+        return std::string::npos;
+    }
+    for (size_t one : titled()) {
+        if (slots_[one]->id == of && slots_[one]->mod_of.empty()) {
+            return one;
+        }
+    }
+    return std::string::npos;
+}
+
+std::vector<size_t> App::mods_of(size_t which) const {
+    std::vector<size_t> list;
+    for (size_t one : titled()) {
+        if (mod_parent(one) == which) {
+            list.push_back(one);
+        }
+    }
+    return list;
+}
+
+std::vector<size_t> App::with_mods(const std::vector<size_t>& list) const {
+    std::vector<size_t> all;
+    for (size_t which : list) {
+        all.push_back(which);
+        for (size_t mod : mods_of(which)) {
+            all.push_back(mod);
+        }
+    }
+    return all;
+}
+
+bool App::mods_open(const std::string& id) const {
+    std::stringstream ids(prefs_.get("games", "mods_open"));
+    for (std::string one; std::getline(ids, one, ',');) {
+        if (one == id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void App::open_mods(const std::string& id, bool open) {
+    std::stringstream ids(prefs_.get("games", "mods_open"));
+    std::string kept;
+    for (std::string one; std::getline(ids, one, ',');) {
+        if (one != id && !one.empty()) {
+            kept += (kept.empty() ? "" : ",") + one;
+        }
+    }
+    if (open) {
+        kept += (kept.empty() ? "" : ",") + id;
+        opened_ = "mods:" + id;
+    }
+    prefs_.set("games", "mods_open", kept);
+    prefs_.save();
 }
 
 std::vector<std::vector<size_t>> App::units() const {
     std::vector<std::vector<size_t>> list;
     for (size_t which : titled()) {
+        if (mod_parent(which) != std::string::npos) {
+            continue;  // (under its game's row, and moved with it)
+        }
         const std::string& series = slots_[which]->series;
         if (!series.empty() && !list.empty() && slots_[list.back().front()]->series == series) {
             list.back().push_back(which);
@@ -1020,15 +1115,25 @@ bool App::grouped(const std::vector<size_t>& unit) const {
 
 std::vector<App::Row> App::rows() const {
     std::vector<Row> list;
+    // (a game's mods under its row, while it is open)
+    auto mods = [&](size_t which) {
+        if (mods_open(slots_[which]->id)) {
+            for (size_t mod : mods_of(which)) {
+                list.push_back({mod, false, true, true});
+            }
+        }
+    };
     for (const std::vector<size_t>& unit : units()) {
         if (!grouped(unit)) {
             list.push_back({unit.front()});
+            mods(unit.front());
             continue;
         }
         list.push_back({unit.front(), true});
         if (series_open(slots_[unit.front()]->series)) {
             for (size_t which : unit) {
                 list.push_back({which, false, true});
+                mods(which);
             }
         }
     }
@@ -1076,6 +1181,9 @@ void App::keep_page(const std::function<void()>& change) {
                                          : !row.series && row.game == which;
         // (a game of a series that has closed: the series)
         bool closed = kind == Page::Title && row.series && slots_[row.game]->series == slots_[which]->series;
+        // (a mod whose game's row has closed: that game)
+        closed = closed || (kind == Page::Title && !row.series && !row.mod && !slots_[which]->mod_of.empty() &&
+                            slots_[row.game]->id == slots_[which]->mod_of);
         if (same || closed) {
             page_ = fixed_pages() + static_cast<int>(i);
             if (same) {
@@ -1128,7 +1236,7 @@ void App::move_game(size_t which, int place) {
         for (const std::vector<size_t>& one : list) {
             flat.insert(flat.end(), one.begin(), one.end());
         }
-        reorder(flat);
+        reorder(with_mods(flat));
         return;
     }
 }
@@ -1149,7 +1257,7 @@ void App::move_unit(size_t unit, int place) {
     for (const std::vector<size_t>& one : list) {
         flat.insert(flat.end(), one.begin(), one.end());
     }
-    reorder(flat);
+    reorder(with_mods(flat));
 }
 
 // The launcher's own page at a place in the sidebar (a port's pages come first), or Page::Count; for a
@@ -2067,7 +2175,7 @@ void App::sidebar(float height) {
             drag_row = i;
         }
     }
-    if (drag_row >= 0 && list[drag_row].inside) {
+    if (drag_row >= 0 && list[drag_row].inside && !slots_[list[drag_row].game]->series.empty()) {
         const std::string& series = slots_[list[drag_row].game]->series;
         for (first_row = drag_row; first_row > 0 && list[first_row - 1].inside && slots_[list[first_row - 1].game]->series == series; first_row--) {
         }
@@ -2097,7 +2205,10 @@ void App::sidebar(float height) {
     int move_to = -1;
     std::string toggle;       // (a series' row pressed: it opens or closes)
     std::string close_drag;   // (a series' row taken hold of while open: it closes)
+    std::string toggle_mods;  // (a game's row with mods pressed: they open or close)
+    std::string close_mods;   // (such a row taken hold of while open: they close)
     float series_y = 0.0f;    // (the last series' row's place: its games' rows come out from under it)
+    float game_y = 0.0f;      // (the last game's row's place: its mods' rows come out from under it)
     focus_row_ = -1;
     for (int i = 0; i < count; i++) {
         size_t which = 0;
@@ -2111,9 +2222,14 @@ void App::sidebar(float height) {
             ImGuiID place = ImGui::GetID("place");
             if (row->series) {
                 series_y = y;
+            } else if (!row->mod) {
+                game_y = y;
             }
-            if (row->inside && opened_ == slots_[which]->series) {
+            if (row->inside && !row->mod && opened_ == slots_[which]->series) {
                 ui::set_value(place, series_y);
+            }
+            if (row->mod && (opened_ == "mods:" + slots_[which]->mod_of || opened_ == slots_[which]->series)) {
+                ui::set_value(place, opened_ == slots_[which]->series ? series_y : game_y);
             }
             if (k == drag_row) {
                 ui::set_value(place, drag_at);
@@ -2131,12 +2247,17 @@ void App::sidebar(float height) {
                            : !row     ? own[static_cast<int>(kind)]
                            : row->series ? slots_[which]->series.c_str()
                                          : slots_[which]->name.c_str();
-        int fold = row && row->series ? (series_open(slots_[which]->series) ? 1 : 0) : -1;
+        // (a game with mods: its row opens and closes as a series' does)
+        const bool has_mods = row && !row->series && !row->mod && !mods_of(which).empty();
+        int fold = row && row->series ? (series_open(slots_[which]->series) ? 1 : 0) : has_mods ? (mods_open(slots_[which]->id) ? 1 : 0) : -1;
         bool was_dropped = row && static_cast<int>(which) == dropped && row->series == dropped_series;
-        if (ui::nav_item(name, shown == i, inner, in_sidebar_ || shown == i, row && row->inside ? 14.0f : 0.0f, fold) && !was_dropped) {
+        float indent = !row || !row->inside ? 0.0f : row->mod && !slots_[which]->series.empty() ? 28.0f : 14.0f;
+        if (ui::nav_item(name, shown == i, inner, in_sidebar_ || shown == i, indent, fold) && !was_dropped) {
             page_ = i;
             if (row && row->series) {
                 toggle = slots_[which]->series;
+            } else if (has_mods) {
+                toggle_mods = slots_[which]->id;
             }
         }
         if (kind == Page::Library && update_news()) {
@@ -2144,13 +2265,15 @@ void App::sidebar(float height) {
             const ImVec2 at(ImGui::GetItemRectMax().x - px(18), (ImGui::GetItemRectMin().y + ImGui::GetItemRectMax().y) * 0.5f);
             ImGui::GetWindowDrawList()->AddCircleFilled(at, px(4), ui::palette().accent);
         }
-        if (row && games > 1 && ImGui::IsItemActive()) {
+        if (row && !row->mod && games > 1 && ImGui::IsItemActive()) {  // (a mod's row moves with its game's)
             if (dragging_ < 0 && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
                 dragging_ = static_cast<int>(which);
                 dragging_series_ = row->series;
                 drag_grab_ = ImGui::GetIO().MouseClickedPos[ImGuiMouseButton_Left].y - origin.y - y;
-                if (fold == 1) {
+                if (fold == 1 && row->series) {
                     close_drag = slots_[which]->series;
+                } else if (fold == 1) {
+                    close_mods = slots_[which]->id;
                 }
             }
             if (row && k == drag_row) {
@@ -2184,7 +2307,12 @@ void App::sidebar(float height) {
     }
     if (move_to >= 0 && drag_row >= 0) {
         if (list[drag_row].inside) {
-            move_game(list[drag_row].game, move_to - first_row);
+            // (its place among its series' games: the mods' rows between are not places)
+            int place = 0;
+            for (int r = first_row; r < move_to && r <= last_row; r++) {
+                place += list[r].mod ? 0 : 1;
+            }
+            move_game(list[drag_row].game, place);
         } else {
             // (past the places it is over: a series' rows are passed once the dragged row is over its last, going down,
             // or its first, going up)
@@ -2218,6 +2346,13 @@ void App::sidebar(float height) {
     if (!toggle.empty()) {
         bool open = !series_open(toggle);
         keep_page([&] { open_series(toggle, open); });
+    }
+    if (!close_mods.empty()) {
+        keep_page([&] { open_mods(close_mods, false); });
+    }
+    if (!toggle_mods.empty()) {
+        bool open = !mods_open(toggle_mods);
+        keep_page([&] { open_mods(toggle_mods, open); });
     }
     in_sidebar_ = in_sidebar;
     focus_seen_ = focused;
@@ -4130,7 +4265,8 @@ void App::title_page(size_t which, float width) {
             list.push_back(unit.front());
         }
     }
-    if (list.size() > 1) {
+    // (a mod has no place of its own: it is under its game's row, and moves with it)
+    if (list.size() > 1 && mod_parent(which) == std::string::npos) {
         int place = static_cast<int>(std::find(list.begin(), list.end(), which) - list.begin());
         ui::gap(36);
         ui::text("YOUR GAMES", Font::Semibold, ui::size::kDetail, p.secondary);
@@ -4187,7 +4323,7 @@ void App::series_page(size_t which, float width) {
     while (unit + 1 < places.size() && slots_[places[unit].front()]->series != series) {
         unit++;
     }
-    const std::vector<size_t> games = places[unit];
+    const std::vector<size_t> games = with_mods(places[unit]);  // (each game's mods after it)
     std::string intro = TrFormat("{} of your games are {} games. Play one here, or go to its page for its ROM set, its Display switches and "
                                  "what only it has.",
                                  {std::to_string(games.size()), series});
@@ -4204,6 +4340,10 @@ void App::series_page(size_t which, float width) {
         {
             std::lock_guard<std::mutex> lock(mutex_);
             status = one.file.message;
+        }
+        const size_t parent = mod_parent(games[i]);
+        if (parent != std::string::npos) {
+            status = TrFormat("A mod of {}.", {slots_[parent]->name}) + (status.empty() ? "" : " " + status);
         }
         row(width, one.name.c_str(), status.c_str(), 230.0f, 36.0f, [&] {
             if (ui::button(one.game.running() ? "Playing…" : "Play", Kind::Primary, 110.0f, can_play(games[i]))) {

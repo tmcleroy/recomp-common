@@ -256,6 +256,7 @@ inline constexpr Entry kSpanish[] = {
     {"THIS GAME'S FEATURES", "OPCIONES DE ESTE JUEGO"},
     {"What only this game has. What the games share is on the Features page, set for all of them.", "Lo que solo tiene este juego. Lo que comparten los juegos está en la página Opciones, ajustado para todos."},
     {"Nothing of its own: every feature it has is on the Features page.", "Nada propio: todas sus opciones están en la página Opciones."},
+    {"A mod of {}.", "Un mod de {}."},
     {"{} of your games are {} games. Play one here, or go to its page for its ROM set, its Display switches and what only it has.", "{} de tus juegos son juegos de {}. Juega uno aquí, o ve a su página para su conjunto de ROMs, sus ajustes de Pantalla y lo que solo él tiene."},
     {"ITS GAMES", "SUS JUEGOS"},
     {"Its page", "Su página"},

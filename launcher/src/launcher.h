@@ -282,6 +282,10 @@ struct CollectionGame {
     // The hardware it ran on, as the player reads it ("CV1000"), or nullptr. When the games name two or more, the
     // Games page has a choice of which to list (all, or one of them), and the sidebar follows it.
     const char *hardware = nullptr;
+    // The id of the game it is a mod of (a community change of that game's ROM set: "sf2hf"), or nullptr. Its row in
+    // the sidebar is under that game's, which opens and closes like a series' row, so that a game's mods don't fill
+    // the list; it moves with that game, and is listed after it on the Games page and its series' page.
+    const char *mod_of = nullptr;
 };
 
 // A choice of a multi-game mode's: a row of its card on the Multi game page, kept in launcher.ini under
