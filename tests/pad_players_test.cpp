@@ -60,6 +60,12 @@ int main() {
     AssignPads(odd, {"deck", "pad", "pad-2"}, 2, out);
     CHECK(Is(out, 1, 0, -1, -1));
 
+    // (an empty seat: takes its automatic place and plays nothing, the players after it keep theirs)
+    AssignPads(none, {"", "pad"}, 2, out);
+    CHECK(Is(out, 0, 1, -1, -1));
+    AssignPads(deckOff, {"deck", "", "pad-2"}, 2, out);
+    CHECK(Is(out, 1, 2, -1, -1));
+
     // (as text, and from a settings.ini)
     CHECK(PadChoiceText(kPadNobody) == "none" && PadChoiceText(kPadAuto) == "auto" && PadChoiceText(1) == "2");
     CHECK(PadChoiceFromText("none") == kPadNobody && PadChoiceFromText("auto") == kPadAuto && PadChoiceFromText("4") == 3);

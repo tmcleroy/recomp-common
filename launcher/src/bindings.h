@@ -239,7 +239,9 @@ inline PadChoices LoadPadChoices(const std::string &settingsPath) {
 
 // Each player's gamepad (nobody's: -1) from the connected ones, in the order they were connected (`identities`,
 // PadIdentity's): those chosen for a player are that player's (the first, if two were chosen for one), and the rest
-// go in order to the players who have none. `players` is how many there are (at most kBindMaxPlayers).
+// go in order to the players who have none. `players` is how many there are (at most kBindMaxPlayers). An empty
+// identity is an empty seat (a game that keeps a let-go gamepad's place for it): it takes an automatic place, so the
+// players after it keep theirs, and that player plays nothing until it is back.
 inline void AssignPads(const PadChoices &choices, const std::vector<std::string> &identities, int players, int out[kBindMaxPlayers]) {
     for (int player = 0; player < kBindMaxPlayers; player++) {
         out[player] = -1;
@@ -249,7 +251,7 @@ inline void AssignPads(const PadChoices &choices, const std::vector<std::string>
     std::vector<int> chosen(identities.size());
     for (int i = 0; i < count; i++) {
         int &player = chosen[static_cast<size_t>(i)];
-        player = choices.of(identities[static_cast<size_t>(i)]);
+        player = identities[static_cast<size_t>(i)].empty() ? kPadAuto : choices.of(identities[static_cast<size_t>(i)]);
         if (player >= 0 && player < players && out[player] < 0) {
             out[player] = i;
         } else if (player >= 0) {
@@ -278,15 +280,15 @@ inline void AssignPads(const PadChoices &choices, const SDL_JoystickID *ids, int
     AssignPads(choices, identities, players, out);
 }
 
-// The same for a game's open gamepads, in the order they were connected: each player's (or nullptr). A game calls
-// it when one is connected or let go, not every frame (it asks SDL for every gamepad's GUID).
+// The same for a game's open gamepads, in the order they were connected (nullptr: an empty seat): each player's (or
+// nullptr). A game calls it when one is connected or let go, not every frame (it asks SDL for every gamepad's GUID).
 inline void AssignPads(const PadChoices &choices, SDL_Gamepad *const *open, int count, int players, SDL_Gamepad *out[kBindMaxPlayers]) {
-    std::vector<SDL_JoystickID> ids(static_cast<size_t>(count > 0 ? count : 0));
+    std::vector<std::string> identities;
     for (int i = 0; i < count; i++) {
-        ids[static_cast<size_t>(i)] = SDL_GetGamepadID(open[i]);
+        identities.push_back(open[i] ? PadIdentity(SDL_GetGamepadID(open[i])) : std::string());
     }
     int index[kBindMaxPlayers];
-    AssignPads(choices, ids.data(), count, players, index);
+    AssignPads(choices, identities, players, index);
     for (int player = 0; player < kBindMaxPlayers; player++) {
         out[player] = index[player] >= 0 ? open[index[player]] : nullptr;
     }
