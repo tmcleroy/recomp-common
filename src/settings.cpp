@@ -361,6 +361,30 @@ std::vector<FeatureInfo> ParseFeatureList(const std::string &text) {
     return features;
 }
 
+std::string FeatureListNote(const std::string &note) {
+    std::string line = note;
+    for (char &c : line) {
+        if (c == '\t' || c == '\n' || c == '\r') {
+            c = ' ';
+        }
+    }
+    return "!note\t" + line + "\n";
+}
+
+std::string ParseFeatureListNote(const std::string &text) {
+    std::istringstream lines(text);
+    std::string line;
+    while (std::getline(lines, line)) {
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
+        if (line.rfind("!note\t", 0) == 0) {
+            return line.substr(6);
+        }
+    }
+    return "";
+}
+
 bool SettingOff(const std::string &value) {
     return value == "0" || value == "off" || value == "false" || value == "no";
 }

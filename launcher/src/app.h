@@ -95,6 +95,7 @@ private:
         recomp::Ini settings;            // its settings.ini: features, controls
         std::vector<recomp::FeatureInfo> features;
         std::string features_error;
+        std::string program_note;        // what its program's --list-features says of it (settings.h: FeatureListNote), or ""
         std::string file_path;
         launcher::FileCheck file;        // (under mutex_ when checked on a thread)
         std::atomic<bool> checking{false};

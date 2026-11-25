@@ -220,6 +220,8 @@ free_play = 0            ; a feature's own value wins over the preset: 0, 1, or 
   `recomp::FeatureListText(features)`, a feature a line (name, category, flags, title, description
   and, when it is a choice of several things, their names with `|` between them, tab-separated).
   Features flagged `kFeatureSession` last one run and are not listed or saved.
+  A line `recomp::FeatureListNote(text)` after them is a note about the program itself (a build with none of the
+  game's code translated, which plays slower, say): the launcher shows it on the game's row and under its Play.
 - **Both read values the same way:** `recomp::FeatureValues(ini, features)` gives every feature's
   value: the file's if it has one, else the preset's (on only in `enhanced`, for features flagged
   `kFeatureEnhanced`). Of a category's `kFeatureExclusive` features only one is on.
