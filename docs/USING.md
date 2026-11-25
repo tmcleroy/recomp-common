@@ -152,6 +152,13 @@ These make every port feel the same. Two headers do most of it: `menu_layout.h` 
     and A confirm. Backspace and B go back a page.
   - The mouse: over a row chooses it, a click confirms, the right button goes back, the wheel goes up and down
     (`sdl::MouseEvent`, given where the menu's picture is on the window).
+- **The menu turned with the picture** (`menu_turn.h`), in a port that can show a vertical game as the board sends
+  it, for a monitor turned on its side: a **Menu orientation** feature on the Display page (`turn::kTitle`,
+  `kDescription`, `Choices()`: Auto, the default, Upright and the three turns). `turn::MenuTurn` gives the menu's turn
+  on the screen (Auto: as the game's picture stands). The port draws the menu on a picture of `TurnedSize`'s shape
+  (so it lays itself out for the turned screen), turns it onto the screen's with `TurnPixels`, does the same with its
+  own notes and readouts, and gives the turn in `sdl::MenuPlace::turn`, which maps the mouse (and with `ToMenu`, the
+  fingers) back through it. The stick and the arrows need nothing: they are held upright, as the menu now stands.
 
   Nothing but the menu's "Quit game" row (and closing the window) ends the game; Esc does not.
 - **The keys while playing:**

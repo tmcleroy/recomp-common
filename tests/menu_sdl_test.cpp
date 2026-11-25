@@ -3,6 +3,7 @@
 // The menu's SDL controls (menu_sdl.h): its keys, and the mouse's events made into the picture's places.
 #include "menu_sdl.h"
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -63,6 +64,32 @@ int main() {
         found = chosen.kind == Menu::Chosen::Load;
     }
     CHECK(found);
+    // (the menu turned a quarter for a monitor on its side: its 240 x 320 picture turned onto the window's 640 x 480
+    // from 100, 50; its rows run across the window, top at the right, and a click there is mapped back through the turn)
+    {
+        std::vector<uint32_t> own(240 * 320);
+        const sdl::MenuPlace turned{100, 50, 640, 480, 240, 320, 90};
+        bool hit = false;
+        for (float x = 740; x > 100 && !hit; x -= 1) {
+            SDL_Event click{};
+            click.type = SDL_EVENT_MOUSE_BUTTON_DOWN;
+            click.button.button = SDL_BUTTON_LEFT;
+            click.button.x = x;
+            click.button.y = 290;
+            Menu::Chosen chosen;
+            Menu probe;
+            probe.Configure(config);
+            probe.Open();
+            probe.Draw(own.data(), 240, 320);
+            CHECK(sdl::MouseEvent(click, nullptr, turned, probe, chosen));
+            hit = chosen.kind == Menu::Chosen::Load;
+        }
+        CHECK(hit);
+        // (a corner of the window back to the menu's picture: the window's top right is the menu's top left)
+        float mx = -1, my = -1;
+        turned.ToMenu(740, 50, mx, my);
+        CHECK(std::fabs(mx) < 0.01f && std::fabs(my) < 0.01f);
+    }
     // (a touch the system made into a click: not the menu's)
     SDL_Event touch{};
     touch.type = SDL_EVENT_MOUSE_BUTTON_DOWN;

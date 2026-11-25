@@ -5,6 +5,11 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The menu turned with the picture** (`menu_turn.h`; `sdl::MenuPlace::turn`, `ToMenu`): for a vertical game shown
+  as the board sends it on a monitor turned on its side, a **Menu orientation** feature (Auto, the default: as the
+  game's picture stands; Upright, as before; Top to the right, Upside down, Top to the left), the turn for it, the
+  menu's picture turned onto the screen's, and the mouse and fingers mapped back through the turn. The words are in
+  Spanish and Portuguese.
 - **A note from the game's program** (`FeatureListNote`, `ParseFeatureListNote`; `settings.h`): a line `!note` and a few
   words after the features `--list-features` prints, about the program itself (a build with none of its game's code
   translated, which plays slower, say). The launcher shows it on the game's row of the Games page and under its Play.
