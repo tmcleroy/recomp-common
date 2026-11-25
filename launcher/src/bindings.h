@@ -16,8 +16,8 @@
 // Which gamepad is which player's (the Controllers page's Connected list):
 //
 //   [controllers]       a gamepad (PadIdentity) = the player it is (1 to 4), "none" (nobody's) or "auto"
-//   030000005e0400000b0b000000000000 = 1
-//   030000005e0400000b0b000000000000-2 = 2
+//   <GUID> = 1           (SDL's GUID for the gamepad: 32 hex digits)
+//   <GUID>-2 = 2         (the second one of that kind connected)
 //
 // A gamepad not listed, or "auto", goes to the first player who has none, in the order they were connected; one
 // chosen for a player who is not connected leaves that player to the automatic ones. So with nothing chosen the
