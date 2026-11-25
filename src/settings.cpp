@@ -384,6 +384,10 @@ std::vector<int> FeatureValues(const Ini &ini, const std::vector<FeatureInfo> &f
     return values;
 }
 
+bool FeatureChosen(const Ini &ini, const FeatureInfo &feature) {
+    return !(feature.flags & kFeatureSession) && HasValue(ini, feature);
+}
+
 void SetFeature(Ini &ini, const std::vector<FeatureInfo> &features, size_t index, int value) {
     if (index >= features.size() || (features[index].flags & kFeatureSession)) {
         return;
