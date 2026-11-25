@@ -5,6 +5,12 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Which gamepad is which player's** (`bindings.h`: `[controllers]`, `PadIdentity`, `LoadPadChoices`, `AssignPads`):
+  each gamepad on the Controllers page's Connected list has a choice, Automatic, Player 1 to the last, or Not used,
+  kept in every game's `settings.ini`, and a held button shows on its row to tell two of the same gamepad apart. A game
+  gives out its open gamepads with `AssignPads` (those chosen first, then the automatic ones in the order connected),
+  so a Steam Deck's own controls can play nothing and two gamepads plugged into it play each other. With nothing
+  chosen it is as before. The words are in Spanish and Portuguese.
 - **The menu turned with the picture** (`menu_turn.h`; `sdl::MenuPlace::turn`, `ToMenu`): for a vertical game shown
   as the board sends it on a monitor turned on its side, a **Menu orientation** feature (Auto, the default: as the
   game's picture stands; Upright, as before; Top to the right, Upside down, Top to the left), the turn for it, the
