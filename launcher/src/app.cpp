@@ -3785,8 +3785,44 @@ void App::room_card(float width, const std::vector<size_t>& playable) {
             detail = std::string(Tr(launcher::kCountryFlags[country].name)) + (detail.empty() ? "" : " · " + detail);
         }
         const launcher::Online* online = which < slots_.size() ? &slots_[which]->about->online : nullptr;
+        // (a collection's: the games they have, those this player can play too first and marked, so as to know what to
+        // invite them to)
+        std::vector<ui::Piece> theirs;
+        size_t both = 0;
+        if (collection_ && !player.games.empty()) {
+            std::vector<ui::Piece> others;
+            for (const std::string& id : player.games) {
+                std::string name = id;
+                bool mine = false;
+                for (size_t slot = 0; slot < slots_.size(); slot++) {
+                    if (room_game(slot) == id) {
+                        name = slots_[slot]->name;
+                        mine = std::find(playable.begin(), playable.end(), slot) != playable.end();
+                        break;
+                    }
+                }
+                (mine ? theirs : others).push_back({name, mine});
+            }
+            both = theirs.size();
+            const auto by_name = [](const ui::Piece& a, const ui::Piece& b) { return a.text < b.text; };
+            std::sort(theirs.begin(), theirs.end(), by_name);
+            std::sort(others.begin(), others.end(), by_name);
+            theirs.insert(theirs.end(), others.begin(), others.end());
+        }
+        const auto their_games = [&](float text_width) {
+            if (theirs.empty()) {
+                return;
+            }
+            const ui::Palette& p = ui::palette();
+            ui::gap(6);
+            const std::string count = both == 0 ? TrFormat("Their games ({}): none you have too", {std::to_string(theirs.size())})
+                                                : TrFormat("Their games ({}), the {} you both have first:", {std::to_string(theirs.size()), std::to_string(both)});
+            ui::text(count.c_str(), ui::Font::Regular, ui::size::kDetail, p.secondary, text_width);
+            ui::gap(2);
+            ui::pieces(theirs, ", ", ui::size::kDetail, p.secondary, p.accent, text_width);
+        };
         ImGui::PushID(static_cast<int>(n));
-        row(width, player.name.c_str(), detail.c_str(), 284.0f, 36.0f, [&] {
+        layout::row_more(width, player.name.c_str(), detail.c_str(), 284.0f, 36.0f, [&] {
             // (their flag before the buttons: 30 points wide, then 14 of room; the space kept when they have none)
             const ImVec2 at = ImGui::GetCursorScreenPos();
             ImGui::SetCursorScreenPos(ImVec2(at.x, at.y + px(7)));
@@ -3799,7 +3835,7 @@ void App::room_card(float width, const std::vector<size_t>& playable) {
             if (ui::button("Block", Kind::Secondary, 100.0f)) {
                 block(player.id);
             }
-        });
+        }, their_games);
         ImGui::PopID();
     }
     if (collection_) {

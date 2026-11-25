@@ -190,6 +190,8 @@ inline constexpr Entry kPortuguese[] = {
     {"Nobody else is here right now. Players show here while their Online page is open, a few seconds after they open it.", "Não há mais ninguém aqui agora. Os jogadores aparecem aqui enquanto a página Online deles está aberta, alguns segundos depois de abri-la."},
     {"Nobody else is here right now. Players show here while their launcher's Game page is open, a few seconds after they open it.", "Não há mais ninguém aqui agora. Os jogadores aparecem aqui enquanto a página Jogo do launcher deles está aberta, alguns segundos depois de abri-la."},
     {"Has {}.", "Tem {}."},
+    {"Their games ({}): none you have too", "Jogos que tem ({}): nenhum que você também tenha"},
+    {"Their games ({}), the {} you both have first:", "Jogos que tem ({}), primeiro os {} que vocês dois têm:"},
     {"Hasn't added {} yet: they can when invited.", "Ainda não adicionou {}: pode adicionar quando for convidado."},
     {"Give yourself a name to invite.", "Dê um nome a você para convidar."},
     {"Invite", "Convidar"},
