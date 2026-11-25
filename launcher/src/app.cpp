@@ -748,6 +748,7 @@ App::App(SDL_Window* window)
         beside_wanted_ = beside_wanted_ || (one.about->game_page && one.about->find_beside);
     }
     find_shared();
+    give_shared();
     if (!collection_ && about_.game_page && (about_.open_on_game_page || about_.own_pages_after_game)) {
         page_ = place_of(Page::Game);
     }
@@ -1811,6 +1812,46 @@ void App::find_shared() {
         }
     }
     shared_.erase(std::remove_if(shared_.begin(), shared_.end(), [](const Shared& s) { return s.where.size() < 2; }), shared_.end());
+}
+
+// A game new to the collection (a mod, or a game an update added) has none of the shared features' values the player
+// chose on the Features page, which wrote them only to the games there were then: its VSync, its shader and the rest
+// were its own defaults while the page showed the others'. Each shared feature it has no value of its own for takes
+// the one the games that have chosen it agree on. (A choice of its own, or games that differ, is left as it is.)
+void App::give_shared() {
+    // (all found before any is set: setting one makes the game's preset custom, which writes down its other values)
+    struct Gift {
+        size_t which, feature;
+        int value;
+    };
+    std::vector<Gift> gifts;
+    for (const Shared& shared : shared_) {
+        int agreed = -1;
+        bool differ = false;
+        std::vector<std::pair<size_t, size_t>> unchosen;
+        for (const auto& [which, feature] : shared.where) {
+            const Slot& one = *slots_[which];
+            if (!recomp::FeatureChosen(one.settings, one.features[feature])) {
+                unchosen.push_back({which, feature});
+                continue;
+            }
+            const int value = recomp::FeatureValues(one.settings, one.features)[feature];
+            differ = differ || (agreed >= 0 && value != agreed);
+            agreed = value;
+        }
+        if (agreed < 0 || differ) {
+            continue;
+        }
+        for (const auto& [which, feature] : unchosen) {
+            const Slot& one = *slots_[which];
+            if (recomp::FeatureValues(one.settings, one.features)[feature] != agreed) {
+                gifts.push_back({which, feature, agreed});
+            }
+        }
+    }
+    for (const Gift& gift : gifts) {
+        set_feature(*slots_[gift.which], gift.feature, gift.value);
+    }
 }
 
 void App::set_preset(const std::string& name) {

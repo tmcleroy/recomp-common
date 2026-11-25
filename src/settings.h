@@ -93,6 +93,10 @@ std::string Preset(const Ini &ini);
 // numbered order.
 std::vector<int> FeatureValues(const Ini &ini, const std::vector<FeatureInfo> &features);
 
+// Whether the file gives the feature a value of its own (chosen, or written down when the preset became custom), not
+// the preset's
+bool FeatureChosen(const Ini &ini, const FeatureInfo &feature);
+
 // Gives one feature a value. The preset becomes "custom", and on the way there every feature that followed
 // the preset is written down as it was, so nothing else changes; a value already in the file is never
 // rewritten. Switching an exclusive feature on switches its category's other exclusive ones off. A session
