@@ -15,6 +15,7 @@
 
 #include "menu.h"
 #include "menu_buttons.h"
+#include "menu_turn.h"
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_gamepad.h>
@@ -97,10 +98,24 @@ inline unsigned MenuHeld(const bool *keys, SDL_Gamepad *const *pads, int count) 
 }
 
 // Where the menu's picture is on the window: its rectangle in the window's pixels (as the port draws it there),
-// and the picture's own size (what Menu::Draw was given)
+// the picture's own size (what Menu::Draw was given), and its turn there, in degrees clockwise (menu_turn.h: the
+// menu turned with the picture for a monitor on its side; the rectangle is then the turned picture's)
 struct MenuPlace {
     float x = 0, y = 0, w = 0, h = 0;
     int width = 0, height = 0;
+    int turn = 0;
+    // A place in the window's pixels as a place in the menu's picture (for Menu::Mouse), through the turn
+    void ToMenu(float px, float py, float &mx, float &my) const {
+        if (turn::Normal(turn) == 0) {
+            mx = w > 0 ? (px - x) * width / w : 0;
+            my = h > 0 ? (py - y) * height / h : 0;
+            return;
+        }
+        float u = 0, v = 0;
+        turn::Unturn(turn, w > 0 ? (px - x) / w : 0, h > 0 ? (py - y) / h : 0, u, v);
+        mx = u * width;
+        my = v * height;
+    }
 };
 
 // The mouse, for the menu: an SDL event of the mouse's, while the menu is open, handed on to Menu::Mouse. True when
@@ -139,8 +154,8 @@ inline bool MouseEvent(const SDL_Event &event, SDL_Window *window, const MenuPla
     }
     // (the window's points to its pixels, then to the picture's)
     const float density = window ? SDL_GetWindowPixelDensity(window) : 1.0f;
-    const float x = (px * (density > 0 ? density : 1.0f) - place.x) * place.width / place.w;
-    const float y = (py * (density > 0 ? density : 1.0f) - place.y) * place.height / place.h;
+    float x = 0, y = 0;
+    place.ToMenu(px * (density > 0 ? density : 1.0f), py * (density > 0 ? density : 1.0f), x, y);
     chosen = menu.Mouse(what, x, y);
     return true;
 }
