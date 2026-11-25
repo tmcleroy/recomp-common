@@ -254,6 +254,16 @@ int main() {
             CHECK(ParseFeatureList(FeatureListText({gap}))[0].numbered == gap.numbered);
         }
     }
+    // Chosen: a value of the file's own, not the preset's (a collection's launcher gives a game new to it the shared values)
+    {
+        Ini ini = Loaded("[features]\npreset=enhanced\n");
+        CHECK(!FeatureChosen(ini, features[0]) && FeatureValues(ini, features)[0] == 1);
+        SetFeature(ini, features, 3, 2);
+        CHECK(FeatureChosen(ini, features[3]) && FeatureChosen(ini, features[0])); // (custom: the others written down)
+        CHECK(!FeatureChosen(ini, features[4]));                                   // (a session feature never is)
+        SetPreset(ini, features, "pure");
+        CHECK(!FeatureChosen(ini, features[3]));
+    }
     std::error_code error;
     std::filesystem::remove(std::filesystem::temp_directory_path() / "recomp_common_settings_test.ini", error);
     printf("settings: ok\n");
