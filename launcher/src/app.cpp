@@ -1776,11 +1776,14 @@ std::vector<bool> App::hidden_choices(const Slot& one, size_t feature) {
 void App::load_features(Slot& one) {
     one.features.clear();
     one.features_error.clear();
+    one.program_note.clear();
     if (!one.has_program()) {
         one.features_error = "The game program wasn't found next to the launcher.";
         return;
     }
-    one.features = recomp::ParseFeatureList(GameProcess::output_of(one.program(), {"--list-features"}));
+    const std::string list = GameProcess::output_of(one.program(), {"--list-features"});
+    one.features = recomp::ParseFeatureList(list);
+    one.program_note = recomp::ParseFeatureListNote(list); // (a build with no translated code, say: settings.h)
     // (a file from before a feature was kept by name: made over once, settings.h)
     if (recomp::MigrateFeatures(one.settings, one.features)) {
         one.settings.save();
@@ -2719,6 +2722,10 @@ bool App::play_button(size_t which, float width) {
                !(collection_ && std::any_of(collection_->multi.begin(), collection_->multi.end(),
                                             [&](const launcher::MultiMode& m) { return m.next_code == one.game.exit_code(); }))) {
         stopped_note(one, width);
+    }
+    if (have_program && !one.program_note.empty()) {
+        ui::gap(10);
+        ui::text(one.program_note.c_str(), Font::Regular, ui::size::kDetail, p.danger, width);
     }
     return ready;
 }
@@ -4134,6 +4141,9 @@ void App::library_page(float width) {
         }
         bool usable = !one.checking && !one.file_path.empty() && file.usable();
         std::string status = one.checking ? std::string("Checking…") : one.file_path.empty() ? std::string(one.about->file_empty) : file.message;
+        if (!one.program_note.empty()) {
+            status += "  ·  " + one.program_note; // (what the program says of itself: its row shows it)
+        }
         ImGui::PushID(static_cast<int>(which));
         ImVec2 row_top = ImGui::GetCursorScreenPos();
         // (Play first, so that the ring coming into the row from the left is on it)

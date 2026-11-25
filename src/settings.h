@@ -79,6 +79,12 @@ struct FeatureInfo {
 // sees the five fields it expects; a list with no sixth field has no choices, one with no seventh no ids.
 std::string FeatureListText(const std::vector<FeatureInfo> &features);
 std::vector<FeatureInfo> ParseFeatureList(const std::string &text);
+// A line of the list that is about the program, not a feature: "!note", a tab, and a few words the launcher shows by
+// the game's name (a program built with none of its game's code translated, say, which plays slower). One line, no
+// tabs. A reader that knows nothing of it skips it, as it skips any line of fewer than five fields.
+std::string FeatureListNote(const std::string &note);
+// ... and the note in a list ("" when it has none)
+std::string ParseFeatureListNote(const std::string &text);
 
 // A value that means off: 0, off, false, no
 bool SettingOff(const std::string &value);

@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **A note from the game's program** (`FeatureListNote`, `ParseFeatureListNote`; `settings.h`): a line `!note` and a few
+  words after the features `--list-features` prints, about the program itself (a build with none of its game's code
+  translated, which plays slower, say). The launcher shows it on the game's row of the Games page and under its Play.
+  Older readers pass over it.
 - **More save-state slots, the port's choice** (`MenuConfig::slots`, `RMenuConfig::slots`): the Slot row goes from 1
   to the number a port gives (9 unless it says), around both ways, and its description says the range. `SlotCount()`
   gives it to the host for its own slot keys.

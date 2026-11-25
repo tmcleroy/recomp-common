@@ -68,6 +68,14 @@ int main() {
     CHECK(parsed[0].choices.empty() && parsed[0].flags == kFeatureEnhanced);
     // (a list from a game that knows nothing of choices, and lines that are not features)
     CHECK(ParseFeatureList("a\tB\t4\tA\tAn a.\r\nnot a feature\n\n").size() == 1);
+    // (the program's note: not a feature, and read back; tabs and line ends in it become spaces)
+    {
+        const std::string noted = text + FeatureListNote("interpreted build:\tno\ntranslated code");
+        CHECK(ParseFeatureList(noted).size() == parsed.size());
+        CHECK(ParseFeatureListNote(noted) == "interpreted build: no translated code");
+        CHECK(ParseFeatureListNote(text).empty());
+        CHECK(ParseFeatureListNote("!note\tslow\r\n") == "slow");
+    }
 
     // No file: pure, everything off
     {
