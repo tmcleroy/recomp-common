@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The launcher on a Steam Deck in Game Mode**: started by Steam on Linux (`SteamGameId` or `SteamAppId` set), the
+  launcher reads the Deck's own controller through Steam Input's pad, not SDL's HIDAPI driver for it, whose watchdog
+  feature reports held the main thread about 8 ms every second or so (spelunkomp#18).
+  `SDL_JOYSTICK_HIDAPI_STEAMDECK` set by hand wins.
 - **Which gamepad is which player's** (`bindings.h`: `[controllers]`, `PadIdentity`, `LoadPadChoices`, `AssignPads`):
   each gamepad on the Controllers page's Connected list has a choice, Automatic, Player 1 to the last, or Not used,
   kept in every game's `settings.ini`, and a held button shows on its row to tell two of the same gamepad apart. A game

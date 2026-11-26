@@ -28,6 +28,7 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -312,6 +313,15 @@ int main(int argc, char** argv) {
         SDL_Quit();
         return code;
     }
+#if defined(__linux__) && !defined(__ANDROID__)
+    // (started by Steam, as on a Steam Deck in Game Mode: the Deck's own controller through Steam Input's pad, not SDL's
+    // HIDAPI driver for it, which every 200 updates feeds the controller's watchdog with feature reports that wait on
+    // the device, about 8 ms on the main thread; spelunkomp#18. Set by hand, SDL_JOYSTICK_HIDAPI_STEAMDECK wins. A hint,
+    // not the environment: the game started from here decides for itself)
+    if ((std::getenv("SteamGameId") || std::getenv("SteamAppId")) && !std::getenv(SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK)) {
+        SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK, "0");
+    }
+#endif
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, LAUNCHER_GAME_NAME, SDL_GetError(), nullptr);
         return 1;
