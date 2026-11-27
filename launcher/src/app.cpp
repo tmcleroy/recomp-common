@@ -5312,7 +5312,30 @@ void App::feature_list(float width, const std::vector<FeatureRow>& rows, const c
 namespace {
 
 // A gamepad's button or trigger as the page names it (SDL's own names are "a", "dpup", ...).
-std::string pad_label(recomp::PadInput input) {
+// A gamepad input as the player sees it. The four face buttons are kept by where they are (SDL's south, east, west,
+// north: "a", "b", "x", "y" in settings.ini), but their letters are not the same on every gamepad: a Nintendo one has
+// B at the bottom and A on the right, a PlayStation one shapes. Given the type of the player's gamepad they are named
+// as it prints them; with none known (no gamepad connected, or one SDL cannot tell), every name and the place.
+std::string pad_label(recomp::PadInput input, SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN) {
+    static const char* const kPlaces[] = {"bottom", "right", "left", "top"};  // (south, east, west, north)
+    if (input.button >= SDL_GAMEPAD_BUTTON_SOUTH && input.button <= SDL_GAMEPAD_BUTTON_NORTH && type != SDL_GAMEPAD_TYPE_UNKNOWN &&
+        type != SDL_GAMEPAD_TYPE_STANDARD) {
+        const char* name = nullptr;
+        switch (SDL_GetGamepadButtonLabelForType(type, static_cast<SDL_GamepadButton>(input.button))) {
+        case SDL_GAMEPAD_BUTTON_LABEL_A: name = "A"; break;
+        case SDL_GAMEPAD_BUTTON_LABEL_B: name = "B"; break;
+        case SDL_GAMEPAD_BUTTON_LABEL_X: name = "X"; break;
+        case SDL_GAMEPAD_BUTTON_LABEL_Y: name = "Y"; break;
+        case SDL_GAMEPAD_BUTTON_LABEL_CROSS: name = "Cross"; break;
+        case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE: name = "Circle"; break;
+        case SDL_GAMEPAD_BUTTON_LABEL_SQUARE: name = "Square"; break;
+        case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE: name = "Triangle"; break;
+        default: break;
+        }
+        if (name) {
+            return std::string(name) + " (" + kPlaces[input.button - SDL_GAMEPAD_BUTTON_SOUTH] + ")";
+        }
+    }
     static const struct {
         const char* name;
         const char* label;
@@ -5592,9 +5615,8 @@ void App::controllers_page(float width) {
             std::string pressed;
             for (int b = 0; b < SDL_GAMEPAD_BUTTON_COUNT; b++) {
                 if (SDL_GetGamepadButton(pad, static_cast<SDL_GamepadButton>(b))) {
-                    const char* label = SDL_GetGamepadStringForButton(static_cast<SDL_GamepadButton>(b));
                     pressed += pressed.empty() ? "" : "  ";
-                    pressed += label ? label : "?";
+                    pressed += Tr(pad_label({b, -1}, SDL_GetGamepadType(pad)));
                 }
             }
             row(width, "Buttons", pressed.empty() ? "(press any button)" : pressed.c_str(), 0.0f, 0.0f, [] {});
@@ -5609,6 +5631,10 @@ void App::controllers_page(float width) {
             ui::request_frames(2);  // keep the readings live
         }
     }
+    // (the face buttons below are named as the gamepad of the player shown prints them: theirs, or the first one
+    // connected when they have none)
+    const int bind_pad = bind_player_ >= 0 && bind_player_ < players && whose[bind_player_] >= 0 ? whose[bind_player_] : 0;
+    const SDL_GamepadType bind_type = bind_pad < count ? SDL_GetGamepadTypeForID(pads[bind_pad]) : SDL_GAMEPAD_TYPE_UNKNOWN;
     SDL_free(pads);
 
     // Which of a gamepad's buttons open the in-game menu (menu_buttons.h), in every game: Start and Select together
@@ -5763,7 +5789,7 @@ void App::controllers_page(float width) {
                     for (int gamepad = 0; gamepad < 2; gamepad++) {
                         bool waiting = capture_action_ == action && capture_gamepad_ == (gamepad != 0);
                         std::string label = waiting ? (gamepad ? "Press a button..." : "Press a key...")
-                                            : gamepad ? pad_label(layout_shown.pad[bind_player_][action])
+                                            : gamepad ? pad_label(layout_shown.pad[bind_player_][action], bind_type)
                                                       : key_label(layout_shown.key[bind_player_][action]);
                         ImRect rect;
                         ImGui::SetCursorScreenPos(at + ImVec2(gamepad ? px(kChip + kChipGap) : 0.0f, 0));
