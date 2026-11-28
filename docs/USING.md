@@ -146,6 +146,12 @@ it is said above its rows. With two pages or more, each tab's page is under a he
 - `menu_sdl.h` gives the buttons: Q and E and the shoulder buttons change tab, Delete and a gamepad's X (west) put back
   the default, and names them for the hint line (`kTabsName`, `kBackName`: `MenuConfig::tabsName`, `backName`).
 
+#### The icon
+
+`MenuConfig::icon` (`MenuIcon`: pixels, any size) is drawn at the left of the command row, scaled to the row; `icon.h`'s
+`sdl::MenuIconOf(kIconPng, kIconPngSize)` makes it from the port's PNG. It is left out where the row is at its
+tightest. Making and wiring the icon everywhere: docs/ICONS.md.
+
 #### Hotkeys
 
 A player can give any option a key or a gamepad button, which steps it while playing: Run-ahead through its frames,

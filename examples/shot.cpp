@@ -99,6 +99,15 @@ namespace {
         // (hotkeys: Run-ahead's is F3, Shader's the right stick)
         config.hotkey = [](size_t feature) { return feature == 2 ? std::string("F3") : feature == 5 ? std::string("Right stick") : std::string(); };
         config.hotkeyName = "H or Y";
+        // (an icon: a port's comes from its PNG, icon.h's MenuIconOf; here two halves, green over blue, round-cornered)
+        config.icon.width = config.icon.height = 64;
+        for (int y = 0; y < 64; y++) {
+            for (int x = 0; x < 64; x++) {
+                const int cx = x < 14 ? 14 - x : x > 49 ? x - 49 : 0, cy = y < 14 ? 14 - y : y > 49 ? y - 49 : 0;
+                const bool inside = cx * cx + cy * cy <= 14 * 14;
+                config.icon.pixels.push_back(!inside ? 0 : y < 31 ? 0xFF6EB24Cu : y < 34 ? 0xFF5AB4D9u : 0xFFC9733Du);
+            }
+        }
         return config;
     }
 

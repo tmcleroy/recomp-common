@@ -954,6 +954,50 @@ void Menu::ShowTab(int tab) {
     Fill();
 }
 
+namespace {
+    // An icon drawn at size x size, each pixel the average of those of the icon's it covers (a big icon drawn small
+    // stays smooth), over what is there by its alpha
+    void DrawIcon(const Canvas &canvas, const MenuIcon &icon, float x, float y, float size) {
+        const int n = std::max(1, static_cast<int>(size));
+        for (int py = 0; py < n; py++) {
+            const int ty = static_cast<int>(y) + py;
+            if (ty < 0 || ty >= canvas.height) {
+                continue;
+            }
+            const int sy0 = py * icon.height / n, sy1 = std::max(sy0 + 1, (py + 1) * icon.height / n);
+            for (int px = 0; px < n; px++) {
+                const int tx = static_cast<int>(x) + px;
+                if (tx < 0 || tx >= canvas.width) {
+                    continue;
+                }
+                const int sx0 = px * icon.width / n, sx1 = std::max(sx0 + 1, (px + 1) * icon.width / n);
+                uint64_t r = 0, g = 0, b = 0, a = 0, count = 0;
+                for (int sy = sy0; sy < sy1; sy++) {
+                    for (int sx = sx0; sx < sx1; sx++) {
+                        const uint32_t c = icon.pixels[static_cast<size_t>(sy) * icon.width + sx];
+                        const uint32_t ca = c >> 24;
+                        r += (c & 0xFF) * ca;
+                        g += ((c >> 8) & 0xFF) * ca;
+                        b += ((c >> 16) & 0xFF) * ca;
+                        a += ca;
+                        count++;
+                    }
+                }
+                if (!a) {
+                    continue;
+                }
+                const uint32_t alpha = static_cast<uint32_t>(a / count);
+                const uint32_t cr = static_cast<uint32_t>(r / a), cg = static_cast<uint32_t>(g / a), cb = static_cast<uint32_t>(b / a);
+                uint32_t &under = canvas.pixels[static_cast<size_t>(ty) * canvas.width + tx];
+                const uint32_t ur = ((under & 0xFF) * (255 - alpha) + cr * alpha) / 255;
+                const uint32_t ug = (((under >> 8) & 0xFF) * (255 - alpha) + cg * alpha) / 255;
+                const uint32_t ub = (((under >> 16) & 0xFF) * (255 - alpha) + cb * alpha) / 255;
+                under = 0xFF000000u | (ub << 16) | (ug << 8) | ur;
+            }
+        }
+    }
+} // namespace
+
 Menu::Chosen Menu::ButtonsTabbed(unsigned pressed) {
     if (!m_open || !pressed || m_listen >= 0) {
         return {};
@@ -1397,6 +1441,11 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
             default: return "";
             }
         };
+        // (the port's icon at the row's left, as tall as the row's items)
+        const bool hasIcon = m_config.icon.width > 0 && m_config.icon.height > 0 &&
+                             m_config.icon.pixels.size() >= static_cast<size_t>(m_config.icon.width) * m_config.icon.height;
+        const float iconSize = crt ? std::round(h - 3 * u) : std::round(36 * u);
+        float iconRoom = hasIcon ? iconSize + (crt ? 3 * u : 10 * u) : 0;
         // (as roomy as fits: the long words, then the short, then tighter, then Back as "<", the smaller letters, and
         // at the last hardly any room between)
         int tight = 0;
@@ -1418,23 +1467,27 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
                 w.push_back(type.Width(label2(item), dot) + 2 * itemPad);
                 total += w.back() + gap;
             }
-            if (total + 2 * edge + (crt || tight >= 1 ? 0 : 40 * u) <= pw) {
+            iconRoom = hasIcon && tight < 5 ? iconSize + (crt ? 3 * u : 10 * u) : 0; // (at the last, no icon)
+            if (total + 2 * edge + iconRoom + (crt || tight >= 1 ? 0 : 40 * u) <= pw) {
                 break;
             }
         }
         tight = std::min(tight, 5);
+        if (iconRoom > 0) {
+            DrawIcon(canvas, m_config.icon, std::round(px + (crt ? 2 * u : 10 * u)), std::round(y + (h - iconSize) / 2), iconSize);
+        }
         const float itemHeight = crt ? h - 2 * u : 42 * u;
         float middleWidth = 0;
         for (size_t i = 1; i + 1 < m_bar.size(); i++) {
             middleWidth += w[i] + (i + 2 < m_bar.size() ? gap : 0);
         }
-        const float left = px + edge + w.front(), right = px + pw - edge - w.back();
+        const float left = px + edge + iconRoom + w.front(), right = px + pw - edge - w.back();
         float mx = std::round(left + std::max((right - left - middleWidth) / 2, gap));
         for (size_t i = 0; i < m_bar.size(); i++) {
             const BarItem &item = m_bar[i];
             float ix;
             if (i == 0) {
-                ix = px + edge;
+                ix = px + edge + iconRoom;
             } else if (i + 1 == m_bar.size()) {
                 ix = px + pw - edge - w[i];
             } else {
