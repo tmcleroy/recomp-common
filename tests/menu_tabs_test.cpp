@@ -242,5 +242,38 @@ int main() {
         CHECK(menu.Buttons(kMenuTabNext).kind == Menu::Chosen::None && menu.IsOpen());
     }
     puts("menu_tabs_test: all as it should be");
+    {
+        // Hotkeys: Hotkey on a feature's row asks for one; while asked the buttons are not the menu's; Step goes around the choices offered, and flips a switch
+        g_values = {};
+        Menu menu;
+        MenuConfig with = Config();
+        menu.Configure(Config());
+        menu.Open();
+        Press(menu, {kMenuTabNext, kMenuDown});
+        CHECK(Press(menu, {kMenuHotkey}).kind == Menu::Chosen::None && menu.Listening() < 0); // (no MenuConfig::hotkey)
+        with.hotkey = [](size_t feature) { return feature == 2 ? std::string("F3") : std::string(); };
+        menu.Configure(with);
+        Press(menu, {kMenuHotkey});
+        CHECK(menu.Listening() == 2); // Shader
+        Press(menu, {kMenuDown, kMenuBack});
+        CHECK(menu.IsOpen() && menu.Listening() == 2);
+        menu.StopListening();
+        CHECK(menu.IsOpen() && menu.Listening() < 0);
+        std::vector<uint32_t> pixels(1152 * 672);
+        Press(menu, {kMenuHotkey});
+        menu.Draw(pixels.data(), 1152, 672); // (the question drawn)
+        menu.StopListening();
+        menu.Draw(pixels.data(), 1152, 672); // (the row's key drawn)
+        menu.Close();
+        CHECK(menu.Step(2, 1) == "Shader: Scanlines" && g_values[2] == 1);
+        CHECK(menu.Step(2, 1) == "Shader: CRT");
+        CHECK(menu.Step(2, 1) == "Shader: Off" && g_values[2] == 0);
+        CHECK(menu.Step(2, -1) == "Shader: CRT");
+        CHECK(menu.Step(1, 1) == "Wide: On" && menu.Step(1, -1) == "Wide: Off");
+        with.offered = [](size_t, int choice) { return choice != 1; }; // (Scanlines not offered)
+        menu.Configure(with);
+        g_values[2] = 0;
+        CHECK(menu.Step(2, 1) == "Shader: CRT");
+    }
     return 0;
 }

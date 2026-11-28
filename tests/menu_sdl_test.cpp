@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Tommy McLeroy. Part of recomp-common: https://github.com/tmcleroy/recomp-common
 // The menu's SDL controls (menu_sdl.h): its keys, and the mouse's events made into the picture's places.
+#include "hotkey.h"
 #include "menu_sdl.h"
 
 #include <cmath>
@@ -102,6 +103,55 @@ int main() {
     right.type = SDL_EVENT_MOUSE_BUTTON_DOWN;
     right.button.button = SDL_BUTTON_RIGHT;
     CHECK(sdl::MouseEvent(right, nullptr, place, menu, chosen) && !menu.IsOpen());
+    {
+        // Hotkeys: kept as a line and read back; asked for, refused, given, taken away; stepping in the game
+        Hotkeys keys;
+        keys.Set("run_ahead", {SDL_SCANCODE_F3, SDL_GAMEPAD_BUTTON_INVALID});
+        keys.Set("shader", {SDL_SCANCODE_UNKNOWN, SDL_GAMEPAD_BUTTON_RIGHT_STICK});
+        Hotkeys back;
+        back.Load(keys.Save() + ",nothing:key:NoSuchKey,broken");
+        CHECK(back.Save() == keys.Save() && back.Of("run_ahead").Name() == "F3" && back.Of("shader").Name() == "Right stick");
+        CHECK(back.Find({SDL_SCANCODE_F3, SDL_GAMEPAD_BUTTON_INVALID}) == "run_ahead");
+        back.Set("other", {SDL_SCANCODE_F3, SDL_GAMEPAD_BUTTON_INVALID}); // (one key, one feature)
+        CHECK(back.Find({SDL_SCANCODE_F3, SDL_GAMEPAD_BUTTON_INVALID}) == "other" && back.Of("run_ahead").Empty());
+
+        int value = 0;
+        MenuConfig c;
+        c.tabs = {{"Game", {"Game"}}};
+        c.features = {{"Game", "Run-ahead", "", {"Off", "1 frame", "2 frames"}}};
+        c.value = [&](size_t) { return value; };
+        c.setValue = [&](size_t, int to) { value = to; };
+        Hotkeys mine;
+        c.hotkey = [&](size_t) { return mine.Of("run_ahead").Name(); };
+        const std::vector<std::string> ids = {"run_ahead"};
+        Menu m;
+        m.Configure(c);
+        m.Open();
+        m.Buttons(kMenuHotkey);
+        CHECK(m.Listening() == 0);
+        SDL_Event key{};
+        key.type = SDL_EVENT_KEY_DOWN;
+        key.key.scancode = SDL_SCANCODE_W;
+        bool changed = false;
+        const auto taken = [](Hotkey h) { return h.key == SDL_SCANCODE_W ? std::string("That key plays the game.") : std::string(); };
+        CHECK(sdl::HotkeyListen(key, m, mine, ids, taken, changed) && !changed && m.Listening() == 0);
+        key.key.scancode = SDL_SCANCODE_DOWN; // (the menu's)
+        CHECK(sdl::HotkeyListen(key, m, mine, ids, taken, changed) && !changed && m.Listening() == 0);
+        key.key.scancode = SDL_SCANCODE_F3;
+        CHECK(sdl::HotkeyListen(key, m, mine, ids, taken, changed) && changed && m.Listening() < 0 && mine.Of("run_ahead").Name() == "F3");
+        CHECK(!sdl::HotkeyListen(key, m, mine, ids, taken, changed)); // (not asking now)
+        m.Close();
+        CHECK(sdl::HotkeyPress(key, m, mine, ids) == "Run-ahead: 1 frame" && value == 1);
+        key.key.mod = SDL_KMOD_LSHIFT;
+        CHECK(sdl::HotkeyPress(key, m, mine, ids) == "Run-ahead: Off");
+        key.key.scancode = SDL_SCANCODE_F4;
+        CHECK(sdl::HotkeyPress(key, m, mine, ids).empty());
+        m.Open();
+        m.Buttons(kMenuHotkey);
+        key.key.scancode = SDL_SCANCODE_BACKSPACE;
+        changed = false;
+        CHECK(sdl::HotkeyListen(key, m, mine, ids, taken, changed) && changed && mine.Of("run_ahead").Empty());
+    }
     puts("menu_sdl_test: all as it should be");
     return 0;
 }

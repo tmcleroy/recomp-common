@@ -5,7 +5,7 @@
 // writes the picture as a PPM file. Shows everything a real host does except showing the picture in a window.
 //
 //   shot OUT.ppm [KEYS] [WIDTHxHEIGHT] [tabs|crt]
-//     KEYS: u d l r (the directions), a (confirm), b (back), q e (the tab before, after), x (default)
+//     KEYS: u d l r (the directions), a (confirm), b (back), q e (the tab before, after), x (default), h (hotkey)
 //     tabs: the tabbed menu (layout::Tabbed) in its window look; crt: in its CRT look (compact)
 //   shot menu.ppm dddda 896x672
 //   shot tabs.ppm e 1152x672 tabs
@@ -96,6 +96,9 @@ namespace {
         config.setMuted = [](bool to) { muted = to; };
         config.confirmName = "A";
         config.closeName = "Esc";
+        // (hotkeys: Run-ahead's is F3, Shader's the right stick)
+        config.hotkey = [](size_t feature) { return feature == 2 ? std::string("F3") : feature == 5 ? std::string("Right stick") : std::string(); };
+        config.hotkeyName = "H or Y";
         return config;
     }
 
@@ -126,7 +129,7 @@ int main(int argc, char **argv) {
     for (const char *key = keys; *key; key++) {
         const unsigned button = *key == 'u' ? kMenuUp : *key == 'd' ? kMenuDown : *key == 'l' ? kMenuLeft : *key == 'r' ? kMenuRight
                                 : *key == 'a' ? kMenuConfirm : *key == 'b' ? kMenuBack : *key == 'q' ? kMenuTabPrev
-                                : *key == 'e' ? kMenuTabNext : *key == 'x' ? kMenuDefault : 0;
+                                : *key == 'e' ? kMenuTabNext : *key == 'x' ? kMenuDefault : *key == 'h' ? kMenuHotkey : 0;
         const Menu::Chosen chosen = menu.Buttons(button);
         // A port carries out what was chosen and closes the menu if that went well
         switch (chosen.kind) {
