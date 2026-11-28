@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The Tabs layout** (`Description::layout`): the launcher in the in-game menu's look, its pages as tabs along the top and a
+  collection's games as a grid of pictures, the chosen one's Play and switches beside it. `ui::set_menu_look`.
 - **A launcher with only what is set before a game starts** (`Description::launcher_features_only`, `kFeatureLauncher`):
   the rest of a game's options are its in-game menu's alone. `board_category` puts a card of the board's own settings
   on each game's page, `controller_features` puts features on the Controllers page.
