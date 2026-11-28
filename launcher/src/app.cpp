@@ -2538,7 +2538,9 @@ void App::page(float width, float height) {
     ImGuiID child = shown_kind == Page::Title    ? ImHashStr(slots_[shown_game]->id.c_str())
                     : shown_kind == Page::Series ? ImHashStr(("series:" + slots_[shown_game]->series).c_str())
                                                  : static_cast<ImGuiID>(page_ + 100);
-    ImGui::BeginChild(child, ImVec2(width, height), ImGuiChildFlags_AlwaysUseWindowPadding);
+    // (the Tabs layout: the page and the tabs one place for the arrows and a gamepad, so that Up from the page's top goes
+    // to the tabs, and Down from them into the page)
+    ImGui::BeginChild(child, ImVec2(width, height), ImGuiChildFlags_AlwaysUseWindowPadding | (tabbed() ? ImGuiChildFlags_NavFlattened : 0));
     ImGui::PushItemFlag(ImGuiItemFlags_NoNav, false);
     // (The sidebar and the page are apart for the arrow keys and a gamepad: ImGui's own search would go from
     // a sidebar row to whatever in the page is nearest. Left, Right and Back go between them: navigation().)
@@ -6093,7 +6095,7 @@ void App::top_bar(float width) {
         const float w = text.x + px(32);
         ImGui::SetCursorScreenPos(ImVec2(x, origin.y));
         ImGui::PushID(i + 7000);
-        const bool pressed = ImGui::InvisibleButton("##tab", ImVec2(w, height));
+        const bool pressed = ImGui::InvisibleButton("##tab", ImVec2(w, height), ImGuiButtonFlags_EnableNav);
         const bool hovered = ImGui::IsItemHovered();
         if (focus_sidebar_ && active) {
             ui::focus_item();  // (Back from a page: onto its tab, as the Sidebar layout's rows)
@@ -6205,7 +6207,7 @@ void App::library_grid(float width) {
         const auto pill = [&](const char* id, const std::string& label, bool on) {
             const ImVec2 size = ui::text_size(label.c_str(), Font::Semibold, ui::size::kDetail) + ImVec2(px(26), px(14));
             const ImVec2 at = ImGui::GetCursorScreenPos();
-            const bool pressed = ImGui::InvisibleButton(id, size);
+            const bool pressed = ImGui::InvisibleButton(id, size, ImGuiButtonFlags_EnableNav);
             const bool hovered = ImGui::IsItemHovered();
             list->AddRectFilled(at, at + size, on ? p.accent : hovered ? p.control_hover : p.control, size.y / 2);
             if (ImGui::IsItemFocused() && ui::focus_shown()) {
@@ -6292,7 +6294,7 @@ void App::library_grid(float width) {
             const bool usable = !one.checking && !one.file_path.empty() && file.usable();
             ImGui::SetCursorScreenPos(at);
             ImGui::PushID(static_cast<int>(which));
-            const bool pressed = ImGui::InvisibleButton("##tile", ImVec2(tile_w, tile_h));
+            const bool pressed = ImGui::InvisibleButton("##tile", ImVec2(tile_w, tile_h), ImGuiButtonFlags_EnableNav);
             const bool hovered = ImGui::IsItemHovered();
             const bool focused = ImGui::IsItemFocused() && ui::focus_shown();
             if (focused && picked_game_ != which) {
