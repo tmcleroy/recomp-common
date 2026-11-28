@@ -7,7 +7,7 @@ CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Wpedantic -Isrc
 B := build
 
 .PHONY: test example launcher launcher-shots audit clean
-test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings_c_test $(B)/folders_test $(B)/proxy_test $(B)/update_test $(B)/online_test $(B)/layout_test $(B)/curl_args_test $(B)/menu_buttons_test $(B)/menu_buttons_port_test $(B)/own_shaders_test $(B)/own_shaders_test20 $(B)/menu_turn_test
+test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings_c_test $(B)/folders_test $(B)/proxy_test $(B)/update_test $(B)/online_test $(B)/layout_test $(B)/curl_args_test $(B)/video_keys_test $(B)/menu_buttons_test $(B)/menu_buttons_port_test $(B)/own_shaders_test $(B)/own_shaders_test20 $(B)/menu_turn_test
 	@$(B)/menu_test
 	@$(B)/i18n_test
 	@$(B)/c_test
@@ -21,6 +21,7 @@ test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings
 	@$(B)/curl_args_test
 	@$(B)/menu_buttons_test
 	@$(B)/menu_buttons_port_test
+	@$(B)/video_keys_test
 	@$(B)/own_shaders_test
 	@$(B)/own_shaders_test20
 	@$(B)/menu_turn_test
@@ -33,6 +34,10 @@ test: $(B)/menu_test $(B)/i18n_test $(B)/c_test $(B)/settings_test $(B)/settings
 $(B)/pad_players_test: tests/pad_players_test.cpp launcher/src/bindings.h
 	@mkdir -p $(B)
 	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined $$(pkg-config --cflags sdl3) tests/pad_players_test.cpp $$(pkg-config --libs sdl3) -o $@
+# The Display switches a game changed while the launcher ran (launcher/src/video_keys.h)
+$(B)/video_keys_test: tests/video_keys_test.cpp launcher/src/video_keys.h launcher/src/launcher.h src/settings.cpp
+	@mkdir -p $(B)
+	$(CXX) $(CXXFLAGS) -Ilauncher/src $$(pkg-config --cflags sdl3) -fsanitize=address,undefined tests/video_keys_test.cpp src/settings.cpp -o $@
 # The launcher's notification chime (launcher/src/chime.cpp; needs SDL 3, no sound device)
 $(B)/chime_test: tests/chime_test.cpp launcher/src/chime.cpp launcher/src/chime.h
 	@mkdir -p $(B)
