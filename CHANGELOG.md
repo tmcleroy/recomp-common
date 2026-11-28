@@ -5,6 +5,10 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **A port's icon** (`tools/make_icons.sh`, `src/icon.h`, docs/ICONS.md): one SVG made into every system's icon
+  (PNGs, .icns, .ico, Android mipmaps, the PNG as bytes); the window's icon, `Description::icon_png` beside the name
+  in the launcher's top bar, `MenuConfig::icon` at the left of the in-game menu's command row. docs/ICONS.md also
+  says how the ports' icons are drawn, so they look like one family.
 - **Hotkeys for the in-game menu's options** (`hotkey.h`, `MenuConfig::hotkey`, `kMenuHotkey`, `Menu::Step`): H or a
   gamepad's Y on an option's row asks for a key or button, which then steps the option while playing (Shift: back).
 - **The tabbed menu on a stood-up or narrow picture**: its scale follows the width as well as the height, and the
