@@ -5,6 +5,17 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Display switches for every game** (`Toggle::global`, `launcher.h`): a collection's launcher shows a switch marked
+  global once, as a **Display** card on its Games page, and keeps it in `launcher.ini`'s `[video]` for every game,
+  instead of on each game's page and in `[video.<id>]`. A game whose `arguments` never asks for the switch (no
+  widescreen, say) is not affected. A port's launcher of one game is as before, and a switch not marked global stays
+  the game's own. A collection that had them per game takes the value of the game played last that had one set (the
+  latest `logs/game.log`), else the default, the first time. The launcher gives the game it starts `RECOMP_LAUNCHER_INI`
+  (launcher.ini), `RECOMP_LAUNCHER_GLOBAL` (the global keys, comma separated) and `RECOMP_LAUNCHER_VIDEO` (the game's own
+  section), so that a switch the game changes in its own menu is kept where the launcher reads it.
+- **A chime for an invitation** (`chime.h`, `launcher::play_chime`): when a player in the waiting room invites this
+  one, the launcher plays a short two-tone chime, made in code (no sound file), once for each invitation; not while the
+  Sound card's Muted switch is on.
 - **Which gamepad is which player's** (`bindings.h`: `[controllers]`, `PadIdentity`, `LoadPadChoices`, `AssignPads`):
   each gamepad on the Controllers page's Connected list has a choice, Automatic, Player 1 to the last, or Not used,
   kept in every game's `settings.ini`, and a held button shows on its row to tell two of the same gamepad apart. A game
