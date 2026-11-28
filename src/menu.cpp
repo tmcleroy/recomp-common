@@ -1251,8 +1251,9 @@ namespace {
         Color shade, panel, strip, line, textColor, dim, accent, onAccent, value, changed, danger, dangerFill, focusFill, pane;
     };
 
-    Look WindowLook(int height) {
-        const float u = std::max(height / 720.0f, 0.5f);
+    Look WindowLook(int width, int height) {
+        // (as the height allows, and no larger than a narrow width allows: a stood-up picture's narrow one)
+        const float u = std::max(std::min(height / 720.0f, width / 800.0f), 0.5f);
         Look look{};
         look.crt = false;
         look.u = u;
@@ -1280,9 +1281,10 @@ namespace {
         return look;
     }
 
-    Look CrtLook(int height) {
-        // (whole board pixels: a 224 or 240 line screen has 1, a picture made twice the board's 2)
-        const float u = std::max(1.0f, std::floor(height / 224.0f));
+    Look CrtLook(int width, int height) {
+        // (whole board pixels: a 224 or 240 line screen has 1, a picture made twice the board's 2; a stood-up
+        // picture's narrow width counts too)
+        const float u = std::max(1.0f, std::floor(std::min(height / 224.0f, width / 288.0f)));
         Look look{};
         look.crt = true;
         look.u = u;
@@ -1314,7 +1316,7 @@ namespace {
 void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
     m_hits.clear();
     const Canvas canvas{pixels, width, height};
-    const Look look = m_compact ? CrtLook(height) : WindowLook(height);
+    const Look look = m_compact ? CrtLook(width, height) : WindowLook(width, height);
     const Type type{canvas, m_compact ? nullptr : m_font};
     const float u = look.u;
     const bool crt = look.crt;
@@ -1364,25 +1366,32 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
             default: return "";
             }
         };
-        const float itemPad = crt ? 3 * u : 14 * u, gap = crt ? 4 * u : 4 * u, edge = crt ? 2 * u : 10 * u;
-        const float itemHeight = crt ? h - 2 * u : 42 * u;
-        const auto widths = [&](bool shortly) {
-            std::vector<float> w;
-            for (const BarItem &item : m_bar) {
-                w.push_back(type.Width(label(item, shortly), look.dot) + 2 * itemPad);
-            }
-            return w;
-        };
+        // (as roomy as fits: the long words, then the short, then tighter, then Back as "<" and the smaller letters)
+        int tight = 0;
+        float itemPad = 0, gap = 0, edge = 0, dot = look.dot;
         bool shortly = false;
-        std::vector<float> w = widths(false);
-        float total = 0;
-        for (float one : w) {
-            total += one + gap;
+        std::vector<float> w;
+        const auto label2 = [&](const BarItem &item) {
+            return tight >= 3 && item.kind == kRowBack ? std::string("<") : label(item, shortly);
+        };
+        for (tight = 0; tight <= 4; tight++) {
+            shortly = tight >= 1;
+            itemPad = crt ? (tight >= 2 ? u : 3 * u) : (tight >= 2 ? 7 * u : 14 * u);
+            gap = crt ? (tight >= 2 ? 2 * u : 4 * u) : 4 * u;
+            edge = crt ? (tight >= 2 ? u : 2 * u) : (tight >= 2 ? 4 * u : 10 * u);
+            dot = tight >= 4 ? std::max(1.0f, std::round(crt ? u : look.dot * 2 / 3)) : look.dot;
+            w.clear();
+            float total = 0;
+            for (const BarItem &item : m_bar) {
+                w.push_back(type.Width(label2(item), dot) + 2 * itemPad);
+                total += w.back() + gap;
+            }
+            if (total + 2 * edge + (crt || tight >= 1 ? 0 : 40 * u) <= pw) {
+                break;
+            }
         }
-        if (total + 2 * edge + (crt ? 0 : 40 * u) > pw) {
-            shortly = true;
-            w = widths(true);
-        }
+        tight = std::min(tight, 4);
+        const float itemHeight = crt ? h - 2 * u : 42 * u;
         float middleWidth = 0;
         for (size_t i = 1; i + 1 < m_bar.size(); i++) {
             middleWidth += w[i] + (i + 2 < m_bar.size() ? gap : 0);
@@ -1435,7 +1444,7 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
             if (resume && crt && !focused && !armed) {
                 ink = look.accent;
             }
-            type.Draw(ix + itemPad, middle(iy, itemHeight, look.dot), look.dot, ink, label(item, shortly));
+            type.Draw(ix + itemPad, middle(iy, itemHeight, dot), dot, ink, label2(item));
             m_hits.push_back({kHitBar, static_cast<int>(i), ix, iy, w[i], itemHeight});
         }
         if (!crt) {
