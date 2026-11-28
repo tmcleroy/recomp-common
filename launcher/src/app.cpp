@@ -3969,6 +3969,7 @@ void App::game_page(float width) {
 #endif
     file_card(0, width);
     display_cards(0, width);
+    board_card(0, width);
     play_cards(0, width, ready);
     language_card(width);
     files_card(width);
