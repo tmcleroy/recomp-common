@@ -117,6 +117,45 @@ the size the player sees, not at the console's resolution, if you want sharp tex
   `setMuted`. The Speed and Mute rows may be on a page rather than the first (`MenuPage::rows`). Give Space, Enter and a gamepad's A to Confirm, and Backspace and B to Back.
 - The menu opens on the page and the row it was closed on.
 
+### Tabs
+
+Give `MenuConfig::tabs` and the menu is tabbed: a row of commands at the top (Back at its left, Resume at its right,
+`MenuConfig::bar` between: Save state, Load state, Slot, Reset game, Quit game), the tabs under it and the tab's rows
+under them. `groups` is then not shown. `layout::Tabbed(config, rows)` (`menu_layout.h`) does it all for a port on the
+standard layout: it calls `Standard`, then makes the nine standard tabs, which every port names and orders the same:
+
+| Tab | Its pages |
+|---|---|
+| Game | Game (Speed, Mute and the game's options), Board; the port's own rows, any page no tab has, Reset all options |
+| Display, Sound, Online, Stage, Cheats | the page of the same name |
+| Training | Training mode (Dummy under it) |
+| Modes | Alternative modes, and the port's other ways to play (`Rows::modes`) |
+| Capture | Video, Scene export |
+
+A tab with nothing on it is left out. A page under a tab's page is a row that opens it in the tab's place, with where
+it is said above its rows. With two pages or more, each tab's page is under a heading of its name.
+
+- Up from a tab's top row goes to the tabs (Left and Right change tab there), and Up again to the command row (Left
+  and Right go along it); Down comes back. Down on the last row goes round to the top one.
+- `kMenuTabPrev` and `kMenuTabNext` change tab from anywhere, round; each tab keeps the row it was left on.
+- `kMenuDefault` puts the option chosen back to its default: `MenuConfig::defaultValue` (none: 0, off). A row whose
+  value is not its default is marked, and each tab says how many it has.
+- Left and Right set a switch off and on.
+- Reset game and Quit game in the command row want a second press straight after the first; the hint line says so.
+- Back leaves a page for the tab; on a tab it closes the menu.
+- `menu_sdl.h` gives the buttons: Q and E and the shoulder buttons change tab, Delete and a gamepad's X (west) put back
+  the default, and names them for the hint line (`kTabsName`, `kBackName`: `MenuConfig::tabsName`, `backName`).
+
+It has two looks, which share everything but the drawing, the mouse's places included:
+
+- **The window look** (the usual): a card over the darkened game, the command row, a strip of tabs, the rows, and
+  beside them what the chosen row does and, for a choice, its choices (the default said), which the mouse can click.
+  Where the picture is narrow, the description goes under the rows. `Menu::SetFont` draws its text in a font of the
+  port's (`MenuFont`); without one, the menu's dot font.
+- **The CRT look** (`Menu::SetCompact(true)`): for a picture at the board's own size, a 15 kHz screen's. Capitals in the
+  dot font, a solid bar for the row chosen, one tab at a time between arrows with its place (5/9), a navy ground
+  (a white field blooms on a CRT) and a margin for the overscan.
+
 ## The interface (C)
 
 `menu_c.h` is the same thing as plain functions and structs: `rmenu_new`, `rmenu_configure` (rows
