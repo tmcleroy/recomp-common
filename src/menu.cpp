@@ -958,19 +958,23 @@ namespace {
     // An icon drawn at size x size, each pixel the average of those of the icon's it covers (a big icon drawn small
     // stays smooth), over what is there by its alpha
     void DrawIcon(const Canvas &canvas, const MenuIcon &icon, float x, float y, float size) {
-        const int n = std::max(1, static_cast<int>(size));
-        for (int py = 0; py < n; py++) {
+        // (inside size x size, its own shape kept, in the middle)
+        const float scale = size / std::max(icon.width, icon.height);
+        const int nw = std::max(1, static_cast<int>(std::round(icon.width * scale))), nh = std::max(1, static_cast<int>(std::round(icon.height * scale)));
+        x += std::round((size - nw) / 2);
+        y += std::round((size - nh) / 2);
+        for (int py = 0; py < nh; py++) {
             const int ty = static_cast<int>(y) + py;
             if (ty < 0 || ty >= canvas.height) {
                 continue;
             }
-            const int sy0 = py * icon.height / n, sy1 = std::max(sy0 + 1, (py + 1) * icon.height / n);
-            for (int px = 0; px < n; px++) {
+            const int sy0 = py * icon.height / nh, sy1 = std::max(sy0 + 1, (py + 1) * icon.height / nh);
+            for (int px = 0; px < nw; px++) {
                 const int tx = static_cast<int>(x) + px;
                 if (tx < 0 || tx >= canvas.width) {
                     continue;
                 }
-                const int sx0 = px * icon.width / n, sx1 = std::max(sx0 + 1, (px + 1) * icon.width / n);
+                const int sx0 = px * icon.width / nw, sx1 = std::max(sx0 + 1, (px + 1) * icon.width / nw);
                 uint64_t r = 0, g = 0, b = 0, a = 0, count = 0;
                 for (int sy = sy0; sy < sy1; sy++) {
                     for (int sx = sx0; sx < sx1; sx++) {

@@ -58,7 +58,8 @@ Check 16, 32 and 64 before showing it to anyone.
    **No `transform=` in the SVG:** ImageMagick's own renderer, which `make_icons.sh` uses, puts transformed shapes in
    the wrong place (the CPS-2 label landed off the board).
 2. `tools/make_icons.sh icon.svg OUT ANDROID_RES` writes every size and form: PNGs 16 to 1024, `icon.icns` (on a Mac),
-   `icon.ico`, `icon_png.h` (the 256 PNG as bytes) and the Android mipmaps. Commit them all: a build needs no
+   `icon.ico`, `icon_png.h` (the art without its tile, for the launcher's and the menu's own dark grounds: the tile is
+   found by its `rx="224"`, so keep that on the tile alone) and the Android mipmaps. Commit them all: a build needs no
    ImageMagick.
 3. Wire it in:
    - **macOS:** `icon.icns` into `Contents/Resources/`, `CFBundleIconFile` = `icon` in Info.plist.

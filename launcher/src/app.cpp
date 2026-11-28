@@ -6070,8 +6070,11 @@ void App::top_bar(float width) {
     float left = px(22);
     if (SDL_Texture* icon = named ? icon_texture() : nullptr) {
         const float side = px(40);
-        list->AddImage(ImTextureRef(static_cast<ImTextureID>(reinterpret_cast<intptr_t>(icon))), origin + ImVec2(px(18), (height - side) / 2),
-                       origin + ImVec2(px(18) + side, (height + side) / 2));
+        float tw = 1, th = 1;
+        SDL_GetTextureSize(icon, &tw, &th);
+        const float w = tw >= th ? side : side * tw / th, h = th >= tw ? side : side * th / tw;  // (its own shape kept)
+        const ImVec2 at = origin + ImVec2(px(18) + (side - w) / 2, (height - h) / 2);
+        list->AddImage(ImTextureRef(static_cast<ImTextureID>(reinterpret_cast<intptr_t>(icon))), at, at + ImVec2(w, h));
         left = px(18) + side + px(12);
     }
     ImGui::SetCursorScreenPos(origin + ImVec2(left, px(13)));

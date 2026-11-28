@@ -9,7 +9,8 @@
 #   OUT/png/icon-N.png        16 24 32 48 64 128 256 512 1024 (Linux: hicolor/NxN/apps; the window's own: icon_png.h)
 #   OUT/icon.icns             macOS (Contents/Resources, CFBundleIconFile), made on a Mac only (iconutil)
 #   OUT/icon.ico              Windows (16-256 in one; a .rc's ICON line puts it in the .exe)
-#   OUT/icon_png.h            the 256 PNG as bytes, kIconPng / kIconPngSize, for icon.h and Description::icon_png
+#   OUT/icon_png.h            the art without its tile, 256 on its longer side, as PNG bytes (kIconPng, kIconPngSize):
+#                             the window's icon, the launcher's top bar, the in-game menu (icon.h)
 #   ANDROID_RES/mipmap-*/ic_launcher.png, ic_launcher_round.png, ic_launcher_foreground.png (adaptive: the whole tile
 #                             at 72 of 108 dp, over the tile's own colour: values/ic_launcher_background.xml)
 #
@@ -39,7 +40,12 @@ if command -v iconutil > /dev/null; then
     iconutil -c icns "$set_" -o "$out/icon.icns"
     rm -rf "$(dirname "$set_")"
 fi
-python3 - "$out/png/icon-256.png" "$out/icon_png.h" <<'PY'
+# (in the launcher and the menu the icon sits on their own dark ground: the art alone, without its tile (the
+# rx="224" rect), cropped to it, 256 on its longer side)
+mark=$(mktemp -d)
+grep -v 'rx="224"' "$svg" > "$mark/mark.svg"
+magick -background none -density 384 "$mark/mark.svg" -trim +repage -filter Lanczos -resize 256x256 -strip -depth 8 "PNG32:$mark/mark.png"
+python3 - "$mark/mark.png" "$out/icon_png.h" <<'PY'
 import sys
 data = open(sys.argv[1], 'rb').read()
 lines = [', '.join('0x%02x' % b for b in data[i:i + 16]) for i in range(0, len(data), 16)]
@@ -49,6 +55,7 @@ open(sys.argv[2], 'w').write(
     'inline constexpr unsigned char kIconPng[] = {\n    ' + ',\n    '.join(lines) + ',\n};\n'
     'inline constexpr size_t kIconPngSize = sizeof(kIconPng);\n')
 PY
+rm -rf "$mark"
 if [ -n "$res" ]; then
     # (dp sizes: mdpi 1x .. xxxhdpi 4x; launcher icons 48 dp, adaptive layers 108 dp)
     for d in mdpi:1 hdpi:1.5 xhdpi:2 xxhdpi:3 xxxhdpi:4; do
