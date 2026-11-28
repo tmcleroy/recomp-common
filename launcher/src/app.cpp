@@ -4451,7 +4451,7 @@ void App::board_card(size_t which, float width) {
         width, rows, "",
         [&](const FeatureRow& feature, int value) { set_feature(one, feature.index, value); },
         [&](const FeatureRow& feature) { return recomp::MenuChoices(one.settings, one.features[feature.index]); },
-        [&](const FeatureRow& feature, const std::vector<bool>& offered) { set_menu_choices(one, feature.index, offered); });
+        [&](const FeatureRow& feature, const std::vector<bool>& offered) { set_menu_choices(one, feature.index, offered); }, false);
 }
 
 // The features the Controllers page has (Description::controller_features: Keyboard only, for a controller-to-keys
@@ -4484,7 +4484,8 @@ void App::controller_features_card(float width) {
                 for (const auto& [which, index] : shared_[feature.index].where) {
                     set_menu_choices(*slots_[which], index, offered);
                 }
-            });
+            },
+            false);
     } else {
         Slot& one = slot();
         std::vector<int> values = recomp::FeatureValues(one.settings, one.features);
@@ -4499,7 +4500,7 @@ void App::controller_features_card(float width) {
         feature_list(
             width, rows, "", [&](const FeatureRow& feature, int value) { set_feature(one, feature.index, value); },
             [&](const FeatureRow& feature) { return recomp::MenuChoices(one.settings, one.features[feature.index]); },
-            [&](const FeatureRow& feature, const std::vector<bool>& offered) { set_menu_choices(one, feature.index, offered); });
+            [&](const FeatureRow& feature, const std::vector<bool>& offered) { set_menu_choices(one, feature.index, offered); }, false);
     }
     ui::gap(24);
 }
