@@ -4,10 +4,14 @@
 // A host with no game: sets the menu up as a port would, presses the buttons named on the command line and
 // writes the picture as a PPM file. Shows everything a real host does except showing the picture in a window.
 //
-//   shot OUT.ppm [KEYS] [WIDTHxHEIGHT]     KEYS: u d l r (the directions), a (confirm), b (back)
+//   shot OUT.ppm [KEYS] [WIDTHxHEIGHT] [tabs|crt]
+//     KEYS: u d l r (the directions), a (confirm), b (back), q e (the tab before, after), x (default)
+//     tabs: the tabbed menu (layout::Tabbed) in its window look; crt: in its CRT look (compact)
 //   shot menu.ppm dddda 896x672
+//   shot tabs.ppm e 1152x672 tabs
 #include "i18n.h"
 #include "menu.h"
+#include "menu_layout.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -48,6 +52,53 @@ namespace {
     }
 } // namespace
 
+    // The tabbed menu as a port has it: the standard layout's pages, as tabs
+    MenuConfig TabbedConfig() {
+        MenuConfig config;
+        using namespace recomp::layout;
+        config.features = {
+            {kGame, "Free play", "Start works without a coin."},
+            {kGame, "Straight to the title", "Skips the board's start-up checks."},
+            {kGame, "Run-ahead", "Takes the board's own lag away by running frames ahead.", {"Off", "1 frame", "2 frames"}},
+            {kDisplay, "Widescreen", "The stage drawn wider than the board's 384 pixels, to fill a 16:9 screen."},
+            {kDisplay, "Picture shape", "As an arcade monitor showed it (4:3), or each pixel square.", {"4:3", "Square pixels"}},
+            {kDisplay, "Shader", "A filter over the picture.", {"Off", "Scanlines", "CRT aperture grille", "CRT slot mask"}},
+            {kDisplay, "VSync", "Waits for the screen before showing each frame."},
+            {"Arcade monitor", "Monitor", "The arcade monitor's mode.", {"Off", "15 kHz", "31 kHz"}},
+            {kSound, "Custom soundtrack", "Music files played in place of the board's songs.", {"Off", "Arranged"}},
+            {kTraining, "Gauge refills", "The super gauge fills again after each combo."},
+            {kTraining, "Hit boxes", "Each fighter's hurt, attack, push and throw boxes."},
+            {kDummy, "Guards", "What player 2 guards.", {"Never", "All", "After the first hit", "Random"}},
+            {kCheats, "Infinite time", "The round's clock never runs out."},
+            {kCheats, "No damage", "Hits land but take no health.", {"Off", "Player 1", "Player 2", "Both"}},
+            {kStage, "Stage", "Where every fight is, whatever is played.", {"Game's own", "Random", "Feast of the Damned"}},
+            {kVideo, "Replay length", "How much play is kept for Save replay.", {"Off", "10 seconds", "30 seconds", "60 seconds"}},
+        };
+        config.commands = {
+            {kTraining, "Start training", "A fight with no clock that nobody loses."},
+            {"Survival", "Start survival", "One life against every fighter in turn."},
+            {kVideo, "Record video", "Records what is played and heard as an MP4."},
+            {kSceneExport, "Save scene", "The picture taken apart, layer by layer."},
+        };
+        config.pages = {{"Arcade monitor", kDisplay, "A CRT at the board's own resolution."},
+                        {"Survival", kModes, "One life against every fighter in turn.", false},
+                        {kVideo, kGame, ""}, {kSceneExport, kGame, ""}};
+        Rows rows;
+        rows.actions = {{MenuRow::Action, ::kInsertCoin, "Insert coin", "Puts a coin in the first slot."}};
+        Tabbed(config, rows);
+        config.value = [](size_t feature) { return g_values[feature]; };
+        config.setValue = [](size_t feature, int value) { g_values[feature] = value; };
+        config.defaultValue = [](size_t feature) { return feature == 3 || feature == 6 ? 1 : 0; };
+        Speeds(config);
+        config.speedDescription = "Left/Right: slow motion, or faster than the board.";
+        static bool muted = false;
+        config.muted = [] { return muted; };
+        config.setMuted = [](bool to) { muted = to; };
+        config.confirmName = "A";
+        config.closeName = "Esc";
+        return config;
+    }
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr, "usage: shot OUT.ppm [KEYS] [WIDTHxHEIGHT]\n");
@@ -55,19 +106,27 @@ int main(int argc, char **argv) {
     }
     const char *keys = argc > 2 ? argv[2] : "";
     int width = 896, height = 672;
-    if (argc > 3 && sscanf(argv[3], "%dx%d", &width, &height) != 2) {
+    if (argc > 3 && *argv[3] && sscanf(argv[3], "%dx%d", &width, &height) != 2) {
         fprintf(stderr, "shot: the size is WIDTHxHEIGHT\n");
         return 2;
     }
 
     // (in the language RECOMP_LANGUAGE names, as a game the launcher starts: i18n.h)
     recomp::i18n::SetLanguage(recomp::i18n::Resolve("", recomp::i18n::FromEnvironment()));
+    const std::string look = argc > 4 ? argv[4] : "";
     Menu menu;
-    menu.Configure(Config());
+    if (look == "tabs" || look == "crt") {
+        g_values = {{0, 1}, {1, 1}, {3, 1}, {5, 2}, {6, 1}, {10, 1}};
+        menu.Configure(TabbedConfig());
+        menu.SetCompact(look == "crt");
+    } else {
+        menu.Configure(Config());
+    }
     menu.Open();
     for (const char *key = keys; *key; key++) {
         const unsigned button = *key == 'u' ? kMenuUp : *key == 'd' ? kMenuDown : *key == 'l' ? kMenuLeft : *key == 'r' ? kMenuRight
-                                : *key == 'a' ? kMenuConfirm : *key == 'b' ? kMenuBack : 0;
+                                : *key == 'a' ? kMenuConfirm : *key == 'b' ? kMenuBack : *key == 'q' ? kMenuTabPrev
+                                : *key == 'e' ? kMenuTabNext : *key == 'x' ? kMenuDefault : 0;
         const Menu::Chosen chosen = menu.Buttons(button);
         // A port carries out what was chosen and closes the menu if that went well
         switch (chosen.kind) {

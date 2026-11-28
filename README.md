@@ -43,11 +43,20 @@ To play a game, download a port; this repository is for people making ports.
 - Six buttons: up, down, left, right, confirm, back. The port maps its own onto them.
 - Any picture size: sizes follow the picture's height, and where the rows do not all fit, the ones
   about the chosen row are shown.
+- **Tabs** (`MenuConfig::tabs`, `layout::Tabbed`): the commands every game has in a row at the top (Back, save
+  states, Reset, Quit, Resume), the game's options under nine tabs named and ordered the same in every port (Game,
+  Display, Sound, Online, Training, Modes, Stage, Cheats, Capture), the shoulder buttons or Q/E changing tab, X putting
+  an option back to its default, and the mouse on everything. Two looks: one for a window, and one drawn at the board's
+  own resolution for a CRT.
 - **In the player's language**: English, Brazilian Portuguese or Spanish, chosen in the launcher (or the system's), in
   the menu and the launcher alike (`i18n.h`). A port adds tables for its own words; a text no table has stays in
   English. The menu's font has the accented letters.
 
 ![A page of features](docs/menu-page.png)
+
+![The tabbed menu in a window](docs/menu-tabs.png)
+
+![The tabbed menu on a CRT, at the board's 384 x 224](docs/menu-crt.png)
 
 ## The launcher
 
@@ -121,6 +130,7 @@ Its look, and the files that make it, come from the launcher of
 make test       # the menu's rules, and the C interface compiled as C
 make example    # build/shot: a host with no game
 build/shot menu.ppm ddddar     # press Down x4, Confirm, Right; write the picture
+build/shot tabs.ppm e 1152x672 tabs   # the tabbed menu, on its second tab (crt: its CRT look)
 ```
 
 `examples/shot.cpp` is a complete host in about a hundred lines and is the place to start reading.

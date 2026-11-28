@@ -16,6 +16,14 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 - **A chime for an invitation** (`chime.h`, `launcher::play_chime`): when a player in the waiting room invites this
   one, the launcher plays a short two-tone chime, made in code (no sound file), once for each invitation; not while the
   Sound card's Muted switch is on.
+- **The tabbed menu** (`MenuConfig::tabs`, `MenuConfig::bar`, `layout::Tabbed`): a row of commands (Back, the port's,
+  Resume), tabs under it and the tab's rows; the nine standard tabs, named and ordered the same in every port. Up and
+  Down go through the rows, the tabs and the command row; `kMenuTabPrev`, `kMenuTabNext` and `kMenuDefault`
+  (`MenuConfig::defaultValue`) are new buttons, given by `menu_sdl.h` to Q/E, the shoulder buttons, Delete and X.
+  Reset game and Quit game want a second press. A window look (the description and choices beside the rows, clickable)
+  and a CRT look (`SetCompact`: the board's own resolution, capitals, a solid bar), sharing the layout and the mouse.
+  `MenuFont` for a port's own font in the window look. The page menu is unchanged where there are no tabs.
+
 - **Which gamepad is which player's** (`bindings.h`: `[controllers]`, `PadIdentity`, `LoadPadChoices`, `AssignPads`):
   each gamepad on the Controllers page's Connected list has a choice, Automatic, Player 1 to the last, or Not used,
   kept in every game's `settings.ini`, and a held button shows on its row to tell two of the same gamepad apart. A game
