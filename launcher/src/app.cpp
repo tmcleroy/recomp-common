@@ -5259,7 +5259,10 @@ void App::features_page(float width) {
     }
     // (the menu's choices: as the first game that has the feature has them, and set for every one)
     feature_list(
-        width, rows, here < 2 ? "With one game, its features are on its own page." : "The games have no features in common.",
+        width, rows,
+        about_.launcher_features_only ? ""
+        : here < 2                    ? "With one game, its features are on its own page."
+                                      : "The games have no features in common.",
         [&](const FeatureRow& feature, int value) { set_shared(feature.index, value); },
         [&](const FeatureRow& feature) {
             const auto& [which, index] = shared_[feature.index].where[0];
@@ -6333,7 +6336,7 @@ void App::library_grid(float width) {
                 for (char c : one.id) {
                     hash = (hash ^ static_cast<unsigned char>(c)) * 16777619u;
                 }
-                const ImVec4 tint = ImColor::HSV(static_cast<float>(hash % 360) / 360.0f, 0.45f, usable ? 0.30f : 0.18f);
+                const ImVec4 tint = ImColor::HSV(static_cast<float>(hash % 360) / 360.0f, 0.32f, usable ? 0.24f : 0.15f);
                 draw->AddRectFilled(pic_min, pic_max, ImGui::ColorConvertFloat4ToU32(tint), px(12), ImDrawFlags_RoundCornersTop);
                 ImGui::PushClipRect(pic_min, pic_max, true);
                 ImGui::SetCursorScreenPos(pic_min + ImVec2(px(14), px(12)));
@@ -6347,9 +6350,13 @@ void App::library_grid(float width) {
                 ImGui::SetCursorScreenPos(tag_at + ImVec2(px(6), px(3)));
                 ui::text(one.hardware.c_str(), Font::Semibold, ui::size::kSmall, p.secondary);
             }
-            ImGui::SetCursorScreenPos(at + ImVec2(px(12), picture_h + px(10)));
-            ui::text(ui::fit_end(one.name, Font::Semibold, 14.0f, tile_w - px(24)).c_str(), Font::Semibold, 14.0f, usable ? p.text : p.secondary);
-            ImGui::SetCursorScreenPos(at + ImVec2(px(12), picture_h + px(31)));
+            // (under the picture its name, which a tile with no picture has on it already, and how it stands)
+            const bool named = texture != nullptr;
+            if (named) {
+                ImGui::SetCursorScreenPos(at + ImVec2(px(12), picture_h + px(10)));
+                ui::text(ui::fit_end(one.name, Font::Semibold, 14.0f, tile_w - px(24)).c_str(), Font::Semibold, 14.0f, usable ? p.text : p.secondary);
+            }
+            ImGui::SetCursorScreenPos(at + ImVec2(px(12), picture_h + (named ? px(31) : px(20))));
             const std::string status = one.game.running() ? std::string(Tr("Playing…"))
                                        : one.checking     ? std::string(Tr("Checking…"))
                                        : usable           ? (one.series.empty() ? std::string(Tr("Ready")) : one.series)
