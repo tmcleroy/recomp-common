@@ -1026,6 +1026,19 @@ Menu::Chosen Menu::ButtonsTabbed(unsigned pressed) {
         m_selected = (m_selected + 1) % count;
         return {};
     }
+    if (pressed & (kMenuLeft | kMenuRight)) {
+        // (a switch: Left off, Right on, as it is drawn)
+        const Row &row = m_rows[static_cast<size_t>(m_selected)];
+        const bool on = (pressed & kMenuRight) != 0;
+        if (row.kind == kRowFeature && m_config.features[row.index].choices.empty() && m_config.setValue) {
+            m_config.setValue(row.index, on ? 1 : 0);
+            return {};
+        }
+        if (row.kind == kRowMute) {
+            m_config.setMuted(on);
+            return {};
+        }
+    }
     if (pressed & kMenuDefault) {
         const Row &row = m_rows[static_cast<size_t>(m_selected)];
         if (row.kind == kRowFeature && m_config.setValue) {

@@ -95,6 +95,14 @@ int main() {
         Press(menu, {kMenuTabNext, kMenuTabPrev, kMenuConfirm});
         CHECK(g_values[0] == 0); // (back on Free play: off again)
 
+        // A switch: Left off, Right on (and Confirm, as before, the other way)
+        Press(menu, {kMenuRight});
+        CHECK(g_values[0] == 1);
+        Press(menu, {kMenuRight});
+        CHECK(g_values[0] == 1);
+        Press(menu, {kMenuLeft});
+        CHECK(g_values[0] == 0);
+
         // Default: the option chosen back to its own default
         Press(menu, {kMenuTabNext, kMenuConfirm}); // (Display: Wide off)
         CHECK(g_values[1] == 0);
