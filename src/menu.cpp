@@ -1397,7 +1397,8 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
             default: return "";
             }
         };
-        // (as roomy as fits: the long words, then the short, then tighter, then Back as "<" and the smaller letters)
+        // (as roomy as fits: the long words, then the short, then tighter, then Back as "<", the smaller letters, and
+        // at the last hardly any room between)
         int tight = 0;
         float itemPad = 0, gap = 0, edge = 0, dot = look.dot;
         bool shortly = false;
@@ -1405,11 +1406,11 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
         const auto label2 = [&](const BarItem &item) {
             return tight >= 3 && item.kind == kRowBack ? std::string("<") : label(item, shortly);
         };
-        for (tight = 0; tight <= 4; tight++) {
+        for (tight = 0; tight <= 5; tight++) {
             shortly = tight >= 1;
-            itemPad = crt ? (tight >= 2 ? u : 3 * u) : (tight >= 2 ? 7 * u : 14 * u);
-            gap = crt ? (tight >= 2 ? 2 * u : 4 * u) : 4 * u;
-            edge = crt ? (tight >= 2 ? u : 2 * u) : (tight >= 2 ? 4 * u : 10 * u);
+            itemPad = crt ? (tight >= 2 ? u : 3 * u) : (tight >= 5 ? 2 * u : tight >= 2 ? 7 * u : 14 * u);
+            gap = crt ? (tight >= 5 ? u : tight >= 2 ? 2 * u : 4 * u) : (tight >= 5 ? 2 * u : 4 * u);
+            edge = crt ? (tight >= 2 ? u : 2 * u) : (tight >= 5 ? 2 * u : tight >= 2 ? 4 * u : 10 * u);
             dot = tight >= 4 ? std::max(1.0f, std::round(crt ? u : look.dot * 2 / 3)) : look.dot;
             w.clear();
             float total = 0;
@@ -1421,7 +1422,7 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
                 break;
             }
         }
-        tight = std::min(tight, 4);
+        tight = std::min(tight, 5);
         const float itemHeight = crt ? h - 2 * u : 42 * u;
         float middleWidth = 0;
         for (size_t i = 1; i + 1 < m_bar.size(); i++) {
