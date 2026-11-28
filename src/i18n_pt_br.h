@@ -47,6 +47,7 @@ inline constexpr Entry kPortuguese[] = {
     {"Keeps every option as it is.", "Mantém todas as opções como estão."},
     {"Reset all options: are you sure?", "Restaurar todas as opções: tem certeza?"},
     // (the tabbed menu)
+    {"{}: tab   {}: back   {}: close", "{}: aba   {}: voltar   {}: fechar"},
     {"Save", "Salvar"},
     {"Load", "Carregar"},
     {"Reset", "Reiniciar"},

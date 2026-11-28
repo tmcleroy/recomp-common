@@ -1465,12 +1465,6 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
             m_hits.push_back({kHitTabPrev, 0, cx - 16 * u - arrow, tabsY, arrow + 12 * u, h});
             m_hits.push_back({kHitTab, m_tab, cx - 3 * u, tabsY, nameWidth + 6 * u, h});
             m_hits.push_back({kHitTabNext, 0, cx + nameWidth + 4 * u, tabsY, arrow + 12 * u, h});
-            const size_t slash = m_config.tabsName.find('/');
-            if (slash != std::string::npos) {
-                const std::string prev = words(m_config.tabsName.substr(0, slash)), next = words(m_config.tabsName.substr(slash + 1));
-                type.Draw(cx - 22 * u - arrow - type.Width(prev, look.dot), ty, look.dot, look.dim, prev);
-                type.Draw(cx + nameWidth + 22 * u + arrow, ty, look.dot, look.dim, next);
-            }
             type.Draw(px + pw - 4 * u - type.Width(place, look.dot), ty, look.dot, look.dim, place);
             canvas.Fill(px + 4 * u, tabsY + h - 2 * u, pw - 8 * u, 2 * u, look.line);
         } else {
@@ -1533,7 +1527,21 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
     std::string title, value, description;
     int valueKind = kValuePlain; // (the pane shows the choices themselves)
     const Row *chosen = m_rows.empty() ? nullptr : &m_rows[static_cast<size_t>(std::clamp(m_selected, 0, static_cast<int>(m_rows.size()) - 1))];
-    if (chosen) {
+    if (m_zone == kZoneBar && !m_bar.empty()) {
+        // (the command row's item: what it does)
+        const BarItem &item = m_bar[static_cast<size_t>(std::clamp(m_barAt, 0, static_cast<int>(m_bar.size()) - 1))];
+        Describe({item.kind, item.index, ""}, title, value, valueKind, description);
+        if (item.kind == kRowBack) {
+            description = m_page.empty() ? Tr("Back to the game.")
+                                         : i18n::TrFormat("To the {} page (Left does the same).",
+                                                          {Tr(InTab(Parent(m_page)) || Parent(m_page).empty()
+                                                                  ? m_config.tabs[static_cast<size_t>(Tab())].name
+                                                                  : Parent(m_page))});
+        }
+        chosen = nullptr; // (no choices shown)
+    } else if (m_zone == kZoneTabs) {
+        chosen = nullptr;
+    } else if (chosen) {
         Describe(*chosen, title, value, valueKind, description);
     }
     const std::string note = Tr(m_note);
@@ -1673,7 +1681,8 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
             } else {
                 const bool arrows = !crt || focused;
                 const float inner = std::max(vw, boxWidth);
-                const float nextX = right - arrowWidth, valueX = nextX - (crt ? 4 * u : 10 * u) - inner;
+                // (the CRT look's arrows only on the row chosen: the others' values at the edge, as a switch's are)
+                const float nextX = right - arrowWidth, valueX = arrows ? nextX - (crt ? 4 * u : 10 * u) - inner : right - inner;
                 const float prevX = valueX - (crt ? 4 * u : 10 * u) - arrowWidth;
                 type.Draw(valueX + (inner - vw) / 2, ty, look.dot, valueInk, said);
                 if (arrows) {
@@ -1707,7 +1716,7 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
         canvas.Fill(sx, sy, std::max(1.0f, std::round(u)), bottom - sy, look.line);
         const float inner = paneWidth - 48 * u, ix = sx + 24 * u;
         float yy = sy + 22 * u;
-        if (chosen && !title.empty()) {
+        if (!title.empty()) {
             for (const std::string &line : type.Wrap(title, look.dot + (look.dot >= 2 ? 1 : 0), inner)) {
                 type.Draw(ix, yy, look.dot + (look.dot >= 2 ? 1 : 0), {255, 255, 255, 255}, line);
                 yy += text::kLineHeight * (look.dot + (look.dot >= 2 ? 1 : 0));
@@ -1783,9 +1792,12 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
         } else {
             canvas.Fill(px, fy, pw, std::max(1.0f, std::round(u)), look.line);
         }
-        const std::string hint = crt ? Capitals(i18n::TrFormat("{}: back   {}: tab", {Tr(m_config.backName), Tr(m_config.tabsName)}))
-                                     : i18n::TrFormat("Up/Down: choose   Left/Right: change   {}: tab   {}: back   {}: close",
-                                                      {Tr(m_config.tabsName), Tr(m_config.backName), Tr(m_config.closeName)});
+        std::string hint = crt ? Capitals(i18n::TrFormat("{}: back   {}: tab", {Tr(m_config.backName), Tr(m_config.tabsName)}))
+                               : i18n::TrFormat("Up/Down: choose   Left/Right: change   {}: tab   {}: back   {}: close",
+                                                {Tr(m_config.tabsName), Tr(m_config.backName), Tr(m_config.closeName)});
+        if (!crt && type.Width(hint, look.small) + 44 * u > pw) {
+            hint = i18n::TrFormat("{}: tab   {}: back   {}: close", {Tr(m_config.tabsName), Tr(m_config.backName), Tr(m_config.closeName)});
+        }
         const float legendRoom = crt ? 70 * u : 140 * u;
         const bool legend = type.Width(hint, look.small) + legendRoom + (crt ? 12 : 44) * u <= pw;
         type.Draw(px + (crt ? 6 : 22) * u, middle(fy, h, look.small), look.small, look.dim,
