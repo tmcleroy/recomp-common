@@ -2740,17 +2740,18 @@ void App::global_display_card(float width) {
     ui::gap(10);
     Card card(width);
     bool first = true;
-    for (const auto& [which, toggle] : list) {
+    for (const auto& entry : list) {
         if (!first) {
             inset_separator(width);
         }
         first = false;
-        Slot& one = *slots_[which];
-        bool on = toggle_on(one, *toggle);
-        std::string id = std::string("##global_") + toggle->key;
-        row(width, toggle->title, toggle->detail, 42.0f, 24.0f, [&] {
+        Slot& one = *slots_[entry.first];
+        const launcher::Toggle& toggle = *entry.second;
+        bool on = toggle_on(one, toggle);
+        std::string id = std::string("##global_") + toggle.key;
+        row(width, toggle.title, toggle.detail, 42.0f, 24.0f, [&] {
             if (ui::toggle(id.c_str(), on)) {
-                set_toggle(one, *toggle, !on);
+                set_toggle(one, toggle, !on);
             }
         });
     }
@@ -2760,7 +2761,8 @@ void App::global_display_card(float width) {
 // The global switches before this launcher had them were each game's own ([video.<id>]). The one for every game is
 // taken from the game played last that had it set (its log is the latest written), else it is the switch's default.
 void App::migrate_global_display() {
-    for (const auto& [which, toggle] : global_toggles()) {
+    for (const auto& entry : global_toggles()) {
+        const launcher::Toggle* toggle = entry.second;
         if (!prefs_.get("video", toggle->key).empty()) {
             continue;
         }
