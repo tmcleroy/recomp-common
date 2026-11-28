@@ -346,6 +346,8 @@ include(../recomp-common/launcher/launcher.cmake)     # makes the target `launch
 | `pages` | Pages of the port's own, before the launcher's in the sidebar (below). |
 | `game_page` | `false`: no Game page, game file or Display card; the port's pages have Play. |
 | `features_name`, `features_intro`, `presets` | Another name and other first lines for the Features page, and whether it has the preset chooser. |
+| `launcher_features_only`, `board_category`, `controller_features` | Only the features marked `kFeatureLauncher` (settings.h) on the launcher's pages: what has to be set before a game starts. The rest are the in-game menu's alone, still saved and set by the presets. `board_category`: a small card of that category's features on each game's page, set for that game alone. `controller_features`: features by name on the Controllers page. |
+| `layout` | `Layout::Sidebar` (the usual) or `Layout::Tabs`: the in-game menu's look, the pages as tabs along the top (LB/RB go through them), a collection's games as a grid of pictures (`picture.png` in a game's folder, which the game can leave there on quitting, else its newest screenshot, else its name) with the chosen game's Play, Host online, Display switches and its own page beside it. |
 
 **Pages of a port's own.** A `launcher::CustomPage` is a name and a `draw(PageContext&)`, and
 optionally `drop` (a file dropped on the window) and `busy` (work is going on on another thread:
