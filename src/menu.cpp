@@ -271,8 +271,32 @@ void Menu::EndConfirm() {
     Fill();
 }
 
+std::string Menu::Step(size_t feature, int direction) {
+    if (feature >= m_config.features.size() || !m_config.setValue) {
+        return "";
+    }
+    const MenuFeature &f = m_config.features[feature];
+    const int value = m_config.value ? m_config.value(feature) : 0;
+    int to = value ? 0 : 1;
+    if (!f.choices.empty()) {
+        const int choices = static_cast<int>(f.choices.size());
+        const int now = std::clamp(value, 0, choices - 1);
+        to = now;
+        do { // (around, to the next one offered)
+            to = ((to + (direction < 0 ? -1 : 1)) % choices + choices) % choices;
+        } while (to != now && to != 0 && m_config.offered && !m_config.offered(feature, to));
+    }
+    m_config.setValue(feature, to);
+    const int now = m_config.value ? m_config.value(feature) : to;
+    const std::string said = f.choices.empty() ? Tr(now ? "On" : "Off")
+                                               : Tr(f.choices[static_cast<size_t>(std::clamp(now, 0, static_cast<int>(f.choices.size()) - 1))]);
+    return std::string(Tr(f.title)) + ": " + said;
+}
+
 void Menu::Open() {
     m_note.clear();
+    m_listen = -1;
+    m_listenEnded = false;
     m_confirm = false; // (asked again each time: never left open across a close)
     Fill(); // (on the page, and the row, it was closed on)
     m_open = true;
@@ -932,7 +956,11 @@ void Menu::ShowTab(int tab) {
 }
 
 Menu::Chosen Menu::ButtonsTabbed(unsigned pressed) {
-    if (!m_open || !pressed) {
+    if (m_listenEnded) { // (the key or button just given as a hotkey: not the menu's too)
+        m_listenEnded = false;
+        return {};
+    }
+    if (!m_open || !pressed || m_listen >= 0) {
         return {};
     }
     m_note.clear();
@@ -1038,6 +1066,14 @@ Menu::Chosen Menu::ButtonsTabbed(unsigned pressed) {
             m_config.setMuted(on);
             return {};
         }
+    }
+    if ((pressed & kMenuHotkey) && m_config.hotkey && m_zone == kZoneRows && !m_rows.empty()) {
+        const Row &row = m_rows[static_cast<size_t>(m_selected)];
+        if (row.kind == kRowFeature) {
+            m_listen = static_cast<int>(row.index);
+            m_listenNote.clear();
+        }
+        return {};
     }
     if (pressed & kMenuDefault) {
         const Row &row = m_rows[static_cast<size_t>(m_selected)];
@@ -1717,6 +1753,23 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
                 m_hits.push_back({kHitNext, i, nextX - 4 * u, y, arrowWidth + 10 * u, h});
             }
         }
+        if (isFeature && m_config.hotkey) {
+            // (its hotkey, in a box before the value)
+            const std::string key = m_config.hotkey(row.index);
+            if (!key.empty()) {
+                const std::string shown = crt ? "[" + Capitals(key) + "]" : key;
+                const float kw = type.Width(shown, look.small) + (crt ? 0 : 12) * u, kh = 20 * u;
+                const float kx = valueLeft - (crt ? 6 : 12) * u - kw, ky = std::round(y + (h - kh) / 2);
+                const Color keyInk = focused && crt ? look.onAccent : look.dim;
+                if (crt) {
+                    type.Draw(kx, middle(y, h, look.small), look.small, keyInk, shown);
+                } else {
+                    FillRound(canvas, kx, ky, kw, kh, 5 * u, Color{30, 37, 49, 255});
+                    type.Draw(kx + 6 * u, middle(ky, kh, look.small), look.small, keyInk, shown);
+                }
+                valueLeft = kx;
+            }
+        }
         type.Draw(tx, ty, look.dot, ink, type.Fit(rowTitle, look.dot, valueLeft - tx - 8 * u));
         y += h;
     }
@@ -1820,6 +1873,16 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
         if (!crt && type.Width(hint, look.small) + 44 * u > pw) {
             hint = i18n::TrFormat("{}: tab   {}: back   {}: close", {Tr(m_config.tabsName), Tr(m_config.backName), Tr(m_config.closeName)});
         }
+        // (on a feature's row, with hotkeys: the button that gives it one, when there is room)
+        if (m_config.hotkey && m_zone == kZoneRows && !m_rows.empty() && m_rows[static_cast<size_t>(m_selected)].kind == kRowFeature) {
+            const std::string more = (crt ? std::string("   ") + Capitals(i18n::TrFormat("{}: hotkey", {Tr(m_config.hotkeyName)}))
+                                          : i18n::TrFormat("{}: tab   {}: back   {}: hotkey",
+                                                           {Tr(m_config.tabsName), Tr(m_config.backName), Tr(m_config.hotkeyName)}));
+            const std::string with = crt ? hint + more : more;
+            if (type.Width(with, look.small) + (crt ? 82 : 184) * u <= pw) {
+                hint = with;
+            }
+        }
         const float legendRoom = crt ? 70 * u : 140 * u;
         const bool legend = type.Width(hint, look.small) + legendRoom + (crt ? 12 : 44) * u <= pw;
         type.Draw(px + (crt ? 6 : 22) * u, middle(fy, h, look.small), look.small, look.dim,
@@ -1835,6 +1898,38 @@ void Menu::DrawTabbed(uint32_t *pixels, int width, int height) const {
             FillRound(canvas, lx - 15 * u, std::round(fy + h / 2 - 4 * u), 8 * u, 8 * u, 4 * u, look.changed);
             type.Draw(lx, middle(fy, h, look.small), look.small, look.dim, legend);
         }
+    }
+
+    // Asking for a hotkey: a box over the rest
+    if (m_listen >= 0 && static_cast<size_t>(m_listen) < m_config.features.size()) {
+        canvas.Fill(px, py, pw, ph, crt ? Color{0, 0, 0, 150} : Color{7, 9, 12, 190});
+        const std::string asked = words(i18n::TrFormat("Press a key or button for {}", {Tr(m_config.features[static_cast<size_t>(m_listen)].title)}));
+        const std::string how = words(Tr("Esc: cancel   Backspace: no hotkey"));
+        const std::string note = words(Tr(m_listenNote));
+        const float boxWidth = std::min(pw - (crt ? 8 : 40) * u, std::max(type.Width(asked, look.dot), type.Width(how, look.small)) + (crt ? 16 : 64) * u);
+        const std::vector<std::string> lines = type.Wrap(asked, look.dot, boxWidth - (crt ? 8 : 40) * u);
+        const float lineHeight = text::kLineHeight * look.dot;
+        const float boxHeight = lines.size() * lineHeight + (crt ? 22 : 64) * u + (note.empty() ? 0 : (crt ? 10 : 26) * u);
+        const float bx = std::round(px + (pw - boxWidth) / 2), by = std::round(py + (ph - boxHeight) / 2);
+        if (crt) {
+            canvas.Fill(bx, by, boxWidth, boxHeight, look.strip);
+            Ring(canvas, bx, by, boxWidth, boxHeight, u, look.accent);
+        } else {
+            FillRound(canvas, bx, by, boxWidth, boxHeight, 14 * u, look.panel);
+            Ring(canvas, bx, by, boxWidth, boxHeight, std::max(1.0f, std::round(2 * u)), look.accent);
+        }
+        float ly = by + (crt ? 6 : 22) * u;
+        for (const std::string &line : lines) {
+            type.Draw(std::round(bx + (boxWidth - type.Width(line, look.dot)) / 2), ly, look.dot, look.textColor, line);
+            ly += lineHeight;
+        }
+        if (!note.empty()) {
+            const std::string fit = type.Fit(note, look.small, boxWidth - (crt ? 8 : 40) * u);
+            type.Draw(std::round(bx + (boxWidth - type.Width(fit, look.small)) / 2), ly + (crt ? 2 : 6) * u, look.small, look.danger, fit);
+            ly += (crt ? 10 : 26) * u;
+        }
+        const std::string fit = type.Fit(how, look.small, boxWidth - (crt ? 8 : 40) * u);
+        type.Draw(std::round(bx + (boxWidth - type.Width(fit, look.small)) / 2), ly + (crt ? 4 : 12) * u, look.small, look.dim, fit);
     }
 }
 

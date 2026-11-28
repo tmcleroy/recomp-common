@@ -73,7 +73,7 @@ $(B)/menu_turn_test: tests/menu_turn_test.cpp src/menu_turn.h src/menu.cpp src/m
 	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined tests/menu_turn_test.cpp src/menu.cpp -o $@
 
 # The menu's SDL controls (menu_sdl.h; needs SDL 3)
-$(B)/menu_sdl_test: tests/menu_sdl_test.cpp src/menu_sdl.h src/menu_turn.h src/menu_buttons.h src/menu.cpp src/menu.h
+$(B)/menu_sdl_test: tests/menu_sdl_test.cpp src/hotkey.h src/menu_sdl.h src/menu_turn.h src/menu_buttons.h src/menu.cpp src/menu.h
 	@mkdir -p $(B)
 	$(CXX) $(CXXFLAGS) $$(pkg-config --cflags sdl3) tests/menu_sdl_test.cpp src/menu.cpp $$(pkg-config --libs sdl3) -o $@
 

@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **Hotkeys for the in-game menu's options** (`hotkey.h`, `MenuConfig::hotkey`, `kMenuHotkey`, `Menu::Step`): H or a
+  gamepad's Y on an option's row asks for a key or button, which then steps the option while playing (Shift: back).
 - **The tabbed menu on a stood-up or narrow picture**: its scale follows the width as well as the height, and the
   command row tightens (short words, less padding, Back as "<", smaller letters) until every item fits.
 - **The Tabs layout** (`Description::layout`): the launcher in the in-game menu's look, its pages as tabs along the top and a

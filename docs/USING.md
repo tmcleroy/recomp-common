@@ -146,6 +146,22 @@ it is said above its rows. With two pages or more, each tab's page is under a he
 - `menu_sdl.h` gives the buttons: Q and E and the shoulder buttons change tab, Delete and a gamepad's X (west) put back
   the default, and names them for the hint line (`kTabsName`, `kBackName`: `MenuConfig::tabsName`, `backName`).
 
+#### Hotkeys
+
+A player can give any option a key or a gamepad button, which steps it while playing: Run-ahead through its frames,
+the shader through its list, a switch on and off. `hotkey.h` does the work with SDL; the port wires it up:
+
+- `MenuConfig::hotkey(feature)`: the name of the key or button the feature has (`Hotkeys::Of(id).Name()`), shown on its
+  row; `hotkeyName` for the hint line (`sdl::kHotkeyName`, "H or Y"). Without `hotkey` there are no hotkeys.
+- `kMenuHotkey` (H, a gamepad's Y) on a feature's row asks for one; while `Menu::Listening()` is a feature, each SDL event
+  goes to `sdl::HotkeyListen(event, menu, hotkeys, ids, taken, changed)` first (Esc or B cancels, Backspace or X takes
+  the hotkey away). `taken(Hotkey)` says why a key or button cannot be one ("That key plays the game."), or "".
+  One key, one feature: giving it to another takes it from the first.
+- In the game, `sdl::HotkeyPress(event, menu, hotkeys, ids)` steps the feature (Shift with a key: back) through
+  `Menu::Step`, round, the choices `offered` alone, and returns what to show ("Run-ahead: 2 frames"); "" when the
+  event was no hotkey, which then goes to the game as before.
+- `Hotkeys::Save()` / `Load()` keep them as one line of the game's settings, by the features' ids.
+
 It has two looks, which share everything but the drawing, the mouse's places included:
 
 - **The window look** (the usual): a card over the darkened game, the command row, a strip of tabs, the rows, and
