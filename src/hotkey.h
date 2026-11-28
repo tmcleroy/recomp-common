@@ -9,6 +9,7 @@
 #pragma once
 
 #include "menu.h"
+#include "menu_sdl.h"
 
 #include <SDL3/SDL.h>
 
@@ -145,9 +146,27 @@ inline Hotkey HotkeyOf(const SDL_Event &event) {
     return hotkey;
 }
 
+// A key or button the menu itself goes by (menu_sdl.h's MenuHeld, MenuKey), which can't also be a hotkey
+inline bool MenuOwn(Hotkey hotkey) {
+    switch (hotkey.key) {
+    case SDL_SCANCODE_UP: case SDL_SCANCODE_DOWN: case SDL_SCANCODE_LEFT: case SDL_SCANCODE_RIGHT: case SDL_SCANCODE_SPACE:
+    case SDL_SCANCODE_RETURN: case SDL_SCANCODE_KP_ENTER: case SDL_SCANCODE_Q: case SDL_SCANCODE_E: case SDL_SCANCODE_DELETE:
+    case SDL_SCANCODE_H: return true;
+    case SDL_SCANCODE_UNKNOWN: break;
+    default: return MenuKey(hotkey.key);
+    }
+    switch (hotkey.button) {
+    case SDL_GAMEPAD_BUTTON_DPAD_UP: case SDL_GAMEPAD_BUTTON_DPAD_DOWN: case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: case SDL_GAMEPAD_BUTTON_SOUTH: case SDL_GAMEPAD_BUTTON_NORTH:
+    case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return true;
+    case SDL_GAMEPAD_BUTTON_INVALID: return false;
+    default: return MenuButton(hotkey.button);
+    }
+}
+
 // While the menu asks for a hotkey (Menu::Listening): the event, if it is a key or button, answers it. Esc (or the
 // gamepad's B) cancels, Backspace (or X) takes the hotkey away; `taken` says why a key or button cannot be one ("":
-// it can), the menu then saying so and asking again. `ids`: each menu feature's id. True: the event was the answer's
+// it can; in English: the menu translates it), the menu then saying so and asking again; the menu's own keys and buttons (MenuOwn) never can. `ids`: each menu feature's id. True: the event was the answer's
 // (the host does nothing else with it); `changed`: the hotkeys are to be saved.
 template <class Taken>
 inline bool HotkeyListen(const SDL_Event &event, Menu &menu, Hotkeys &hotkeys, const std::vector<std::string> &ids, Taken taken,
@@ -176,7 +195,7 @@ inline bool HotkeyListen(const SDL_Event &event, Menu &menu, Hotkeys &hotkeys, c
         menu.StopListening();
         return true;
     }
-    const std::string why = taken(pressed);
+    const std::string why = MenuOwn(pressed) ? std::string("The menu uses that one.") : taken(pressed);
     if (!why.empty()) {
         menu.ListenNote(why);
         return true;

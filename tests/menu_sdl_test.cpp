@@ -135,6 +135,8 @@ int main() {
         bool changed = false;
         const auto taken = [](Hotkey h) { return h.key == SDL_SCANCODE_W ? std::string("That key plays the game.") : std::string(); };
         CHECK(sdl::HotkeyListen(key, m, mine, ids, taken, changed) && !changed && m.Listening() == 0);
+        key.key.scancode = SDL_SCANCODE_DOWN; // (the menu's)
+        CHECK(sdl::HotkeyListen(key, m, mine, ids, taken, changed) && !changed && m.Listening() == 0);
         key.key.scancode = SDL_SCANCODE_F3;
         CHECK(sdl::HotkeyListen(key, m, mine, ids, taken, changed) && changed && m.Listening() < 0 && mine.Of("run_ahead").Name() == "F3");
         CHECK(!sdl::HotkeyListen(key, m, mine, ids, taken, changed)); // (not asking now)

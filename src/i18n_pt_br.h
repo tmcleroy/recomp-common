@@ -69,6 +69,7 @@ inline constexpr Entry kPortuguese[] = {
     {"{}: tab   {}: back   {}: hotkey", "{}: aba   {}: voltar   {}: atalho"},
     {"Press a key or button for {}", "Aperte uma tecla ou um botão para {}"},
     {"Esc: cancel   Backspace: no hotkey", "Esc: cancelar   Backspace: sem atalho"},
+    {"The menu uses that one.", "Esse é do menu."},
     {"{} on  >", "{} em diante  >"},
     {"The page of {} choices.", "A página de opções de {}."},
     {"Back", "Voltar"},

@@ -156,7 +156,8 @@ the shader through its list, a switch on and off. `hotkey.h` does the work with 
 - `kMenuHotkey` (H, a gamepad's Y) on a feature's row asks for one; while `Menu::Listening()` is a feature, each SDL event
   goes to `sdl::HotkeyListen(event, menu, hotkeys, ids, taken, changed)` first (Esc or B cancels, Backspace or X takes
   the hotkey away). `taken(Hotkey)` says why a key or button cannot be one ("That key plays the game."), or "".
-  One key, one feature: giving it to another takes it from the first.
+  The menu's own keys and buttons (`sdl::MenuOwn`) never can. One key, one feature: giving it to another takes it
+  from the first.
 - In the game, `sdl::HotkeyPress(event, menu, hotkeys, ids)` steps the feature (Shift with a key: back) through
   `Menu::Step`, round, the choices `offered` alone, and returns what to show ("Run-ahead: 2 frames"); "" when the
   event was no hotkey, which then goes to the game as before.

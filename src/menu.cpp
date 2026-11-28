@@ -296,7 +296,6 @@ std::string Menu::Step(size_t feature, int direction) {
 void Menu::Open() {
     m_note.clear();
     m_listen = -1;
-    m_listenEnded = false;
     m_confirm = false; // (asked again each time: never left open across a close)
     Fill(); // (on the page, and the row, it was closed on)
     m_open = true;
@@ -956,10 +955,6 @@ void Menu::ShowTab(int tab) {
 }
 
 Menu::Chosen Menu::ButtonsTabbed(unsigned pressed) {
-    if (m_listenEnded) { // (the key or button just given as a hotkey: not the menu's too)
-        m_listenEnded = false;
-        return {};
-    }
     if (!m_open || !pressed || m_listen >= 0) {
         return {};
     }

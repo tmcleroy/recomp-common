@@ -243,8 +243,7 @@ int main() {
     }
     puts("menu_tabs_test: all as it should be");
     {
-        // Hotkeys: Hotkey on a feature's row asks for one; while asked the buttons are not the menu's, nor the one
-        // pressed just after; Step goes around the choices offered, and flips a switch
+        // Hotkeys: Hotkey on a feature's row asks for one; while asked the buttons are not the menu's; Step goes around the choices offered, and flips a switch
         g_values = {};
         Menu menu;
         MenuConfig with = Config();
@@ -259,7 +258,6 @@ int main() {
         Press(menu, {kMenuDown, kMenuBack});
         CHECK(menu.IsOpen() && menu.Listening() == 2);
         menu.StopListening();
-        Press(menu, {kMenuBack}); // (the key just given: not the menu's)
         CHECK(menu.IsOpen() && menu.Listening() < 0);
         std::vector<uint32_t> pixels(1152 * 672);
         Press(menu, {kMenuHotkey});

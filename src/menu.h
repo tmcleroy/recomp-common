@@ -233,7 +233,6 @@ public:
     void StopListening() {
         m_listen = -1;
         m_listenNote.clear();
-        m_listenEnded = true; // (the key just taken is not also the menu's)
     }
     void ListenNote(const std::string &text) {
         m_listenNote = text;
@@ -331,7 +330,6 @@ private:
     std::string m_note;
     int m_listen = -1;
     std::string m_listenNote;
-    bool m_listenEnded = false;
     // (where Draw last put each row shown, for Mouse: the row, and its top and bottom; and the panel's left and right)
     struct Shown {
         int row;
