@@ -5,6 +5,8 @@ a minor version. A port's copy only changes when it runs `tools/sync-common.sh`.
 
 ## Unreleased
 
+- **The tabbed menu on a stood-up or narrow picture**: its scale follows the width as well as the height, and the
+  command row tightens (short words, less padding, Back as "<", smaller letters) until every item fits.
 - **The Tabs layout** (`Description::layout`): the launcher in the in-game menu's look, its pages as tabs along the top and a
   collection's games as a grid of pictures, the chosen one's Play and switches beside it. `ui::set_menu_look`.
 - **A launcher with only what is set before a game starts** (`Description::launcher_features_only`, `kFeatureLauncher`):
